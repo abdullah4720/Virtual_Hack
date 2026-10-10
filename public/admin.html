@@ -208,6 +208,7 @@ const P = {
           <div><span>التقديم في الهاكاثون</span><span class="pill">${ph}</span></div>
           <div><span>إرسال البريد</span>${ok(sy.mail,"مفعّل","غير مفعّل (RESEND_API_KEY)")}</div>
           <div><span>استهلاك الذكاء الاصطناعي اليوم</span><span class="pill ${sy.usageToday > sy.dailyAiCalls*0.8 ? "no" : ""}">${fmt(sy.usageToday)} / ${fmt(sy.dailyAiCalls)}</span></div>
+          <div><span>اختبار الذكاء الاصطناعي</span><button class="ib" data-act="aitest">🧪 اختبر الآن</button></div><div id="aiTest" class="help" style="display:block;background:none;padding:0 4px"></div>
           ${st.pendingEvals ? `<div><span>تقييمات معلّقة</span><button class="ib" data-act="reeval">⏳ ${st.pendingEvals} · أكمل التقييم الآن</button></div>` : ""}</div>`)}
         ${APP.demo ? card("🧠 تفعيل الذكاء الاصطناعي في النسخة التجريبية", sy.aiMode === "claude-account"
           ? `<p class="muted">الذكاء الاصطناعي يعمل الآن عبر حسابك في Claude. التقييمات حقيقية.</p>`
@@ -487,6 +488,14 @@ $("main").addEventListener("click", async e => {
       if (pane==="notify") { render(); $("nMsg").textContent = msg; } else alert(msg);
     } catch(err){ alert(err.message); }
     b.disabled = false; return;
+  }
+  if (act==="aitest") {
+    b.disabled = true; b.textContent = "جارٍ الاختبار…";
+    try {
+      const r = await api("ai-test", {});
+      $("aiTest").innerHTML = r.error ? `<span style="color:var(--bad)">❌ ${esc(r.error)}</span>` : r.results.map(x=>x.ok ? `<div>✅ ${esc(x.label)}: <span dir="ltr">${esc(x.model)}</span> يعمل (${(x.ms/1000).toFixed(1)} ث)</div>` : `<div style="color:var(--bad)">❌ ${esc(x.label)} (<span dir="ltr">${esc(x.model)}</span>): ${esc(x.error)}<div class="help" dir="ltr" style="text-align:left">${esc(x.raw)}</div></div>`).join("");
+    } catch(err){ $("aiTest").textContent = err.message; }
+    b.disabled = false; b.textContent = "🧪 اختبر الآن"; return;
   }
   if (act==="genkey") { S.hackathon.judgeKey = genKey(); render(); dirty(); return; }
   if (act==="reeval") { b.disabled = true; b.textContent = "جارٍ التقييم…"; try { const r = await api("reeval", {}); D = await api("get"); render(); dirty(`اكتمل تقييم ${r.evaluated}${r.remaining?`، وبقي ${r.remaining}`:""}`, "ok"); } catch(err){ alert(err.message); } return; }

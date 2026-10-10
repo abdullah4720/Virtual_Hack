@@ -2,7 +2,7 @@
 import { getSettings, saveSettings, ADMIN_KEY, judgeKey, phase, optionLabel } from "../lib/settings.js";
 import { DEFAULTS } from "../lib/defaults.js";
 import { select, insert, update, removeAll, removeOne, hasDb } from "../lib/db.js";
-import { aiAvailable, aiMode, MODEL, EVAL_MODEL } from "../lib/ai.js";
+import { aiAvailable, aiMode, MODEL, EVAL_MODEL, askJSON, explainAiError } from "../lib/ai.js";
 import { T, standings, runEvaluation, ensureCerts, certKind } from "../lib/hackcore.js";
 import { createTicket, TICKETS } from "../lib/tickets.js";
 import { usageToday, USAGE } from "../lib/limits.js";
@@ -160,6 +160,22 @@ export default async function handler(req, res) {
         sent += (await notify(s, "finalists", teamEmails(s, r.team), { team: r.team.name, project: r.best.title, finalists: s.hackathon.finalists, link: `${site}/hackathon?code=${r.team.code}` }, { ref: r.team.id })).ok ? 1 : 0;
       }
       return res.status(200).json({ ok: true, emailed: sent });
+    }
+
+    // ---------- اختبار الذكاء الاصطناعي (يبيّن سبب الفشل إن وُجد) ----------
+    if (action === "ai-test" && req.method === "POST") {
+      if (!aiAvailable()) return res.status(200).json({ ok: false, error: "لا يوجد مفتاح: أضف ANTHROPIC_API_KEY في إعدادات Vercel ثم أعد النشر (Redeploy)." });
+      const out = [];
+      for (const [label, m] of [["المحادثة", "chat"], ["التقييم", "eval"]]) {
+        const t0 = Date.now();
+        try {
+          const r = await askJSON('Reply with JSON only: {"ok": true}', "ping", 20, 0, { model: m });
+          out.push({ label, model: m === "eval" ? EVAL_MODEL : MODEL, ok: r?.ok === true, ms: Date.now() - t0 });
+        } catch (e) {
+          out.push({ label, model: m === "eval" ? EVAL_MODEL : MODEL, ok: false, error: explainAiError(e), raw: String(e.message).slice(0, 300) });
+        }
+      }
+      return res.status(200).json({ ok: out.every((x) => x.ok), results: out });
     }
 
     // ---------- الإشعارات ----------
