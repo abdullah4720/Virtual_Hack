@@ -5,29 +5,31 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>شاشة الجناح</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="hack.css">
 <script src="qrcode.min.js"></script>
+<script src="icons.js"></script>
 <script src="app.js"></script>
 <style>
-html,body{margin:0;height:100%;background:var(--bg,#0b1020);overflow:hidden;font-family:"IBM Plex Sans Arabic",system-ui,sans-serif;color:#eef2ff}
+html,body{margin:0;height:100%;background:var(--paper);overflow:hidden;font-family:"IBM Plex Sans Arabic",system-ui,sans-serif;color:var(--text)}
 iframe{position:fixed;inset:0;width:100%;height:100%;border:0;transition:opacity .8s ease}
 .off{opacity:0;pointer-events:none}
 .dots{position:fixed;bottom:1vw;left:50%;transform:translateX(-50%);display:flex;gap:.6vw;z-index:2}
-.dots i{width:.7vw;height:.7vw;border-radius:50%;background:#25304f}
-.dots i.on{background:var(--accent,#f5b83d)}
-.full{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:2vw;padding:4vw;background:radial-gradient(1400px 700px at 85% -10%,#1d2a55 0,transparent 60%),var(--bg,#0b1020)}
-.full .k{font-size:2vw;color:#9aa6c7}
-.full .big{font-size:9vw;font-weight:700;color:var(--accent,#f5b83d);font-variant-numeric:tabular-nums;line-height:1.1}
+.dots i{width:.7vw;height:.7vw;border-radius:50%;background:var(--line)}
+.dots i.on{background:var(--accent)}
+.full{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:2vw;padding:4vw;background:var(--paper)}
+.full .k{font-size:2vw;color:var(--muted)}
+.full .big{font-size:9vw;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums;line-height:1.1}
 .full .t{font-size:4.2vw;font-weight:700;line-height:1.35}
-.full .b{font-size:2.2vw;color:#c9d1ea;max-width:70vw;line-height:1.7;white-space:pre-wrap}
+.full .b{font-size:2.2vw;color:var(--muted);max-width:70vw;line-height:1.7;white-space:pre-wrap}
 .full .qr{background:#fff;padding:1vw;border-radius:1vw}
 .full .qr img,.full .qr canvas{width:13vw!important;height:13vw!important;display:block}
 .units{display:flex;gap:3vw;justify-content:center}
 .units div{text-align:center}
-.units b{display:block;font-size:8vw;color:var(--accent,#f5b83d);line-height:1.1;font-variant-numeric:tabular-nums}
-.units span{font-size:1.6vw;color:#9aa6c7}
+.units b{display:block;font-size:8vw;color:var(--accent);line-height:1.1;font-variant-numeric:tabular-nums}
+.units span{font-size:1.6vw;color:var(--muted)}
 </style>
 </head>
-<body data-screen>
+<body class="dark" data-screen>
 <div class="dots" id="dots"></div>
 <script>
 // شاشة الجناح: يتحكم المنظّم في وضعها من لوحة التحكم ← الشاشات (تتحدث خلال 15 ثانية)
@@ -60,7 +62,7 @@ function countdown(c){
   try { new QRCode(d.querySelector("#qr"), {text: new URL("welcome.html", location.href).href, width: 400, height: 400}); } catch(e){}
   const u = d.querySelector("#u");
   const f = () => {
-    if (!target) { u.innerHTML = `<div><b>🏆</b><span>ترقّبوا إعلان الفائزين</span></div>`; return; }
+    if (!target) { u.innerHTML = `<div><b><i data-icon="trophy"></i></b><span>ترقّبوا إعلان الفائزين</span></div>`; return; }
     const ms = Math.max(0, target - Date.now()), D = Math.floor(ms/864e5), h = Math.floor(ms/36e5)%24, m = Math.floor(ms/6e4)%60, s = Math.floor(ms/1e3)%60;
     u.innerHTML = [[D,"يوم"],[h,"ساعة"],[m,"دقيقة"],[s,"ثانية"]].filter((x,i)=>i||x[0]).map(([v,l])=>`<div><b>${String(v).padStart(2,"0")}</b><span>${l}</span></div>`).join("");
   };
@@ -69,7 +71,7 @@ function countdown(c){
 
 function announcement(c){
   const a = (c.announcements || [])[0];
-  full(a ? `<div class="k">📣 إعلان</div><div class="t">${esc(a.title)}</div>${a.body?`<div class="b">${esc(a.body)}</div>`:""}` : `<div class="t">لا توجد إعلانات حاليًا</div>`);
+  full(a ? `<div class="k"><i data-icon="megaphone"></i> إعلان</div><div class="t">${esc(a.title)}</div>${a.body?`<div class="b">${esc(a.body)}</div>`:""}` : `<div class="t">لا توجد إعلانات حاليًا</div>`);
 }
 
 async function apply(c){

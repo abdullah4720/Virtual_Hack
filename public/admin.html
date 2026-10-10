@@ -7,6 +7,7 @@
 <meta name="robots" content="noindex">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="hack.css">
+<script src="icons.js"></script>
 <script src="app.js"></script>
 <style>
 body{padding-bottom:90px}
@@ -14,11 +15,14 @@ body{padding-bottom:90px}
 @media (max-width:860px){.shell{grid-template-columns:1fr}}
 nav{position:sticky;top:20px;align-self:start;display:flex;flex-direction:column;gap:4px}
 @media (max-width:860px){nav{position:static;flex-direction:row;overflow-x:auto;padding-bottom:6px}}
-nav .brand{font-weight:700;font-size:18px;margin-bottom:10px;padding:0 10px}
+nav .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px;margin-bottom:12px;padding:0 6px}
+nav .brand .ic{display:grid;place-items:center;width:36px;height:36px;border-radius:10px;background:var(--navy);color:#fff}
 @media (max-width:860px){nav .brand{display:none}}
-nav button{font:inherit;text-align:right;border:0;background:transparent;color:var(--muted);padding:9px 12px;border-radius:10px;cursor:pointer;white-space:nowrap}
+nav button{display:flex;align-items:center;gap:9px;font:inherit;text-align:right;border:0;background:transparent;color:var(--muted);padding:8px 12px;border-radius:10px;cursor:pointer;white-space:nowrap}
+nav button .lu{opacity:.8}
 nav button:hover{color:var(--text);background:var(--card)}
-nav button.on{background:var(--card);color:var(--accent);font-weight:700;box-shadow:inset -3px 0 0 var(--accent)}
+nav button.on{background:var(--card);color:var(--text);font-weight:700;box-shadow:inset -3px 0 0 var(--accent),var(--shadow)}
+nav button.on .lu{color:var(--accent);opacity:1}
 section.pane{display:none}
 section.pane.on{display:block}
 .pane>h1{font-size:24px;margin-bottom:4px}
@@ -27,8 +31,8 @@ section.pane.on{display:block}
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
 @media (max-width:640px){.grid2,.grid3{grid-template-columns:1fr}}
 .stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:14px}
-.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
-.stat b{display:block;font-size:26px;color:var(--accent);font-variant-numeric:tabular-nums}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:var(--shadow)}
+.stat b{display:block;font-size:26px;color:var(--navy);font-variant-numeric:tabular-nums}
 .stat span{color:var(--muted);font-size:13px}
 .status{display:grid;gap:8px}
 .status div{display:flex;justify-content:space-between;align-items:center;background:var(--card2);border-radius:10px;padding:9px 12px;font-size:14.5px}
@@ -40,7 +44,7 @@ section.pane.on{display:block}
 .item .head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}
 .item .head b{font-size:15.5px}
 .tools{display:flex;gap:4px}
-.ib{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:8px;padding:4px 9px;cursor:pointer}
+.ib{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:13px;border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:8px;padding:4px 9px;cursor:pointer}
 .ib.del{color:var(--bad)}
 .ib:disabled{opacity:.35;cursor:default}
 .add{font:inherit;width:100%;border:1.5px dashed var(--line);background:transparent;color:var(--accent);border-radius:12px;padding:10px;cursor:pointer;font-weight:700}
@@ -51,19 +55,20 @@ section.pane.on{display:block}
 .sum{font-weight:700;padding:4px 12px;border-radius:999px}
 .sum.ok{background:rgba(52,211,153,.14);color:var(--good)}
 .sum.no{background:rgba(248,113,113,.14);color:var(--bad)}
-.row-inline{display:grid;grid-template-columns:70px 1fr;gap:10px}
+.row-inline{display:grid;grid-template-columns:240px 1fr;gap:10px}
+@media (max-width:640px){.row-inline{grid-template-columns:1fr}}
 .rub{display:grid;grid-template-columns:1.2fr 90px 2fr auto;gap:8px;align-items:end}
 @media (max-width:640px){.rub{grid-template-columns:1fr 80px}.rub .g{grid-column:1/-1}}
 input[type=color]{height:44px;padding:4px}
 input[type=range]{accent-color:var(--accent);padding:0}
-.savebar{position:fixed;bottom:0;left:0;right:0;background:rgba(11,16,32,.92);backdrop-filter:blur(8px);border-top:1px solid var(--line);padding:12px 16px;display:flex;gap:12px;align-items:center;justify-content:center;z-index:5}
+.savebar{position:fixed;bottom:0;left:0;right:0;background:color-mix(in srgb,var(--card) 92%,transparent);box-shadow:0 -6px 20px -12px rgba(11,37,64,.25);backdrop-filter:blur(8px);border-top:1px solid var(--line);padding:12px 16px;display:flex;gap:12px;align-items:center;justify-content:center;z-index:5}
 .savebar .msg{font-size:14px;color:var(--muted);flex:1;max-width:700px}
 .savebar .msg.err{color:var(--bad)}
 .savebar .msg.ok{color:var(--good)}
 .savebar .btn{width:auto;padding:11px 28px}
-.danger{border-color:rgba(248,113,113,.4)}
+.danger{border-color:color-mix(in srgb,var(--bad) 40%,transparent)}
 .btn.red{background:var(--bad);color:#fff}
-.logo-prev{max-height:56px;max-width:200px;background:#fff1;border-radius:8px;padding:6px;margin-top:8px}
+.logo-prev{max-height:56px;max-width:200px;background:var(--navy);border-radius:8px;padding:6px;margin-top:8px}
 .login{max-width:420px;margin:14vh auto}
 .help{font-size:12.5px;color:var(--muted);margin-top:4px}
 .tbl{width:100%;border-collapse:collapse;font-size:14px}
@@ -77,7 +82,7 @@ input[type=range]{accent-color:var(--accent);padding:0}
 .pv{margin-top:10px}
 .pv .subj{font-size:13.5px;margin-bottom:6px}
 .pv iframe{width:100%;height:460px;border:1px solid var(--line);border-radius:12px;background:#f4f5f9}
-.pill.warn{background:rgba(245,184,61,.16);color:var(--accent)}
+.pill.warn{background:var(--gold-soft);color:var(--gold)}
 </style>
 </head>
 <body data-noannounce>
@@ -92,23 +97,23 @@ input[type=range]{accent-color:var(--accent);padding:0}
 
 <div id="app" class="shell hidden">
   <nav id="nav">
-    <div class="brand">⚙️ لوحة التحكم</div>
-    <button data-p="overview" class="on">نظرة عامة</button>
-    <button data-p="brand">الهوية والعامة</button>
-    <button data-p="investor">المستثمر الذكي</button>
-    <button data-p="hack">الهاكاثون: الإعدادات</button>
-    <button data-p="tracks">المسارات والتحديات</button>
-    <button data-p="rubric">معايير التقييم</button>
-    <button data-p="tickets">التأهيل والدعوات</button>
-    <button data-p="participants">المشاركون</button>
-    <button data-p="judges">المحكّمون</button>
-    <button data-p="announce">الإعلانات</button>
-    <button data-p="notify">الإشعارات والبريد</button>
-    <button data-p="screens">الشاشات</button>
-    <button data-p="welcome">صفحة الترحيب</button>
-    <button data-p="privacy">الخصوصية والحماية</button>
-    <button data-p="reports">التقارير والشهادات</button>
-    <button data-p="data">البيانات</button>
+    <div class="brand"><span class="ic"><i data-icon="settings"></i></span> لوحة التحكم</div>
+    <button data-p="overview" class="on"><i data-icon="layout-dashboard"></i>نظرة عامة</button>
+    <button data-p="brand"><i data-icon="palette"></i>الهوية والعامة</button>
+    <button data-p="investor"><i data-icon="briefcase-business"></i>المستثمر الذكي</button>
+    <button data-p="hack"><i data-icon="zap"></i>الهاكاثون: الإعدادات</button>
+    <button data-p="tracks"><i data-icon="layers"></i>المسارات والتحديات</button>
+    <button data-p="rubric"><i data-icon="list-checks"></i>معايير التقييم</button>
+    <button data-p="tickets"><i data-icon="ticket"></i>التأهيل والدعوات</button>
+    <button data-p="participants"><i data-icon="users"></i>المشاركون</button>
+    <button data-p="judges"><i data-icon="scale"></i>المحكّمون</button>
+    <button data-p="announce"><i data-icon="megaphone"></i>الإعلانات</button>
+    <button data-p="notify"><i data-icon="mail"></i>الإشعارات والبريد</button>
+    <button data-p="screens"><i data-icon="monitor"></i>الشاشات</button>
+    <button data-p="welcome"><i data-icon="house"></i>صفحة الترحيب</button>
+    <button data-p="privacy"><i data-icon="shield-check"></i>الخصوصية والحماية</button>
+    <button data-p="reports"><i data-icon="chart-column"></i>التقارير والشهادات</button>
+    <button data-p="data"><i data-icon="database"></i>البيانات</button>
   </nav>
   <main id="main"></main>
 </div>
@@ -160,14 +165,16 @@ function f(label, k, o={}){
   else inp = `<input data-k="${k}" type="${t}" value="${attr(v)}" ${o.ltr?'dir="ltr"':""} maxlength="${o.max||200}" placeholder="${attr(o.ph||"")}">`;
   return `<div>${label?`<label>${label}</label>`:""}${inp}${o.help?`<div class="help">${o.help}</div>`:""}</div>`;
 }
+// منتقي أيقونة Lucide (للمسارات والمستشارين)
+const iconField = (label, k) => { const v = getP(S,k) || ""; const names = Object.keys(window.ICONS||{}); return `<div>${label?`<label>${label}</label>`:""}<div style="display:flex;gap:8px;align-items:center"><span style="display:grid;place-items:center;width:44px;height:44px;border-radius:11px;background:var(--soft);color:var(--accent);flex:none;font-size:20px" data-prev="${k}">${glyph(v)}</span><select data-k="${k}" data-icon-field>${names.includes(v)?"":`<option value="${attr(v)}" selected>${esc(v)||"—"}</option>`}${names.map(n=>`<option value="${n}" ${n===v?"selected":""}>${n}</option>`).join("")}</select></div></div>`; };
 const tog = (label, k, help="") => `<label class="toggle"><span><b>${label}</b>${help?`<div class="help">${help}</div>`:""}</span><input type="checkbox" data-k="${k}" data-type="bool" ${getP(S,k)?"checked":""}></label>`;
 const tools = (list, i, n) => `<div class="tools"><button class="ib" data-act="up" data-list="${list}" data-i="${i}" ${i===0?"disabled":""} title="أعلى">↑</button><button class="ib" data-act="down" data-list="${list}" data-i="${i}" ${i===n-1?"disabled":""} title="أسفل">↓</button><button class="ib del" data-act="del" data-list="${list}" data-i="${i}">حذف</button></div>`;
 const addBtn = (list, label) => `<button class="add" data-act="add" data-list="${list}">+ ${label}</button>`;
 const card = (title, body, cls="") => `<div class="card ${cls}">${title?`<h2>${title}</h2>`:""}${body}</div>`;
 
 const NEW = {
-  "investor.investors": () => ({id:uid("inv"), name:"", title:"", emoji:"💼", desc:"", persona:"", style:""}),
-  "hackathon.tracks": () => ({id:uid("t"), icon:"💡", title:"", desc:"", challenges:[]}),
+  "investor.investors": () => ({id:uid("inv"), name:"", title:"", emoji:"briefcase-business", desc:"", persona:"", style:""}),
+  "hackathon.tracks": () => ({id:uid("t"), icon:"lightbulb", title:"", desc:"", challenges:[]}),
   "challenges": () => ({id:uid("c"), title:"", desc:""}),
   "hackathon.rubric": () => ({key:uid("k"), label:"", max:10, guide:""}),
   "hackathon.judges": () => ({id:uid("j"), name:"", email:"", key:genKey(), tracks:[]}),
@@ -186,9 +193,9 @@ const P = {
   overview(){
     const st = D.stats, sy = D.system, base = "";
     const ok = (b, y, n) => `<span class="pill ${b?"ok":"no"}">${b?y:n}</span>`;
-    const ph = {open:"🟢 مفتوح", soon:"⏳ لم يبدأ", closed:"🔴 مُقفل"}[sy.phase];
+    const ph = {open:'<span class="dot ok"></span> مفتوح', soon:'<span class="dot wait"></span> لم يبدأ', closed:'<span class="dot no"></span> مُقفل'}[sy.phase];
     const links = [
-      ["⭐ صفحة الترحيب (رمز QR الموحد)","welcome.html"],["المستثمر الذكي (الزوار)","index.html"],["الهاكاثون (الفرق)","hackathon.html"],["شاشة الجناح (المتحكَّم بها)","booth.html"],
+      ["صفحة الترحيب (رمز QR الموحد)","welcome.html"],["المستثمر الذكي (الزوار)","index.html"],["الهاكاثون (الفرق)","hackathon.html"],["شاشة الجناح (المتحكَّم بها)","booth.html"],
       ["لوحة البيانات","dashboard.html"],["لوحة اللجنة","judges.html"],["إعلان الفائزين","winners.html"],["التقرير الختامي","report.html"],["سياسة الخصوصية","privacy.html"]];
     return `<h1>نظرة عامة</h1><p class="lead">${esc(S.brand.orgName)} · ${esc(S.brand.eventName)}</p>
       <div class="stats">
@@ -208,9 +215,9 @@ const P = {
           <div><span>التقديم في الهاكاثون</span><span class="pill">${ph}</span></div>
           <div><span>إرسال البريد</span>${ok(sy.mail,"مفعّل","غير مفعّل (RESEND_API_KEY)")}</div>
           <div><span>استهلاك الذكاء الاصطناعي اليوم</span><span class="pill ${sy.usageToday > sy.dailyAiCalls*0.8 ? "no" : ""}">${fmt(sy.usageToday)} / ${fmt(sy.dailyAiCalls)}</span></div>
-          <div><span>اختبار الذكاء الاصطناعي</span><button class="ib" data-act="aitest">🧪 اختبر الآن</button></div><div id="aiTest" class="help" style="display:block;background:none;padding:0"></div>
-          ${st.pendingEvals ? `<div><span>تقييمات معلّقة</span><button class="ib" data-act="reeval">⏳ ${st.pendingEvals} · أكمل التقييم الآن</button></div>` : ""}</div>`)}
-        ${APP.demo ? card("🧠 تفعيل الذكاء الاصطناعي في النسخة التجريبية", sy.aiMode === "claude-account"
+          <div><span>اختبار الذكاء الاصطناعي</span><button class="ib" data-act="aitest"><i data-icon="flask-conical"></i> اختبر الآن</button></div><div id="aiTest" class="help" style="display:block;background:none;padding:0"></div>
+          ${st.pendingEvals ? `<div><span>تقييمات معلّقة</span><button class="ib" data-act="reeval"><i data-icon="hourglass"></i> ${st.pendingEvals} · أكمل التقييم الآن</button></div>` : ""}</div>`)}
+        ${APP.demo ? card("تفعيل الذكاء الاصطناعي في النسخة التجريبية", sy.aiMode === "claude-account"
           ? `<p class="muted">الذكاء الاصطناعي يعمل الآن عبر حسابك في Claude. التقييمات حقيقية.</p>`
           : `<p class="muted small">بدون ذكاء اصطناعي تكون الأسئلة ثابتة والدرجات <b style="color:var(--bad)">عشوائية وهمية</b>. للتقييم الحقيقي على هذا الجهاز أدخل مفتاح Claude API (من console.anthropic.com). يُحفظ في هذا المتصفح فقط، ولا يُرسل إلا إلى Anthropic.</p>
             <div class="grid2" style="margin-top:10px"><input id="demoKey" type="password" dir="ltr" placeholder="sk-ant-..." value=""><div style="display:flex;gap:8px"><button class="btn" data-act="savekey" style="width:auto;padding:10px 18px">تفعيل</button>${sy.aiMode==="browser-key"?`<button class="btn ghost" data-act="clearkey" style="width:auto;padding:10px 18px">إزالة المفتاح</button>`:""}</div></div>
@@ -225,7 +232,7 @@ const P = {
         <div class="grid2">${f("اسم الجناح أو الموقع","brand.boothName",{ph:"مثال: جناح جامعة القصيم"})}${f("المنطقة الزمنية","brand.tzOffset",{type:"select",opts:[["+03:00","السعودية (UTC+3)"],["+04:00","الإمارات وعُمان (UTC+4)"],["+02:00","مصر (UTC+2)"],["+01:00","UTC+1"],["+00:00","UTC"]]})}</div>
         ${f("رابط الشعار (اختياري)","brand.logoUrl",{ltr:true,max:500,ph:"https://…/logo.png",help:"رابط صورة PNG أو SVG بخلفية شفافة. يظهر أعلى الصفحات والشاشات."})}
         ${S.brand.logoUrl?`<img class="logo-prev" src="${attr(S.brand.logoUrl)}" alt="">`:""}`)}
-      ${card("الألوان", `<div class="grid2">${f("اللون الرئيسي","brand.accent",{type:"color"})}${f("لون الخلفية","brand.bg",{type:"color"})}</div><p class="help">يُفضَّل لون خلفية داكن ولون رئيسي واضح عليه.</p>`)}`;
+      ${card("الألوان", `<div class="grid2">${f("لون الأزرار والعناصر التفاعلية","brand.accent",{type:"color"})}${f("اللون الأساسي (الشريط العلوي والشاشات)","brand.bg",{type:"color"})}</div><p class="help">يُفضَّل لون أساسي داكن (كحلي مثلًا)، ولون تفاعلي متوسط الدرجة يظهر بوضوح على الأبيض.</p>`)}`;
   },
   investor(){
     const L = S.investor.investors;
@@ -234,8 +241,8 @@ const P = {
         <div class="grid2">${f("أقل مبلغ استثمار (ريال)","investor.minAmount",{type:"num",min:1000,step:1000})}${f("أعلى مبلغ استثمار (ريال)","investor.maxAmount",{type:"num",min:1000,step:1000})}</div>`)}
       ${card("الفرز والتأهل للهاكاثون", `<div class="grid2">${f("درجة التأهل (من 100)","investor.qualifyScore",{type:"num",min:0,max:100,help:"من يحصل عليها أو أكثر يُمنح رمز تأهل للهاكاثون"})}${f("عدد المحاولات لكل بريد","investor.maxAttempts",{type:"num",min:1,max:20})}</div>
         <p class="help">التقييم بأربعة معايير موحّدة (25 لكل منها): المشكلة والحل، العميل والسوق، نموذج الربح، جودة الإجابات. كل معيار بمستويات 0–5 مثبّتة بأوصاف، مع سقوف إلزامية (مثلًا: بلا شريحة عملاء محددة لا يتجاوز «العميل» 10 من 25، وبلا سعر لا يتجاوز «الربح» 15). يُسند المستثمر عشوائيًا، وشخصيته تغيّر الأسلوب فقط.</p>`)}
-      ${card("شخصيات المستثمرين", L.map((x,i)=>`<div class="item"><div class="head"><b>${esc(x.emoji)} ${esc(x.name)||"مستثمر جديد"}</b>${tools("investor.investors",i,L.length)}</div>
-        <div class="row-inline">${f("رمز","investor.investors."+i+".emoji",{max:8})}${f("الاسم","investor.investors."+i+".name",{max:40})}</div>
+      ${card("شخصيات المستثمرين", L.map((x,i)=>`<div class="item"><div class="head"><b>${glyph(x.emoji)} ${esc(x.name)||"مستشار جديد"}</b>${tools("investor.investors",i,L.length)}</div>
+        <div class="row-inline">${iconField("الأيقونة","investor.investors."+i+".emoji")}${f("الاسم","investor.investors."+i+".name",{max:40})}</div>
         <div class="grid2">${f("اللقب","investor.investors."+i+".title",{max:60,ph:"مثال: المستثمر المتشكك"})}${f("وصف قصير للزائر","investor.investors."+i+".desc",{max:120})}</div>
         ${f("الشخصية (تعليمات للذكاء الاصطناعي)","investor.investors."+i+".persona",{type:"textarea",rows:3,max:1500,help:"صِف أسلوبه وطريقة كلامه وما يهتم به."})}
         ${f("أسلوب القرار","investor.investors."+i+".style",{type:"textarea",rows:2,max:600,help:"متى يستثمر ومتى يرفض."})}</div>`).join("") + addBtn("investor.investors","إضافة مستثمر"))}
@@ -256,8 +263,8 @@ const P = {
   tracks(){
     const T = S.hackathon.tracks;
     return `<h1>المسارات والتحديات</h1><p class="lead">يختار الفريق مسارًا، ثم تحديًا داخله. إذا لم تضف تحديات لمسار، يختار الفريق المسار نفسه.</p>
-      ${T.map((t,i)=>`<div class="card"><div class="head" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><h2 style="margin:0">${esc(t.icon)} ${esc(t.title)||"مسار جديد"}</h2>${tools("hackathon.tracks",i,T.length)}</div>
-        <div class="row-inline">${f("رمز","hackathon.tracks."+i+".icon",{max:8})}${f("اسم المسار","hackathon.tracks."+i+".title",{max:80})}</div>
+      ${T.map((t,i)=>`<div class="card"><div class="head" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><h2 style="margin:0">${glyph(t.icon)} ${esc(t.title)||"مسار جديد"}</h2>${tools("hackathon.tracks",i,T.length)}</div>
+        <div class="row-inline">${iconField("الأيقونة","hackathon.tracks."+i+".icon")}${f("اسم المسار","hackathon.tracks."+i+".title",{max:80})}</div>
         ${f("وصف المسار","hackathon.tracks."+i+".desc",{type:"textarea",rows:2,max:400})}
         <div class="sub"><label>التحديات (${t.challenges.length})</label>
           ${t.challenges.map((c,j)=>`<div class="item"><div class="head"><b>${esc(c.title)||"تحدٍّ جديد"}</b>${tools("hackathon.tracks."+i+".challenges",j,t.challenges.length)}</div>
@@ -290,11 +297,11 @@ const P = {
     return `<h1>المحكّمون</h1><p class="lead">لكل محكّم مفتاح شخصي ومسارات مسندة. يرى المتأهلين في مساراته فقط، ويقيّم كل معيار، ويستطيع الإقرار بتعارض المصالح.</p>
       ${card(`أعضاء اللجنة (${J.length})`, J.map((j,i)=>`<div class="item"><div class="head"><b>${esc(j.name)||"محكّم جديد"}</b>${tools("hackathon.judges",i,J.length)}</div>
         <div class="grid3">${f("الاسم","hackathon.judges."+i+".name",{max:60})}${f("البريد","hackathon.judges."+i+".email",{ltr:true,max:100})}${f("المفتاح الشخصي","hackathon.judges."+i+".key",{ltr:true,max:40})}</div>
-        <label>المسارات المسندة (بدون اختيار = كل المسارات)</label><div style="display:flex;flex-wrap:wrap;gap:10px">${TR.map(t=>`<label style="display:flex;gap:6px;align-items:center;margin:0;color:var(--text)"><input type="checkbox" data-jt="${i}" value="${attr(t.id)}" ${j.tracks.includes(t.id)?"checked":""} style="width:18px;height:18px;accent-color:var(--accent)"> ${esc(t.icon)} ${esc(t.title)}</label>`).join("")}</div>
-        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button class="ib" data-copy="${attr(`أهلًا ${j.name}، رابط لوحة التحكيم: ${abs("judges.html")}\nمفتاحك الشخصي: ${j.key}`)}">📋 نسخ الدعوة</button>${D.system.mail&&j.email?`<button class="ib" data-act="jinvite" data-id="${attr(j.id)}">✉️ إرسال الدعوة بالبريد</button>`:""}</div></div>`).join("") + addBtn("hackathon.judges","إضافة محكّم"))}
-      ${D.system.mail && J.length ? `<div class="grid2" style="margin-bottom:14px"><button class="btn ghost" data-act="jinvite">✉️ إرسال الدعوات لكل المحكّمين (بعد الحفظ)</button><button class="btn ghost" data-act="remindjudges">⚖️ تذكير من لم يكمل التقييم</button></div>` : ""}
+        <label>المسارات المسندة (بدون اختيار = كل المسارات)</label><div style="display:flex;flex-wrap:wrap;gap:10px">${TR.map(t=>`<label style="display:flex;gap:6px;align-items:center;margin:0;color:var(--text)"><input type="checkbox" data-jt="${i}" value="${attr(t.id)}" ${j.tracks.includes(t.id)?"checked":""} style="width:18px;height:18px;accent-color:var(--accent)"> ${glyph(t.icon)} ${esc(t.title)}</label>`).join("")}</div>
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button class="ib" data-copy="${attr(`أهلًا ${j.name}، رابط لوحة التحكيم: ${abs("judges.html")}\nمفتاحك الشخصي: ${j.key}`)}"><i data-icon="copy"></i> نسخ الدعوة</button>${D.system.mail&&j.email?`<button class="ib" data-act="jinvite" data-id="${attr(j.id)}"><i data-icon="mail"></i> إرسال الدعوة بالبريد</button>`:""}</div></div>`).join("") + addBtn("hackathon.judges","إضافة محكّم"))}
+      ${D.system.mail && J.length ? `<div class="grid2" style="margin-bottom:14px"><button class="btn ghost" data-act="jinvite"><i data-icon="mail"></i> إرسال الدعوات لكل المحكّمين (بعد الحفظ)</button><button class="btn ghost" data-act="remindjudges"><i data-icon="scale"></i> تذكير من لم يكمل التقييم</button></div>` : ""}
       ${card("مفتاح مشترك (اختياري)", `<div class="grid2">${f("المفتاح المشترك","hackathon.judgeKey",{ltr:true,max:80,help:"بديل سريع: من يدخل به يكتب اسمه، ويرى كل المسارات. الحسابات الشخصية أدق."})}
-        <div><label>&nbsp;</label><button class="btn ghost" data-act="genkey">🎲 توليد مفتاح</button></div></div>
+        <div><label>&nbsp;</label><button class="btn ghost" data-act="genkey"><i data-icon="dices"></i> توليد مفتاح</button></div></div>
         <div class="links" style="margin-top:12px"><div><span>رابط لوحة اللجنة</span><code>${esc(abs("judges.html"))}</code><a class="ib" href="judges.html" target="_blank">فتح</a><button class="ib" data-copy="${attr(abs("judges.html"))}">نسخ</button></div></div>`)}`;
   },
   participants(){
@@ -303,14 +310,14 @@ const P = {
     const list = TEAMS.filter(t => !q || [t.name, t.email, t.code, t.title, ...(t.members||[])].join(" ").toLowerCase().includes(q));
     const SRC = {investor:"المستثمر الذكي", invite:"دعوة", direct:"مباشر"};
     return `<h1>المشاركون</h1><p class="lead">${TEAMS.length} فريق · ${TEAMS.filter(t=>t.status==="disqualified").length} مستبعد. ابحث بالاسم أو البريد أو رمز الفريق.</p>
-      <div class="card">${f("","_q",{ph:"🔍 بحث…"})}</div>
+      <div class="card">${f("","_q",{ph:"بحث بالاسم أو البريد أو الرمز…"})}</div>
       ${card(`الفرق (${list.length})`, list.length ? `<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>#</th><th>الفريق</th><th>المسار</th><th>المشروع</th><th>المحاولات</th><th>الدرجة</th><th>المصدر</th><th>الحالة</th><th></th></tr></thead><tbody>
         ${list.map(t=>`<tr style="${t.status==="disqualified"?"opacity:.55":""}"><td>${t.rank??"—"}</td>
-          <td><b>${esc(t.name)}</b>${t.finalist?' <span class="pill">متأهل</span>':""}${t.flagged?' <span class="pill no">⚠️</span>':""}<div class="help">${esc((t.members||[]).join("، "))}<br><span dir="ltr">${esc(t.email)}</span> · <span dir="ltr" style="font-family:monospace">${esc(t.code)}</span></div></td>
-          <td>${esc(t.label)}</td><td>${esc(t.title||"—")}</td><td>${t.attempts}${t.pending?` <span class="pill">⏳${t.pending}</span>`:""}</td>
+          <td><b>${esc(t.name)}</b>${t.finalist?' <span class="pill">متأهل</span>':""}${t.flagged?' <span class="pill no"><i data-icon="triangle-alert"></i></span>':""}<div class="help">${esc((t.members||[]).join("، "))}<br><span dir="ltr">${esc(t.email)}</span> · <span dir="ltr" style="font-family:monospace">${esc(t.code)}</span></div></td>
+          <td>${esc(t.label)}</td><td>${esc(t.title||"—")}</td><td>${t.attempts}${t.pending?` <span class="pill"><i data-icon="hourglass"></i>${t.pending}</span>`:""}</td>
           <td><b class="gold">${t.best??"—"}</b>${t.final!=null?`<div class="help">نهائية ${t.final}</div>`:""}</td><td>${SRC[t.source]||"—"}</td>
           <td>${t.status==="disqualified"?'<span class="pill no">مستبعد</span>':'<span class="pill ok">نشط</span>'}</td>
-          <td style="white-space:nowrap"><a class="ib" href="hackathon.html?code=${esc(t.code)}" target="_blank" title="فتح صفحة الفريق">صفحته</a> <button class="ib" data-act="msg" data-id="${t.id}" data-name="${attr(t.name)}">✉️ رسالة</button> ${t.status==="disqualified"?`<button class="ib" data-act="tstatus" data-id="${t.id}" data-s="active">استعادة</button>`:`<button class="ib del" data-act="tstatus" data-id="${t.id}" data-s="disqualified">استبعاد</button>`}</td></tr>`).join("")}
+          <td style="white-space:nowrap"><a class="ib" href="hackathon.html?code=${esc(t.code)}" target="_blank" title="فتح صفحة الفريق">صفحته</a> <button class="ib" data-act="msg" data-id="${t.id}" data-name="${attr(t.name)}"><i data-icon="mail"></i> رسالة</button> ${t.status==="disqualified"?`<button class="ib" data-act="tstatus" data-id="${t.id}" data-s="active">استعادة</button>`:`<button class="ib del" data-act="tstatus" data-id="${t.id}" data-s="disqualified">استبعاد</button>`}</td></tr>`).join("")}
         </tbody></table></div>` : `<p class="muted">لا توجد فرق.</p>`)}`;
   },
   announce(){
@@ -319,9 +326,9 @@ const P = {
     return `<h1>الإعلانات والإشعارات</h1><p class="lead">تظهر في أعلى الصفحات، وفي صفحات الفرق، وكشريط متحرك على الشاشات. ويمكن إرسالها بالبريد.</p>
       ${card("إعلان جديد", `${f("العنوان","_aTitle",{max:120,ph:"مثال: تم تمديد التقديم حتى الساعة 10 مساءً"})}${f("التفاصيل (اختياري)","_aBody",{type:"textarea",rows:3,max:2000})}
         <div class="grid2">${f("الجمهور","_aAud",{type:"select",opts:Object.entries(AUD)})}<label class="toggle" style="margin-top:28px"><span><b>إرسال بالبريد أيضًا</b><div class="help">${D.system.mail?"للفرق أو المحكّمين حسب الجمهور":"الإرسال غير مفعّل"}</div></span><input type="checkbox" data-k="_aEmail" data-type="bool" ${tmp._aEmail?"checked":""} ${D.system.mail?"":"disabled"}></label></div>
-        <button class="btn" data-act="announce" style="margin-top:10px">📣 نشر الإعلان</button>`)}
+        <button class="btn" data-act="announce" style="margin-top:10px"><i data-icon="megaphone"></i> نشر الإعلان</button>`)}
       ${card(`الإعلانات (${A.length})`, A.length ? A.map(a=>`<div class="item" style="${a.active?"":"opacity:.5"}"><div class="head"><b>${esc(a.title)}</b><div class="tools"><button class="ib" data-act="atoggle" data-id="${a.id}" data-on="${a.active?0:1}">${a.active?"إيقاف":"تفعيل"}</button><button class="ib del" data-act="adelete" data-id="${a.id}">حذف</button></div></div>
-        ${a.body?`<div class="help" style="white-space:pre-wrap">${esc(a.body)}</div>`:""}<div class="help">${a.audience.startsWith("team:")?`✉️ رسالة خاصة لفريق «${esc(a.teamName)}»`:AUD[a.audience]} · ${when(a.created_at)}</div></div>`).join("") : `<p class="muted">لا توجد إعلانات.</p>`)}`;
+        ${a.body?`<div class="help" style="white-space:pre-wrap">${esc(a.body)}</div>`:""}<div class="help">${a.audience.startsWith("team:")?`رسالة خاصة لفريق «${esc(a.teamName)}»`:AUD[a.audience]} · ${when(a.created_at)}</div></div>`).join("") : `<p class="muted">لا توجد إعلانات.</p>`)}`;
   },
   notify(){
     const K = D.notifyKinds || {}, N = S.notify, mail = D.system.mail;
@@ -330,25 +337,25 @@ const P = {
     const groups = [["الزوار والمستثمر الذكي",["otp","qualified","notQualified","invite"]],["الفرق في الهاكاثون",["registered","evaluated","reminderNoSubmit","reminderClose","finalists","winner","results","message"]],["المحكّمون",["judgeInvite","judgeReminder"]],["عامة",["announcement"]]];
     const tpl = k => { const m = K[k], t = N.templates[k]; if (!m || !t) return "";
       const open = OPEN.has(k), base = "notify.templates."+k+".";
-      return `<div class="item ntpl ${t.on||m.locked?"":"off"}"><div class="head"><div><b>${esc(m.label)}</b><div class="meta">📤 ${esc(m.to)} · ⏱️ ${esc(m.when)}</div></div>
-        <div class="tools" style="align-items:center;gap:8px">${m.custom?"":`<button class="ib" data-act="nopen" data-k="${k}">${open?"إغلاق":"✏️ النص"}</button>`}<button class="ib" data-act="npreview" data-k="${k}">👁️ معاينة</button>
+      return `<div class="item ntpl ${t.on||m.locked?"":"off"}"><div class="head"><div><b>${esc(m.label)}</b><div class="meta"><i data-icon="send"></i> ${esc(m.to)} · <i data-icon="clock"></i> ${esc(m.when)}</div></div>
+        <div class="tools" style="align-items:center;gap:8px">${m.custom?"":`<button class="ib" data-act="nopen" data-k="${k}">${open?"إغلاق":'<i data-icon="pencil"></i> النص'}</button>`}<button class="ib" data-act="npreview" data-k="${k}"><i data-icon="eye"></i> معاينة</button>
           <label style="display:flex;align-items:center;gap:6px;margin:0;color:var(--text);font-size:13px">${m.locked?"دائمًا":"مفعّلة"}<input type="checkbox" data-k="${base}on" data-type="bool" ${t.on||m.locked?"checked":""} ${m.locked?"disabled":""} style="width:20px;height:20px;accent-color:var(--accent)"></label></div></div>
         ${open && !m.custom ? `${f("عنوان البريد (الموضوع)",base+"subject",{max:200})}${f("العنوان داخل الرسالة",base+"title",{max:200})}${f("النص",base+"body",{type:"textarea",rows:5,max:3000,help:"سطر فارغ يفصل الفقرات. الرموز والشهادات والزر تُضاف تلقائيًا."})}
           <div class="grid2">${f("نص الزر (فارغ = بلا زر)",base+"cta",{max:60})}<div></div></div>
           <div class="help">المتغيرات المتاحة (اضغط للنسخ):</div><div class="vars">${[...m.vars, ...(D.notifyCommon||[])].map(v=>`<code data-copy="{${v}}">{${v}}</code>`).join("")}</div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="ib" data-act="ntest" data-k="${k}">✉️ إرسال تجريبي</button><button class="ib" data-act="nreset" data-k="${k}">↺ النص الافتراضي</button></div>` : ""}
+          <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="ib" data-act="ntest" data-k="${k}"><i data-icon="send"></i> إرسال تجريبي</button><button class="ib" data-act="nreset" data-k="${k}">↺ النص الافتراضي</button></div>` : ""}
         <div class="pv" id="pv-${k}"></div></div>`; };
     return `<h1>الإشعارات والبريد</h1><p class="lead">كل رسالة تُرسلها المنصة: متى، ولمن، وبأي نص. عدّل النص واحفظ، أو أوقف أي رسالة. الصفحات تبقى تعرض كل شيء للمشارك حتى لو أوقفت البريد.</p>
-      ${mail ? "" : card("⚠️ إرسال البريد غير مفعّل", `<p class="muted small">لن تصل أي رسالة حتى تضيف <code dir="ltr">RESEND_API_KEY</code> و<code dir="ltr">MAIL_FROM</code> في إعدادات الخادم (Vercel)، مع توثيق نطاق البريد في Resend. يمكنك الآن تجهيز النصوص ومعاينتها، والسجل يبيّن ما كان سيُرسل.</p>`, "danger")}
+      ${mail ? "" : card("إرسال البريد غير مفعّل", `<p class="muted small">لن تصل أي رسالة حتى تضيف <code dir="ltr">RESEND_API_KEY</code> و<code dir="ltr">MAIL_FROM</code> في إعدادات الخادم (Vercel)، مع توثيق نطاق البريد في Resend. يمكنك الآن تجهيز النصوص ومعاينتها، والسجل يبيّن ما كان سيُرسل.</p>`, "danger")}
       ${tot ? `<div class="stats"><div class="stat"><b>${fmt(tot.sent)}</b><span>رسالة أُرسلت</span></div><div class="stat"><b style="color:${tot.failed?"var(--bad)":""}">${fmt(tot.failed)}</b><span>فشلت</span></div><div class="stat"><b>${fmt(tot.skipped)}</b><span>لم تُرسل (البريد غير مفعّل)</span></div></div>` : ""}
       ${card("الإعدادات العامة", tog("إرسال رسائل الفريق لكل الأعضاء","notify.members","القائد وكل عضو أضاف بريده عند التسجيل. عند الإيقاف: القائد فقط.")
         + `<div class="grid2">${tog("تذكير قبل إقفال التقديم","notify.reminders.closeOn","لكل الفرق النشطة، مرة واحدة")}${f("قبل الإقفال بـ (ساعة)","notify.reminders.closeHours",{type:"num",min:1,max:168})}</div>
         <div class="grid2">${tog("تذكير من سجّل ولم يقدّم","notify.reminders.noSubmitOn","مرة واحدة لكل فريق")}${f("بعد التسجيل بـ (ساعة)","notify.reminders.noSubmitHours",{type:"num",min:1,max:168})}</div>
         <p class="help">التذكيرات تُرسل تلقائيًا أثناء عمل المنصة (تُفحص كل 10 دقائق عند فتح أي صفحة أو شاشة)، ومرة يوميًا من الخادم احتياطًا. لا تتكرر الرسالة نفسها للفريق نفسه.</p>`)}
       ${card("إرسال الآن", `<div class="grid3">
-          <button class="btn ghost" data-act="nreminders" ${mail?"":"disabled"}>⏰ شغّل التذكيرات الآن</button>
-          <button class="btn ghost" data-act="sendresults">🏆 أرسل النتائج والشهادات</button>
-          <button class="btn ghost" data-act="remindjudges">⚖️ ذكّر المحكّمين بما بقي</button></div>
+          <button class="btn ghost" data-act="nreminders" ${mail?"":"disabled"}><i data-icon="alarm-clock"></i> شغّل التذكيرات الآن</button>
+          <button class="btn ghost" data-act="sendresults"><i data-icon="trophy"></i> أرسل النتائج والشهادات</button>
+          <button class="btn ghost" data-act="remindjudges"><i data-icon="scale"></i> ذكّر المحكّمين بما بقي</button></div>
         <p class="help" id="nMsg">«النتائج والشهادات» تتطلب تفعيل «نشر النتائج» في قسم التقارير: الفائزون الثلاثة يتلقون رسالة الفوز، والبقية رسالة الشكر، ومع كل منها روابط شهادات الأعضاء. كل فريق يتلقاها مرة واحدة.</p>`)}
       ${card("نصوص الرسائل", f("بريد الرسائل التجريبية","_testTo",{ltr:true,max:100,ph:"you@example.com",help:"تصلك عليه الرسالة التجريبية ببيانات وهمية، بالنص الحالي قبل الحفظ."})
         + groups.map(([g, ks])=>`<h3 style="margin:16px 0 8px;font-size:16px;color:var(--muted)">${g}</h3>${ks.map(tpl).join("")}`).join(""))}
@@ -377,16 +384,16 @@ const P = {
   privacy(){
     return `<h1>الخصوصية والحماية</h1><p class="lead">نص سياسة الخصوصية الذي يوافق عليه المشاركون، وحدود الاستخدام التي تحمي رصيد الذكاء الاصطناعي.</p>
       ${card("سياسة الخصوصية", f("النص","privacy.text",{type:"textarea",rows:8,max:5000,help:"كل سطر فقرة. تظهر في صفحة privacy.html ويوافق عليها المشارك قبل البدء."}) + f("جهة التواصل لطلبات البيانات","privacy.contact",{max:200,ph:"مثال: icip@qu.edu.sa"}))}
-      ${card("التحقق من البريد", tog("التحقق برمز قبل عرض الفكرة","investor.verifyEmail", D.system.mail ? "يُرسل رمز من 6 أرقام إلى بريد الزائر. يمنع التحايل على حد المحاولات ببريد وهمي." : "⚠️ يتطلب تفعيل الإرسال (RESEND_API_KEY و MAIL_FROM) وإلا يبقى معطّلًا"))}
+      ${card("التحقق من البريد", tog("التحقق برمز قبل عرض الفكرة","investor.verifyEmail", D.system.mail ? "يُرسل رمز من 6 أرقام إلى بريد الزائر. يمنع التحايل على حد المحاولات ببريد وهمي." : "يتطلب تفعيل الإرسال (RESEND_API_KEY و MAIL_FROM) وإلا يبقى معطّلًا"))}
       ${card("حدود الاستخدام", `<div class="grid3">${f("عروض المستثمر لكل جهاز في الساعة","limits.pitchesPerHour",{type:"num",min:1,max:1000})}${f("تقديمات الهاكاثون لكل جهاز في الساعة","limits.submitsPerHour",{type:"num",min:1,max:1000})}${f("سقف استدعاءات الذكاء الاصطناعي يوميًا","limits.dailyAiCalls",{type:"num",min:10,max:1000000})}</div>
         <p class="help">عند بلوغ السقف اليومي تتوقف التقييمات الجديدة برسالة واضحة حتى اليوم التالي. استهلاك اليوم: ${fmt(D.system.usageToday)}. ملاحظة: أجهزة شبكة الجناح قد تشترك في عنوان واحد، فارفع الحد لكل جهاز إن استخدم الزوار شبكة المعرض.</p>`)}`;
   },
   reports(){
     return `<h1>التقارير والشهادات</h1><p class="lead">التقرير الختامي وكتيّب المشاريع جاهزان للطباعة كـ PDF، والشهادات برمز تحقق لكل مشارك.</p>
       ${card("التقرير الختامي وكتيّب المشاريع", `<p class="muted small">صفحة جاهزة للطباعة: الإحصائيات، والرسوم، والفائزون، وصفحة لكل مشروع. من المتصفح: طباعة ← حفظ كـ PDF.</p>
-        <div class="grid2" style="margin-top:10px"><a class="btn" href="report.html" target="_blank">📊 التقرير الختامي</a><a class="btn ghost" href="report.html?booklet=1" target="_blank">📘 كتيّب المشاريع فقط</a></div>`)}
-      ${card("النتائج", tog("نشر النتائج","hackathon.resultsPublished","يفعّل شهادات الفوز للمراكز الثلاثة الأولى. فعّله بعد اكتمال التحكيم.") + `<div class="grid2" style="margin-top:6px"><button class="btn ghost" data-act="notify">🎉 إشعار المتأهلين للتحكيم النهائي</button><button class="btn ghost" data-act="sendresults" ${S.hackathon.resultsPublished?"":"disabled"}>🏆 إرسال النتائج والشهادات بالبريد</button></div><p class="help" id="notifyMsg">${S.hackathon.resultsPublished?"":"فعّل «نشر النتائج» واحفظ لتتمكن من إرسال النتائج والشهادات."}</p>`)}
-      ${card("الشهادات", CERTS ? (CERTS.length ? `<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>الفريق</th><th>النوع</th><th>الأعضاء</th></tr></thead><tbody>${CERTS.map(c=>`<tr><td><b>${esc(c.team)}</b></td><td>${{participant:"مشاركة",finalist:"تأهل",winner1:"🥇 المركز الأول",winner2:"🥈 المركز الثاني",winner3:"🥉 المركز الثالث"}[c.kind]}</td><td>${c.list.map(x=>`<a class="ib" href="certificate.html?c=${encodeURIComponent(x.code)}" target="_blank">${esc(x.name)}</a>`).join(" ")}</td></tr>`).join("")}</tbody></table></div>` : `<p class="muted">لا توجد فرق قدّمت مشاريع بعد.</p>`) : `<button class="btn ghost" data-act="loadcerts">عرض شهادات كل الفرق</button>`)
+        <div class="grid2" style="margin-top:10px"><a class="btn" href="report.html" target="_blank"><i data-icon="chart-column"></i> التقرير الختامي</a><a class="btn ghost" href="report.html?booklet=1" target="_blank"><i data-icon="book-open"></i> كتيّب المشاريع فقط</a></div>`)}
+      ${card("النتائج", tog("نشر النتائج","hackathon.resultsPublished","يفعّل شهادات الفوز للمراكز الثلاثة الأولى. فعّله بعد اكتمال التحكيم.") + `<div class="grid2" style="margin-top:6px"><button class="btn ghost" data-act="notify"><i data-icon="award"></i> إشعار المتأهلين للتحكيم النهائي</button><button class="btn ghost" data-act="sendresults" ${S.hackathon.resultsPublished?"":"disabled"}><i data-icon="trophy"></i> إرسال النتائج والشهادات بالبريد</button></div><p class="help" id="notifyMsg">${S.hackathon.resultsPublished?"":"فعّل «نشر النتائج» واحفظ لتتمكن من إرسال النتائج والشهادات."}</p>`)}
+      ${card("الشهادات", CERTS ? (CERTS.length ? `<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>الفريق</th><th>النوع</th><th>الأعضاء</th></tr></thead><tbody>${CERTS.map(c=>`<tr><td><b>${esc(c.team)}</b></td><td>${{participant:"مشاركة",finalist:"تأهل",winner1:'<i data-icon="medal" class="medal-1"></i> المركز الأول',winner2:'<i data-icon="medal" class="medal-2"></i> المركز الثاني',winner3:'<i data-icon="medal" class="medal-3"></i> المركز الثالث'}[c.kind]}</td><td>${c.list.map(x=>`<a class="ib" href="certificate.html?c=${encodeURIComponent(x.code)}" target="_blank">${esc(x.name)}</a>`).join(" ")}</td></tr>`).join("")}</tbody></table></div>` : `<p class="muted">لا توجد فرق قدّمت مشاريع بعد.</p>`) : `<button class="btn ghost" data-act="loadcerts">عرض شهادات كل الفرق</button>`)
         + `<p class="help">تظهر الشهادات أيضًا لكل فريق في صفحته بعد إقفال التقديم. صفحة التحقق: certificate.html?c=الرمز</p>`}`;
   },
   data(){
@@ -436,6 +443,7 @@ $("main").addEventListener("input", e => {
 });
 $("main").addEventListener("change", e => {
   if (e.target.dataset.k === "brand.logoUrl") render();
+  if (e.target.hasAttribute("data-icon-field")) { const pv = $("main").querySelector(`[data-prev="${e.target.dataset.k}"]`); if (pv) pv.innerHTML = glyph(e.target.value); }
   if (e.target.dataset.jt != null) {
     const j = S.hackathon.judges[Number(e.target.dataset.jt)], id = e.target.value;
     j.tracks = e.target.checked ? [...new Set([...j.tracks, id])] : j.tracks.filter(x => x !== id);
@@ -493,9 +501,9 @@ $("main").addEventListener("click", async e => {
     b.disabled = true; b.textContent = "جارٍ الاختبار…";
     try {
       const r = await api("ai-test", {});
-      $("aiTest").innerHTML = r.error ? `<span style="color:var(--bad)">❌ ${esc(r.error)}</span>` : r.results.map(x=>x.ok ? `<div>✅ ${esc(x.label)}: <span dir="ltr">${esc(x.model)}</span> يعمل (${(x.ms/1000).toFixed(1)} ث)</div>` : `<div style="display:block;background:var(--card2);border-radius:10px;padding:10px 12px;margin-top:8px;line-height:1.9"><b style="color:var(--bad)">❌ ${esc(x.label)}</b> <bdi dir="ltr" class="muted">${esc(x.model)}</bdi><p style="unicode-bidi:plaintext;margin:4px 0">${esc(x.error)}</p><details><summary class="help" style="cursor:pointer">التفاصيل التقنية</summary><div class="help" dir="ltr" style="text-align:left;word-break:break-word">${esc(x.raw)}</div></details></div>`).join("");
+      $("aiTest").innerHTML = r.error ? `<span style="color:var(--bad)"><i data-icon="circle-x"></i> ${esc(r.error)}</span>` : r.results.map(x=>x.ok ? `<div style="color:var(--good)"><i data-icon="circle-check"></i> ${esc(x.label)}: <span dir="ltr">${esc(x.model)}</span> يعمل (${(x.ms/1000).toFixed(1)} ث)</div>` : `<div style="display:block;background:var(--card2);border-radius:10px;padding:10px 12px;margin-top:8px;line-height:1.9"><b style="color:var(--bad)"><i data-icon="circle-x"></i> ${esc(x.label)}</b> <bdi dir="ltr" class="muted">${esc(x.model)}</bdi><p style="unicode-bidi:plaintext;margin:4px 0">${esc(x.error)}</p><details><summary class="help" style="cursor:pointer">التفاصيل التقنية</summary><div class="help" dir="ltr" style="text-align:left;word-break:break-word">${esc(x.raw)}</div></details></div>`).join("");
     } catch(err){ $("aiTest").textContent = err.message; }
-    b.disabled = false; b.textContent = "🧪 اختبر الآن"; return;
+    b.disabled = false; b.innerHTML = '<i data-icon="flask-conical"></i> اختبر الآن'; return;
   }
   if (act==="genkey") { S.hackathon.judgeKey = genKey(); render(); dirty(); return; }
   if (act==="reeval") { b.disabled = true; b.textContent = "جارٍ التقييم…"; try { const r = await api("reeval", {}); D = await api("get"); render(); dirty(`اكتمل تقييم ${r.evaluated}${r.remaining?`، وبقي ${r.remaining}`:""}`, "ok"); } catch(err){ alert(err.message); } return; }

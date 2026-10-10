@@ -6,16 +6,17 @@
 <title>التقرير الختامي</title>
 <meta name="robots" content="noindex">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="icons.js"></script>
 <script src="app.js"></script>
 <style>
-:root{--accent:#f5b83d;--ink:#1a1f36;--muted:#5b6478;--line:#e3e6ee;--soft:#f5f6fa}
+:root{--accent:#0f8f83;--navy:#0b2a45;--ink:#0b2540;--muted:#5b6478;--line:#e3e6ee;--soft:#f5f6fa}
 *{box-sizing:border-box;margin:0}
 body{font-family:"IBM Plex Sans Arabic",system-ui,sans-serif;background:#e9ebf1;color:var(--ink);line-height:1.8}
 .bar{position:sticky;top:0;background:#1a1f36;color:#fff;padding:10px 16px;display:flex;gap:10px;justify-content:center;align-items:center;z-index:5}
-.bar button,.bar a{font:inherit;background:var(--accent);color:#14110a;border:0;border-radius:10px;padding:7px 16px;font-weight:700;cursor:pointer;text-decoration:none}
+.bar button,.bar a{font:inherit;background:var(--accent);color:#fff;border:0;border-radius:10px;padding:7px 16px;display:inline-flex;align-items:center;gap:6px;font-weight:700;cursor:pointer;text-decoration:none}
 .bar a{background:#2b3355;color:#fff}
 .page{width:210mm;min-height:297mm;margin:16px auto;background:#fff;padding:18mm 16mm;box-shadow:0 2px 14px rgba(0,0,0,.08);position:relative}
-.cover{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:14px;border-top:10px solid var(--accent)}
+.cover{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:14px;border-top:10px solid var(--navy)}
 .cover img{max-height:90px;max-width:260px}
 .cover h1{font-size:34px;line-height:1.4}
 .cover .k{color:var(--muted);font-size:17px}
@@ -29,20 +30,22 @@ table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:6px}
 th{background:var(--soft);text-align:right;padding:8px;font-weight:700}
 td{padding:8px;border-bottom:1px solid var(--line);vertical-align:top}
 .medal{font-size:18px}
+.medal-1{color:#b8892e}.medal-2{color:#8a96a3}.medal-3{color:#a8653a}
+.lu{width:1.1em;height:1.1em;vertical-align:-.18em}
 .funnel{display:flex;gap:6px;align-items:stretch;margin:8px 0 18px}
 .funnel div{flex:1;background:var(--soft);border-radius:10px;padding:10px;text-align:center;position:relative}
 .funnel b{display:block;font-size:22px}
 .funnel span{font-size:12px;color:var(--muted)}
 .proj{border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:12px;break-inside:avoid}
 .proj .hd{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
-.proj .sc{background:var(--accent);color:#14110a;font-weight:700;border-radius:10px;padding:2px 10px;white-space:nowrap}
+.proj .sc{background:var(--navy);color:#fff;font-weight:700;border-radius:10px;padding:2px 10px;white-space:nowrap}
 .proj .lab{color:var(--muted);font-size:12.5px}
 .proj p{font-size:13.5px;margin-top:6px}
 .proj p b{color:var(--muted);font-weight:700}
 .foot{position:absolute;bottom:10mm;left:16mm;right:16mm;display:flex;justify-content:space-between;color:var(--muted);font-size:11px;border-top:1px solid var(--line);padding-top:6px}
 .login{max-width:380px;margin:18vh auto;background:#fff;border-radius:16px;padding:22px}
 .login input{width:100%;font:inherit;padding:10px;border:1px solid var(--line);border-radius:10px;margin:8px 0}
-.login button{width:100%;font:inherit;padding:10px;border:0;border-radius:10px;background:var(--accent);font-weight:700;cursor:pointer}
+.login button{width:100%;font:inherit;padding:10px;border:0;border-radius:10px;background:var(--accent);color:#fff;font-weight:700;cursor:pointer}
 .err{color:#c0392b;font-size:14px}
 svg text{font-family:"IBM Plex Sans Arabic",system-ui,sans-serif}
 @media print{
@@ -60,7 +63,7 @@ svg text{font-family:"IBM Plex Sans Arabic",system-ui,sans-serif}
   <input id="k" type="password" dir="ltr" placeholder="مفتاح الإدارة">
   <button id="go">عرض التقرير</button><p class="err" id="err"></p>
 </div>
-<div class="bar" id="bar" style="display:none"><button onclick="print()">🖨️ طباعة / حفظ PDF</button><a id="toggle" href="#"></a></div>
+<div class="bar" id="bar" style="display:none"><button onclick="print()"><i data-icon="printer"></i> طباعة / حفظ PDF</button><a id="toggle" href="#"></a></div>
 <div id="out"></div>
 <script>
 const $ = id => document.getElementById(id), esc = APP.esc, fmt = APP.fmt;
@@ -72,7 +75,7 @@ function bars(items, w=640, h=170){
   const max = Math.max(1, ...items.map(i=>i.v)), n = Math.max(1, items.length), bw = Math.min(60, w/n - 6), base = h - 26;
   return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}"><line x1="0" x2="${w}" y1="${base}" y2="${base}" stroke="#d5d9e4"/>
     ${items.map((it,i)=>{ const bh = it.v/max*(base-20), x = w - (i+1)*(w/n) + (w/n-bw)/2; const r = Math.min(4, bw/2, bh);
-      return `${it.v?`<path d="M${x},${base} V${base-bh+r} Q${x},${base-bh} ${x+r},${base-bh} H${x+bw-r} Q${x+bw},${base-bh} ${x+bw},${base-bh+r} V${base} Z" fill="var(--accent)"/><text x="${x+bw/2}" y="${base-bh-5}" text-anchor="middle" font-size="12" fill="#1a1f36">${fmt(it.v)}</text>`:""}
+      return `${it.v?`<path d="M${x},${base} V${base-bh+r} Q${x},${base-bh} ${x+r},${base-bh} H${x+bw-r} Q${x+bw},${base-bh} ${x+bw},${base-bh+r} V${base} Z" style="fill:var(--accent)"/><text x="${x+bw/2}" y="${base-bh-5}" text-anchor="middle" font-size="12" fill="#1a1f36">${fmt(it.v)}</text>`:""}
       <text x="${x+bw/2}" y="${h-8}" text-anchor="middle" font-size="11" fill="#5b6478">${esc(it.label)}</text>`; }).join("")}</svg>`;
 }
 
@@ -80,9 +83,9 @@ async function load(){
   const r = await fetch("api/admin?action=report", {headers: {"x-admin-key": KEY}});
   const d = await r.json(); if (!r.ok) throw new Error(d.error || "خطأ");
   $("login").style.display = "none"; $("bar").style.display = "flex";
-  $("toggle").textContent = booklet ? "📊 التقرير الكامل" : "📘 الكتيّب فقط"; $("toggle").href = booklet ? "report.html" : "report.html?booklet=1";
+  $("toggle").innerHTML = booklet ? '<i data-icon="chart-column"></i> التقرير الكامل' : '<i data-icon="book-open"></i> الكتيّب فقط'; $("toggle").href = booklet ? "report.html" : "report.html?booklet=1";
   const S = d.settings, st = d.stats, B = S.brand;
-  document.documentElement.style.setProperty("--accent", B.accent);
+  document.documentElement.style.setProperty("--accent", B.accent); if (B.bg) document.documentElement.style.setProperty("--navy", B.bg);
   const today = new Date().toLocaleDateString("ar-SA-u-nu-latn", {year:"numeric", month:"long", day:"numeric"});
   const foot = (p) => `<div class="foot"><span>${esc(B.orgName)} · ${esc(B.eventName)}</span><span>${p}</span></div>`;
   const cover = `<section class="page cover">${B.logoUrl?`<img src="${esc(B.logoUrl)}" alt="">`:""}
@@ -105,9 +108,9 @@ async function load(){
       <h3>النشاط اليومي</h3>${bars(Object.entries(d.byDay).sort().map(([k,v])=>({label: new Date(k).toLocaleDateString("ar-SA-u-nu-latn",{day:"numeric",month:"short"}), v})))}
       <h3>الفرق حسب المسار</h3>${bars(d.tracks.map(t=>({label:t.title, v:t.teams})))}
       ${foot("1")}</section>
-      <section class="page"><h2>🏆 الفائزون والمتأهلون</h2>
+      <section class="page"><h2>الفائزون والمتأهلون</h2>
       <table><thead><tr><th>المركز</th><th>الفريق</th><th>المشروع</th><th>المسار</th><th>الذكاء الاصطناعي</th><th>اللجنة</th><th>النهائية</th></tr></thead><tbody>
-      ${d.winners.map(w=>`<tr><td class="medal">${["🥇","🥈","🥉"][w.place-1]||w.place}</td><td><b>${esc(w.team)}</b><br><span style="color:#5b6478;font-size:12px">${esc((w.members||[]).join("، "))}</span></td><td>${esc(w.title)}</td><td>${esc(w.label)}</td><td>${w.ai}</td><td>${w.judges??"—"}</td><td><b>${w.final??"—"}</b></td></tr>`).join("") || `<tr><td colspan="7">لا يوجد متأهلون بعد</td></tr>`}
+      ${d.winners.map(w=>`<tr><td class="medal">${w.place<=3?`<i data-icon="medal" class="medal-${w.place}"></i>`:w.place}</td><td><b>${esc(w.team)}</b><br><span style="color:#5b6478;font-size:12px">${esc((w.members||[]).join("، "))}</span></td><td>${esc(w.title)}</td><td>${esc(w.label)}</td><td>${w.ai}</td><td>${w.judges??"—"}</td><td><b>${w.final??"—"}</b></td></tr>`).join("") || `<tr><td colspan="7">لا يوجد متأهلون بعد</td></tr>`}
       </tbody></table>
       <p style="color:#5b6478;font-size:12.5px;margin-top:10px">الدرجة النهائية = ${S.hackathon.weights.ai}% تقييم الذكاء الاصطناعي + ${S.hackathon.weights.judges}% متوسط درجات اللجنة.</p>
       <h3>معايير التقييم</h3>
@@ -117,13 +120,13 @@ async function load(){
   // الكتيّب: 3 مشاريع في الصفحة
   const P = d.projects;
   for (let i = 0; i < P.length; i += 3) {
-    html += `<section class="page">${i===0?`<h2>📘 المشاريع (${P.length})</h2>`:""}${P.slice(i, i+3).map(p=>`<div class="proj">
-      <div class="hd"><div><b style="font-size:16px">${esc(p.title)}</b>${p.finalist?" 🏅":""}<div class="lab">فريق ${esc(p.team)} · ${esc((p.members||[]).join("، "))} · ${esc(p.label)}</div></div><span class="sc">${p.score}/100</span></div>
+    html += `<section class="page">${i===0?`<h2>المشاريع (${P.length})</h2>`:""}${P.slice(i, i+3).map(p=>`<div class="proj">
+      <div class="hd"><div><b style="font-size:16px">${esc(p.title)}</b>${p.finalist?' <i data-icon="award" style="color:var(--accent)"></i>':""}<div class="lab">فريق ${esc(p.team)} · ${esc((p.members||[]).join("، "))} · ${esc(p.label)}</div></div><span class="sc">${p.score}/100</span></div>
       <p><b>المشكلة:</b> ${esc(p.problem)}</p><p><b>الحل:</b> ${esc(p.solution)}</p><p><b>العميل والسوق:</b> ${esc(p.customer)}</p><p><b>نموذج الربح:</b> ${esc(p.business)}</p>
       ${p.summary?`<p style="color:#5b6478"><b>خلاصة التقييم:</b> ${esc(p.summary)}</p>`:""}${p.attempts>1&&p.first!=null?`<p style="color:#5b6478;font-size:12px">${p.attempts} محاولات · من ${p.first} إلى ${p.score}</p>`:""}
     </div>`).join("")}${foot(booklet ? String(i/3+1) : String(i/3+3))}</section>`;
   }
-  if (!P.length) html += `<section class="page"><h2>📘 المشاريع</h2><p>لا توجد مشاريع مقيّمة بعد.</p></section>`;
+  if (!P.length) html += `<section class="page"><h2>المشاريع</h2><p>لا توجد مشاريع مقيّمة بعد.</p></section>`;
   $("out").innerHTML = html;
   document.title = (booklet ? "كتيّب المشاريع · " : "التقرير الختامي · ") + S.hackathon.name;
 }

@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="hack.css">
 <script src="qrcode.min.js"></script>
+<script src="icons.js"></script>
 <script src="app.js"></script>
 <style>
 html,body{height:100%;overflow:hidden}
@@ -27,7 +28,7 @@ header h1{font-size:3.2vw}
 .row.fin{box-shadow:inset -.35vw 0 0 var(--accent)}
 .who b{display:block;font-size:1.35vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .who small{display:block;color:var(--muted);font-size:1vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.bar{height:.7vw;background:#1c2542}
+.bar{height:.7vw;background:var(--line)}
 .score{font-size:1.8vw;font-weight:700;color:var(--accent);text-align:left;font-variant-numeric:tabular-nums}
 .side{align-items:center;text-align:center;justify-content:space-between;gap:1vw}
 .side h3{font-size:1.9vw;line-height:1.5}
@@ -44,10 +45,10 @@ header h1{font-size:3.2vw}
 .brandrow{display:flex;align-items:center;gap:1.4vw}
 </style>
 </head>
-<body data-screen>
+<body class="dark" data-screen>
 <div class="grid">
   <header>
-    <div class="brandrow"><div data-logo hidden></div><div><h1>⚡ <span data-title="hackathon.name"></span></h1><div class="sub" id="host"></div></div></div>
+    <div class="brandrow"><div data-logo hidden></div><div><h1><i data-icon="zap"></i> <span data-title="hackathon.name"></span></h1><div class="sub" id="host"></div></div></div>
     <div class="stats">
       <div class="stat"><b id="sTeams">0</b><small>فريق مسجّل</small></div>
       <div class="stat"><b id="sSubs">0</b><small>تقديم</small></div>
@@ -56,7 +57,7 @@ header h1{font-size:3.2vw}
   </header>
 
   <section class="panel">
-    <h2>🏆 الترتيب المباشر · تقييم الذكاء الاصطناعي</h2>
+    <h2><i data-icon="trophy"></i> الترتيب المباشر · تقييم الذكاء الاصطناعي</h2>
     <div class="rows" id="rows"></div>
     <div class="legend" id="legend"></div>
   </section>
@@ -91,20 +92,20 @@ async function refresh(){
     PH = d.phase; countdown();
     const H = CFG.hackathon;
     $("sTeams").textContent = d.stats.teams; $("sSubs").textContent = d.stats.submissions; $("sEval").textContent = d.stats.evaluated;
-    const icon = id => H.tracks.find(t=>t.id===id)?.icon || "";
+    const trackIcon = id => H.tracks.find(t=>t.id===id)?.icon || "";
     $("legend").textContent = `▍ المميَّزون بالخط الذهبي ضمن أفضل ${H.finalists} ويتأهلون لتحكيم اللجنة`;
     $("rows").innerHTML = d.leaderboard.length ? d.leaderboard.slice(0,7).map(r=>`
       <div class="row ${r.rank<=H.finalists?"fin":""}"><span class="rank">${r.rank}</span>
-        <div class="who"><b>${esc(r.team)}</b><small>${icon(r.track)} ${esc(r.title)}</small></div>
+        <div class="who"><b>${esc(r.team)}</b><small>${glyph(trackIcon(r.track))} ${esc(r.title)}</small></div>
         <div class="bar"><i style="width:${r.score}%"></i></div>
         <span class="score">${r.score}</span></div>`).join("")
-      : `<p class="empty">بانتظار أول مشروع… امسح الرمز وكن الأول! 🚀</p>`;
+      : `<p class="empty">بانتظار أول مشروع… امسح الرمز وكن الأول.</p>`;
   } catch(e){ console.warn(e); }
 }
 APP.ready.then(c => {
   CFG = c; document.title = c.hackathon.name;
   $("host").textContent = [c.brand.boothName, c.brand.eventName].filter(Boolean).join(" · ");
-  $("chs").innerHTML = c.hackathon.tracks.map(t=>`<div>${esc(t.icon)} ${esc(t.title)}</div>`).join("");
+  $("chs").innerHTML = c.hackathon.tracks.map(t=>`<div>${glyph(t.icon)} ${esc(t.title)}</div>`).join("");
   refresh();
 });
 setInterval(refresh, 5000); setInterval(countdown, 30000);

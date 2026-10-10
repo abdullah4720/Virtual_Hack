@@ -6,21 +6,25 @@
 <title>شهادة</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="qrcode.min.js"></script>
+<script src="icons.js"></script>
 <script src="app.js"></script>
 <style>
-:root{--accent:#f5b83d}
+:root{--accent:#0f8f83;--navy:#0b2a45}
+.lu{width:1em;height:1em;vertical-align:-.15em}
 *{box-sizing:border-box;margin:0}
 body{font-family:"IBM Plex Sans Arabic",system-ui,sans-serif;background:#e9ebf1;color:#1a1f36}
 .bar{display:flex;gap:10px;justify-content:center;padding:12px}
-.bar button{font:inherit;background:#1a1f36;color:#fff;border:0;border-radius:10px;padding:8px 18px;font-weight:700;cursor:pointer}
+.bar button{display:inline-flex;align-items:center;gap:8px;font:inherit;background:#0b2a45;color:#fff;border:0;border-radius:10px;padding:8px 18px;font-weight:700;cursor:pointer}
 .cert{width:297mm;height:210mm;margin:0 auto 20px;background:#fff;position:relative;padding:16mm 22mm;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:5mm;overflow:hidden}
-.cert:before{content:"";position:absolute;inset:7mm;border:2px solid var(--accent);border-radius:6mm;pointer-events:none}
+.cert:before{content:"";position:absolute;inset:7mm;border:2px solid var(--navy);border-radius:6mm;pointer-events:none}
 .cert:after{content:"";position:absolute;inset:10mm;border:1px solid color-mix(in srgb,var(--accent) 45%,#fff);border-radius:4mm;pointer-events:none}
 .cert img.logo{max-height:22mm;max-width:70mm}
 .org{color:#5b6478;font-size:15px}
 .kind{font-size:40px;font-weight:700;letter-spacing:1px}
-.kind .gold{color:var(--accent)}
-.medal{font-size:46px;line-height:1}
+.kind{color:var(--navy)}
+.kind .gold{color:inherit}
+.medal{font-size:46px;line-height:1;color:var(--accent)}
+.medal-1{color:#b8892e}.medal-2{color:#8a96a3}.medal-3{color:#a8653a}
 .to{font-size:17px;color:#5b6478}
 .name{font-size:44px;font-weight:700;border-bottom:3px solid var(--accent);padding:0 14mm 2mm}
 .txt{font-size:18px;line-height:2;max-width:210mm}
@@ -32,25 +36,25 @@ body{font-family:"IBM Plex Sans Arabic",system-ui,sans-serif;background:#e9ebf1;
 </style>
 </head>
 <body data-noannounce>
-<div class="bar" id="bar" style="display:none"><button onclick="print()">🖨️ طباعة / حفظ PDF</button></div>
+<div class="bar" id="bar" style="display:none"><button onclick="print()"><i data-icon="printer"></i> طباعة / حفظ PDF</button></div>
 <div id="out"><div class="verify">جارٍ التحقق من الشهادة…</div></div>
 <script>
 const esc = APP.esc;
 const code = (new URLSearchParams(location.search).get("c") || "").toUpperCase();
 const KIND = {
-  participant: ["🎖️", "شهادة مشاركة", "تقديرًا لمشاركته الفاعلة في"],
-  finalist: ["🏅", "شهادة تأهل", "لتأهل مشروعه إلى التحكيم النهائي في"],
-  winner1: ["🥇", "شهادة فوز · المركز الأول", "لفوزه بالمركز الأول في"],
-  winner2: ["🥈", "شهادة فوز · المركز الثاني", "لفوزه بالمركز الثاني في"],
-  winner3: ["🥉", "شهادة فوز · المركز الثالث", "لفوزه بالمركز الثالث في"],
+  participant: ['<i data-icon="award"></i>', "شهادة مشاركة", "تقديرًا لمشاركته الفاعلة في"],
+  finalist: ['<i data-icon="award"></i>', "شهادة تأهل", "لتأهل مشروعه إلى التحكيم النهائي في"],
+  winner1: ['<i data-icon="trophy" class="medal-1"></i>', "شهادة فوز · المركز الأول", "لفوزه بالمركز الأول في"],
+  winner2: ['<i data-icon="trophy" class="medal-2"></i>', "شهادة فوز · المركز الثاني", "لفوزه بالمركز الثاني في"],
+  winner3: ['<i data-icon="trophy" class="medal-3"></i>', "شهادة فوز · المركز الثالث", "لفوزه بالمركز الثالث في"],
 };
 APP.ready.then(async () => {
   const out = document.getElementById("out");
   if (!code) { out.innerHTML = `<div class="verify"><h2>التحقق من شهادة</h2><p>أضف رمز الشهادة إلى الرابط: certificate.html?c=الرمز</p></div>`; return; }
   const r = await fetch("api/hack?action=cert&code=" + encodeURIComponent(code), {cache: "no-store"});
   const d = await r.json().catch(() => ({}));
-  if (!r.ok || !d.valid) { out.innerHTML = `<div class="verify"><div style="font-size:40px">❌</div><h2>شهادة غير صالحة</h2><p>لم نجد شهادة بالرمز <b dir="ltr">${esc(code)}</b>.</p></div>`; return; }
-  document.documentElement.style.setProperty("--accent", d.brand.accent);
+  if (!r.ok || !d.valid) { out.innerHTML = `<div class="verify"><div style="font-size:40px;color:#c0392b"><i data-icon="circle-x"></i></div><h2>شهادة غير صالحة</h2><p>لم نجد شهادة بالرمز <b dir="ltr">${esc(code)}</b>.</p></div>`; return; }
+  document.documentElement.style.setProperty("--accent", d.brand.accent); if (d.brand.bg) document.documentElement.style.setProperty("--navy", d.brand.bg);
   const [medal, title, why] = KIND[d.kind] || KIND.participant;
   const date = new Date(d.date).toLocaleDateString("ar-SA-u-nu-latn", {year: "numeric", month: "long", day: "numeric"});
   out.innerHTML = `<div class="cert">

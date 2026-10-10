@@ -82,6 +82,9 @@ node dev.js
 - بلا مفاتيح يعمل **وضع التجربة**، والبيانات في الذاكرة.
 - لتفعيل الذكاء الاصطناعي: `ANTHROPIC_API_KEY=sk-ant-... node dev.js`
 
+### الأيقونات
+المنصة تستخدم أيقونات [Lucide](https://lucide.dev) (ترخيص ISC) من ملف `public/icons.js`، ويُستخدم في الصفحات بالشكل `<i data-icon="trophy"></i>`. لإضافة أيقونات: أضف أسماءها إلى `demo/icons.txt` ثم شغّل `python3 demo/icons.py <مسار node_modules/lucide-static>`.
+
 ### نسخة الصفحات المستقلة
 `./demo/build.sh` ثم `python3 demo/standalone.py standalone` لبناء كل صفحة كملف HTML واحد يعمل بالفتح المباشر. البيانات في المتصفح، ويلزم أن تُفتح الصفحات في المتصفح نفسه.
 

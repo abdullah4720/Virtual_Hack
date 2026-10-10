@@ -7,6 +7,7 @@
 <meta name="robots" content="noindex">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="hack.css">
+<script src="icons.js"></script>
 <script src="app.js"></script>
 <style>
 .wrap{max-width:980px}
@@ -15,12 +16,13 @@
 .tabs button{font:inherit;font-size:14px;border:1px solid var(--line);background:transparent;color:var(--text);border-radius:10px;padding:7px 14px;cursor:pointer}
 .tabs button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
 .team{background:var(--card);border:1px solid var(--line);border-radius:16px;margin-bottom:10px;overflow:hidden}
-.team.fin{border-color:rgba(245,184,61,.55)}
+.team{box-shadow:var(--shadow)}
+.team.fin{border-inline-start:4px solid var(--gold)}
 .sum{display:grid;grid-template-columns:44px 1fr auto auto auto;gap:14px;align-items:center;padding:14px 16px;cursor:pointer;list-style:none}
 .sum::-webkit-details-marker{display:none}
 .rk{font-size:22px;font-weight:700;color:var(--muted);text-align:center}
 .num{text-align:center;min-width:64px}
-.num b{display:block;font-size:20px;color:var(--accent);font-variant-numeric:tabular-nums}
+.num b{display:block;font-size:20px;color:var(--navy);font-variant-numeric:tabular-nums}
 .num small{color:var(--muted);font-size:11.5px}
 .body{border-top:1px solid var(--line);padding:16px;display:grid;grid-template-columns:1.5fr 1fr;gap:18px}
 @media (max-width:760px){.body{grid-template-columns:1fr}.sum{grid-template-columns:34px 1fr auto}.sum .hide-sm{display:none}}
@@ -32,10 +34,12 @@
 .box{background:var(--card2);border-radius:12px;padding:12px;margin-bottom:12px}
 .scoreform{display:grid;grid-template-columns:100px 1fr;gap:8px}
 .jl div{display:flex;justify-content:space-between;font-size:14px;padding:4px 0;border-bottom:1px dashed var(--line)}
-a{color:var(--blue)}
+a{color:var(--accent)}
+.top h1{display:flex;align-items:center;gap:10px}
+.top h1 .ic{display:grid;place-items:center;width:40px;height:40px;border-radius:11px;background:var(--navy);color:#fff;font-size:20px}
 .login{max-width:420px;margin:12vh auto}
 .fl{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
-.filebtn{display:inline-block;background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:7px 12px;color:var(--text);text-decoration:none;font-size:14px}
+.filebtn{display:inline-flex;align-items:center;gap:6px;background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:7px 12px;color:var(--text);text-decoration:none;font-size:14px}
 .filebtn.deck{border-color:var(--accent);color:var(--accent);font-weight:700}
 .crit{display:grid;grid-template-columns:1fr 84px;gap:8px;align-items:center;margin:6px 0;font-size:14px}
 .crit small{display:block;color:var(--muted);font-size:12px;line-height:1.5}
@@ -45,15 +49,16 @@ a{color:var(--blue)}
 .coi input{width:18px;height:18px;accent-color:var(--bad)}
 .prog{height:10px;background:var(--card2);border-radius:99px;overflow:hidden;margin-top:6px}
 .prog i{display:block;height:100%;background:var(--good);border-radius:99px}
-.ann{background:color-mix(in srgb,var(--accent) 10%,var(--card));border:1px solid var(--accent);border-radius:12px;padding:10px 14px;margin-bottom:8px}
+.ann{background:var(--card);border:1px solid var(--line);border-inline-start:4px solid var(--accent);border-radius:12px;padding:10px 14px;margin-bottom:8px}
 .done-badge{font-size:12px;color:var(--good);font-weight:700}
 </style>
 </head>
 <body data-noannounce>
 <div class="wrap">
   <div id="loginView" class="card login hidden">
-    <h1 style="font-size:24px">لوحة لجنة التحكيم</h1>
-    <p class="muted" data-text="hackathon.name"></p>
+    <div style="text-align:center;margin-bottom:8px"><span style="display:inline-grid;place-items:center;width:52px;height:52px;border-radius:14px;background:var(--navy);color:#fff;font-size:24px"><i data-icon="scale"></i></span></div>
+    <h1 style="font-size:24px;text-align:center">لوحة لجنة التحكيم</h1>
+    <p class="muted" data-text="hackathon.name" style="text-align:center"></p>
     <label for="jKey">مفتاحك الشخصي</label>
     <input id="jKey" type="password" dir="ltr" autocomplete="current-password">
     <div id="nameWrap" class="hidden"><label for="jName">اسمك (للمفتاح المشترك)</label><input id="jName" maxlength="40" placeholder="مثال: د. أحمد"></div>
@@ -63,8 +68,8 @@ a{color:var(--blue)}
 
   <div id="mainView" class="hidden">
     <div class="top">
-      <div><h1 style="font-size:24px">لوحة لجنة التحكيم</h1><div class="muted small" id="meta"></div></div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm ghost" id="refreshBtn">🔄 تحديث</button><a class="btn sm" href="winners.html" target="_blank">🏆 شاشة الإعلان</a><button class="btn sm ghost" id="logoutBtn">خروج</button></div>
+      <div><h1 style="font-size:24px"><span class="ic"><i data-icon="scale"></i></span> لوحة لجنة التحكيم</h1><div class="muted small" id="meta"></div></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm ghost" id="refreshBtn"><i data-icon="refresh-cw"></i> تحديث</button><a class="btn sm" href="winners.html" target="_blank"><i data-icon="trophy"></i> شاشة الإعلان</a><button class="btn sm ghost" id="logoutBtn">خروج</button></div>
     </div>
     <div id="annBox"></div>
     <div class="card" id="progressCard"></div>
@@ -105,7 +110,7 @@ async function load(){
   const c = DATA.config.hackathon, me = DATA.me;
   const tr = me.tracks?.length ? me.tracks.map(id => c.tracks.find(t=>t.id===id)?.title).filter(Boolean).join("، ") : "كل المسارات";
   $("meta").textContent = `${me.admin ? "الإدارة (عرض فقط)" : me.name} · ${tr} · ${DATA.stats.teams} فريق`;
-  $("annBox").innerHTML = (DATA.announcements||[]).map(a=>`<div class="ann"><b>📣 ${esc(a.title)}</b>${a.body?`<br><span class="small" style="white-space:pre-wrap">${esc(a.body)}</span>`:""}</div>`).join("");
+  $("annBox").innerHTML = (DATA.announcements||[]).map(a=>`<div class="ann"><b><i data-icon="megaphone"></i> ${esc(a.title)}</b>${a.body?`<br><span class="small" style="white-space:pre-wrap">${esc(a.body)}</span>`:""}</div>`).join("");
   const p = DATA.progress, pct = p.total ? Math.round(p.done/p.total*100) : 0;
   $("progressCard").innerHTML = me.admin ? `<b>عرض الإدارة</b><div class="muted small">ترى كل المشاريع ودرجات المحكّمين، والتقييم للمحكّمين فقط.</div>` :
     `<div style="display:flex;justify-content:space-between"><b>تقدّمك في التقييم</b><b class="gold">${p.done} / ${p.total}</b></div><div class="prog"><i style="width:${pct}%"></i></div>${p.done===p.total&&p.total?`<p class="small" style="color:var(--good);margin-top:6px">✓ أنهيت تقييم كل المتأهلين المسندين إليك. شكرًا لك!</p>`:""}`;
@@ -127,7 +132,7 @@ function render(){
     return `<details class="team ${r.finalist?"fin":""}" data-id="${r.id}" ${open.has(r.id)?"open":""}>
       <summary class="sum">
         <span class="rk">${r.rank}</span>
-        <span><b>${esc(r.team)}</b> ${r.finalist?'<span class="pill">متأهل</span>':""} ${mine?'<span class="done-badge">✓ قيّمته</span>':""} ${s.flagged?'<span class="pill no">⚠️ محاولة تلاعب محتملة</span>':""}
+        <span><b>${esc(r.team)}</b> ${r.finalist?'<span class="pill">متأهل</span>':""} ${mine?'<span class="done-badge">✓ قيّمته</span>':""} ${s.flagged?'<span class="pill no"><i data-icon="triangle-alert"></i> محاولة تلاعب محتملة</span>':""}
           <div class="muted small">${esc(s.title)} · ${esc(r.challenge)} · ${r.attempts} محاولة</div></span>
         <span class="num"><b>${s.total}</b><small>الذكاء الاصطناعي</small></span>
         <span class="num hide-sm"><b>${r.judgeAvg ?? "—"}</b><small>اللجنة (${r.judges.filter(j=>!j.coi).length})</small></span>
@@ -138,14 +143,14 @@ function render(){
           ${[["المشكلة","problem"],["الحل","solution"],["العميل والسوق","customer"],["نموذج الربح","business"],["النموذج الأولي","prototype_desc"]].map(([l,k])=>s[k]?`<div class="field"><h4>${l}</h4><p>${esc(s[k])}</p></div>`:"").join("")}
           ${s.prototype_url?`<div class="field"><h4>رابط النموذج</h4><a href="${esc(s.prototype_url)}" target="_blank" rel="noopener" dir="ltr">${esc(s.prototype_url)}</a></div>`:""}
           ${s.video_url?`<div class="field"><h4>فيديو العرض</h4><a href="${esc(s.video_url)}" target="_blank" rel="noopener" dir="ltr">${esc(s.video_url)}</a></div>`:""}
-          <div class="field"><h4>الملفات المرفقة</h4>${(s.files||[]).length ? `<div class="fl">${s.files.map(f=>`<a class="filebtn ${f.kind==="deck"?"deck":""}" href="${esc(f.url||"#")}" target="_blank" rel="noopener">${f.kind==="deck"?"📊 العرض الاستثماري":"📎 "+esc(f.name)}</a>`).join("")}</div>${s.deck_read?`<p class="small" style="color:var(--good);margin-top:4px">✓ قرأ الذكاء الاصطناعي العرض الاستثماري</p>`:""}` : `<p class="muted small">لا توجد ملفات</p>`}</div>
+          <div class="field"><h4>الملفات المرفقة</h4>${(s.files||[]).length ? `<div class="fl">${s.files.map(f=>`<a class="filebtn ${f.kind==="deck"?"deck":""}" href="${esc(f.url||"#")}" target="_blank" rel="noopener">${f.kind==="deck"?'<i data-icon="presentation"></i> العرض الاستثماري':'<i data-icon="paperclip"></i> '+esc(f.name)}</a>`).join("")}</div>${s.deck_read?`<p class="small" style="color:var(--good);margin-top:4px">✓ قرأ الذكاء الاصطناعي العرض الاستثماري</p>`:""}` : `<p class="muted small">لا توجد ملفات</p>`}</div>
           <div class="field"><h4>الفريق</h4><p>${esc((r.members||[]).join("، "))}</p></div>
         </div>
         <div>
           ${form}
           <div class="box"><b>تقييم الذكاء الاصطناعي: ${s.total}/100</b>
-            ${R.map(x=>{const v=s.scores?.[x.key]??0; const dt=s.feedback?.details?.[x.key]; return `<div class="rrow"><span>${esc(x.label)}</span><div class="bar"><i style="width:${v/x.max*100}%"></i></div><b>${v}/${x.max}</b></div>${dt?.reason?`<div class="small muted" style="margin:-2px 0 8px">${dt.capped?"🔒 ":""}${esc(dt.reason)}${dt.evidence?`<br><i>«${esc(dt.evidence)}»</i>`:""}</div>`:""}`}).join("")}
-            ${(s.feedback?.caps||[]).length?`<p class="small" style="color:var(--bad)">🔒 ${s.feedback.caps.map(esc).join("، ")}</p>`:""}${s.feedback?.reviewed?`<p class="small muted">🔍 خضع لمراجعة ثانية</p>`:""}${s.feedback?.demo?`<p class="small" style="color:var(--bad);font-weight:700">⚠️ تقييم وهمي (الذكاء الاصطناعي غير مفعّل)</p>`:""}
+            ${R.map(x=>{const v=s.scores?.[x.key]??0; const dt=s.feedback?.details?.[x.key]; return `<div class="rrow"><span>${esc(x.label)}</span><div class="bar"><i style="width:${v/x.max*100}%"></i></div><b>${v}/${x.max}</b></div>${dt?.reason?`<div class="small muted" style="margin:-2px 0 8px">${dt.capped?'<i data-icon="lock"></i> ':""}${esc(dt.reason)}${dt.evidence?`<br><i>«${esc(dt.evidence)}»</i>`:""}</div>`:""}`}).join("")}
+            ${(s.feedback?.caps||[]).length?`<p class="small" style="color:var(--bad)"><i data-icon="lock"></i> ${s.feedback.caps.map(esc).join("، ")}</p>`:""}${s.feedback?.reviewed?`<p class="small muted"><i data-icon="shield-check"></i> خضع لمراجعة ثانية</p>`:""}${s.feedback?.demo?`<p class="small" style="color:var(--bad);font-weight:700"><i data-icon="triangle-alert"></i> تقييم وهمي (الذكاء الاصطناعي غير مفعّل)</p>`:""}
             <p class="small" style="margin-top:8px">${esc(s.feedback?.summary)}</p>
           </div>
           ${r.judges.length?`<div class="box jl"><b>درجات اللجنة</b>${r.judges.map(j=>`<div><span>${esc(j.judge)}${j.note?` <span class="muted small">— ${esc(j.note)}</span>`:""}</span><b class="gold">${j.coi?"تعارض":j.score}</b></div>`).join("")}</div>`:""}

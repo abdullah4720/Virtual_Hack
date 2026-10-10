@@ -6,23 +6,25 @@
 <title>الهاكاثون</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="hack.css">
+<script src="icons.js"></script>
 <script src="app.js"></script>
 <style>
-header{text-align:center;padding:14px 0 18px}
-[data-logo] img{max-height:54px;max-width:200px;margin-bottom:6px}
-.logo{font-size:42px}
-.phase{margin-top:10px;display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap}
+.phase{margin-top:14px;display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap}
+.phase .pill{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.18)}
+.phase #countdown{color:rgba(255,255,255,.8)}
+#host{color:rgba(255,255,255,.72)}
 .opts{display:grid;gap:10px}
 .ch{display:flex;gap:12px;align-items:flex-start;text-align:right;width:100%;font:inherit;color:var(--text);background:var(--card2);border:1.5px solid var(--line);border-radius:14px;padding:12px;cursor:pointer}
-.ch .ic{font-size:28px;line-height:1}
+.ch .ic{display:grid;place-items:center;width:40px;height:40px;border-radius:11px;background:var(--soft);color:var(--accent);flex:none;font-size:20px}
+.ch .ic .lu{width:21px;height:21px}
 .ch b{display:block}
 .ch small{color:var(--muted);font-size:13.5px;line-height:1.6;display:block}
-.ch[aria-pressed=true]{border-color:var(--accent);background:#1f2440}
+.ch[aria-pressed=true]{border-color:var(--accent);background:var(--soft);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 14%,transparent)}
 .subopts{display:grid;gap:8px;margin:2px 22px 4px 0;padding-right:12px;border-right:2px solid var(--accent)}
 .subopts .ch{padding:10px 12px}
 .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center}
-.steps div{background:var(--card2);border-radius:12px;padding:10px 6px;font-size:13.5px}
-.steps b{display:block;font-size:22px}
+.steps div{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px 6px;font-size:13.5px}
+.steps b{display:grid;place-items:center;width:30px;height:30px;margin:0 auto 6px;border-radius:50%;background:var(--navy);color:#fff;font-size:14px}
 @media (max-width:520px){.steps{grid-template-columns:repeat(2,1fr)}}
 .rub{display:grid;gap:8px;margin-top:6px}
 .rub div{background:var(--card2);border-radius:10px;padding:8px 12px;font-size:14.5px}
@@ -32,9 +34,9 @@ header{text-align:center;padding:14px 0 18px}
 .mrow{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .mrow.one{grid-template-columns:1fr}
 @media (max-width:520px){.mrow{grid-template-columns:1fr;gap:0;margin-bottom:6px}}
-.code{font-size:44px;font-weight:700;letter-spacing:6px;color:var(--accent);text-align:center;direction:ltr;margin:8px 0;font-family:ui-monospace,Menlo,monospace}
+.code{font-size:40px;font-weight:700;letter-spacing:6px;color:var(--navy);background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:6px;text-align:center;direction:ltr;margin:8px 0;font-family:ui-monospace,Menlo,monospace}
 .teamhead{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
-.total{font-size:52px;font-weight:700;color:var(--accent);line-height:1.1;text-align:center}
+.total{font-size:52px;font-weight:700;color:var(--navy);line-height:1.1;text-align:center}
 .total small{font-size:20px;color:var(--muted)}
 .rrow{display:grid;grid-template-columns:120px 1fr 52px;gap:10px;align-items:center;margin:7px 0;font-size:14.5px}
 .rrow b{text-align:left;font-variant-numeric:tabular-nums}
@@ -55,26 +57,28 @@ header{text-align:center;padding:14px 0 18px}
 .xlink a{color:var(--accent)}
 .why{font-size:13px;color:var(--muted);margin:-2px 0 10px;line-height:1.7}
 .why .nx{color:var(--text)}
-.caps{font-size:13px;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.3);border-radius:12px;padding:10px;margin-top:10px;line-height:1.8}
+.caps{font-size:13px;background:color-mix(in srgb,var(--bad) 5%,var(--card));border:1px solid color-mix(in srgb,var(--bad) 25%,transparent);border-radius:12px;padding:10px;margin-top:10px;line-height:1.8}
 .consent{display:flex;gap:8px;align-items:flex-start;font-size:14px;color:var(--muted);margin:14px 2px 6px;line-height:1.7;cursor:pointer}
 .consent input{width:18px;height:18px;margin-top:4px;accent-color:var(--accent);flex:none}
 .consent a{color:var(--accent)}
-.ann{display:flex;gap:10px;background:color-mix(in srgb,var(--accent) 10%,var(--card2));border-radius:12px;padding:10px 12px;margin-top:8px;line-height:1.7}
+.ann{display:flex;gap:10px;background:var(--soft);border-radius:12px;padding:10px 12px;margin-top:8px;line-height:1.7}
 .ann.me{border:1px solid var(--accent)}
+.ann > span:first-child{color:var(--accent);padding-top:2px}
 .certrow{display:flex;justify-content:space-between;align-items:center;background:var(--card2);border-radius:10px;padding:8px 12px;margin-top:8px}
 .files{margin-top:18px;padding-top:14px;border-top:1px dashed var(--line)}
 .slot{background:var(--card2);border:1.5px dashed var(--line);border-radius:14px;padding:14px;margin-top:8px}
-.slot.ok{border-style:solid;border-color:rgba(52,211,153,.45)}
-.slot.drag{border-color:var(--accent);background:#1f2440}
+.slot.ok{border-style:solid;border-color:color-mix(in srgb,var(--good) 45%,transparent)}
+.slot.drag{border-color:var(--accent);background:var(--soft)}
 .slot .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.slot .ic{font-size:26px}
+.slot .ic{display:grid;place-items:center;width:40px;height:40px;border-radius:10px;background:var(--soft);color:var(--accent);font-size:20px}
 .slot .nm{flex:1;min-width:140px}
 .slot .nm b{display:block;word-break:break-all;font-size:14.5px}
 .slot .nm small{color:var(--muted)}
 .pick{display:block;text-align:center;cursor:pointer;padding:6px 4px}
 .pick b{color:var(--accent)}
+.pick .up{display:inline-grid;place-items:center;width:42px;height:42px;border-radius:50%;background:var(--soft);color:var(--accent);font-size:20px;margin-bottom:4px}
 .pick input{display:none}
-.prog{height:6px;background:var(--bg);border-radius:9px;overflow:hidden;margin-top:8px}
+.prog{height:6px;background:var(--line);border-radius:9px;overflow:hidden;margin-top:8px}
 .prog i{display:block;height:100%;width:0;background:var(--accent);transition:width .2s}
 .req{font-size:12px;color:var(--bad);font-weight:700}
 .ib{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:8px;padding:5px 10px;cursor:pointer;text-decoration:none}
@@ -82,15 +86,16 @@ header{text-align:center;padding:14px 0 18px}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <div data-logo hidden></div>
-    <div class="logo">⚡</div>
+<header class="topbar">
+  <div class="in">
+    <div class="org"><span data-logo hidden></span><span id="host"></span></div>
+    <div class="mark"><i data-icon="zap"></i></div>
     <h1 data-title="hackathon.name">الهاكاثون</h1>
-    <p class="muted" id="host"></p>
-    <p class="muted small" data-text="hackathon.tagline" style="margin-top:4px"></p>
-    <div class="phase"><span class="pill" id="phasePill">…</span><span class="muted small" id="countdown"></span></div>
-  </header>
+    <p class="sub" data-text="hackathon.tagline"></p>
+    <div class="phase"><span class="pill" id="phasePill">…</span><span class="small" id="countdown"></span></div>
+  </div>
+</header>
+<div class="wrap">
 
   <!-- فكرة قادمة من المستثمر الذكي -->
   <div class="card import hidden" id="importCard"></div>
@@ -115,7 +120,7 @@ header{text-align:center;padding:14px 0 18px}
     </div>
 
     <div class="card hidden" id="gateCard" style="text-align:center;border-color:var(--accent)">
-      <div style="font-size:34px">🎟️</div>
+      <div style="font-size:30px;color:var(--gold)"><i data-icon="ticket"></i></div>
       <h2>التسجيل للمتأهلين فقط</h2>
       <p class="muted" id="gateText"></p>
       <a class="btn" href="index.html" id="gateBtn" style="margin-top:12px"></a>
@@ -159,12 +164,12 @@ header{text-align:center;padding:14px 0 18px}
   <!-- ========== رمز الفريق ========== -->
   <section id="v-code" class="hidden">
     <div class="card" style="text-align:center">
-      <span class="pill ok">✅ تم تسجيل الفريق</span>
+      <span class="pill ok"><i data-icon="circle-check"></i> تم تسجيل الفريق</span>
       <p class="small" id="codeMailed" style="margin-top:8px;color:var(--good)"></p>
       <p style="margin-top:12px">رمز فريقك. <b>احفظه</b> وشاركه مع أعضاء فريقك، فهو طريقتكم للدخول والتقديم:</p>
       <div class="code" id="newCode"></div>
       <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
-        <button class="btn sm ghost" id="copyBtn">📋 نسخ الرمز</button>
+        <button class="btn sm ghost" id="copyBtn"><i data-icon="copy"></i> نسخ الرمز</button>
         <button class="btn sm" id="goTeam">ابدأ تقديم المشروع ←</button>
       </div>
     </div>
@@ -210,7 +215,7 @@ header{text-align:center;padding:14px 0 18px}
       <p class="hint">مثل رابط Figma أو Canva أو Google Drive أو YouTube (غير مدرج).</p>
 
       <div class="files">
-        <h2 style="font-size:17px;margin-bottom:2px">📎 الملفات</h2>
+        <h2 style="font-size:17px;margin-bottom:2px"><i data-icon="paperclip"></i> الملفات</h2>
         <p class="muted small" id="filesHint"></p>
         <label style="margin-top:12px">العرض الاستثماري (Pitch Deck) <span class="req" id="deckReq">· إلزامي</span></label>
         <div id="deckSlot"></div>
@@ -226,7 +231,7 @@ header{text-align:center;padding:14px 0 18px}
   </section>
 
   <div class="card">
-    <h2>🏆 الترتيب الحالي</h2>
+    <h2><i data-icon="trophy"></i> الترتيب الحالي</h2>
     <div class="lb" id="lb"><p class="muted small">لا توجد مشاريع مقيّمة بعد.</p></div>
     <p class="muted small" style="margin-top:8px">الترتيب حسب أعلى تقييم للذكاء الاصطناعي، ويُعرض مباشرة على شاشة الجناح.</p>
   </div>
@@ -253,7 +258,7 @@ function show(id){ ["v-home","v-code","v-team"].forEach(v => $(v).classList.togg
 function renderPhase(){
   const H = CFG.hackathon, p = H.phase, pill = $("phasePill");
   pill.className = "pill " + (p==="open"?"ok":p==="closed"?"no":"");
-  pill.textContent = p==="open" ? "🟢 التقديم مفتوح" : p==="closed" ? "🔴 انتهى التقديم" : "⏳ يبدأ قريبًا";
+  pill.innerHTML = p==="open" ? '<span class="dot ok"></span> التقديم مفتوح' : p==="closed" ? '<span class="dot no"></span> انتهى التقديم' : '<span class="dot wait"></span> يبدأ قريبًا';
   const target = p==="soon" ? H.opensAtMs : p==="open" ? H.closesAtMs : null;
   const tick = () => {
     if (!target) { $("countdown").textContent = ""; return; }
@@ -295,7 +300,7 @@ function renderTracks(){
   for (const t of CFG.hackathon.tracks) {
     const on = chosen.track === t.id;
     const b = document.createElement("button"); b.type="button"; b.className="ch"; b.setAttribute("aria-pressed", on && (!t.challenges.length || chosen.challenge) ? "true" : on ? "true" : "false");
-    b.innerHTML = `<span class="ic">${esc(t.icon)}</span><span><b>${esc(t.title)}</b><small>${esc(t.desc)}</small>${t.challenges.length?`<small class="gold">${t.challenges.length} تحديات ${on?"▾":"◂"}</small>`:""}</span>`;
+    b.innerHTML = `<span class="ic">${glyph(t.icon)}</span><span><b>${esc(t.title)}</b><small>${esc(t.desc)}</small>${t.challenges.length?`<small class="gold">${t.challenges.length} تحديات ${on?"▾":"◂"}</small>`:""}</span>`;
     b.onclick = () => { chosen = {track:t.id, challenge: t.challenges.length===1 ? t.challenges[0].id : null}; renderTracks(); };
     box.appendChild(b);
     if (on && t.challenges.length) {
@@ -343,11 +348,11 @@ $("regBtn").onclick = async () => {
       members:[...document.querySelectorAll(".mem")].map(i=>i.value.trim()),
       memberEmails:[...document.querySelectorAll(".mrow")].map(r=>r.querySelector(".memMail")?.value.trim()||""), ticket: $("tTicket").value.trim().toUpperCase(), consent: $("regConsent").checked
     });
-    LS.set("hack_code", d.code); $("newCode").textContent = d.code; $("codeMailed").textContent = d.emailed ? "✉️ أرسلنا الرمز أيضًا إلى البريد المسجّل" : ""; show("v-code"); scrollTo(0,0);
+    LS.set("hack_code", d.code); $("newCode").textContent = d.code; $("codeMailed").textContent = d.emailed ? "أرسلنا الرمز أيضًا إلى البريد المسجّل" : ""; show("v-code"); scrollTo(0,0);
   } catch(e){ $("regErr").textContent = e.message; }
   $("regBtn").disabled=false;
 };
-$("copyBtn").onclick = async () => { try{ await navigator.clipboard.writeText($("newCode").textContent); $("copyBtn").textContent="✅ تم النسخ"; }catch(e){} };
+$("copyBtn").onclick = async () => { try{ await navigator.clipboard.writeText($("newCode").textContent); $("copyBtn").textContent="✓ تم النسخ"; }catch(e){} };
 $("goTeam").onclick = () => loadTeam(LS.get("hack_code"));
 $("loginBtn").onclick = async () => { $("loginErr").textContent=""; try { await loadTeam($("loginCode").value.trim().toUpperCase(), true); } catch(e){ $("loginErr").textContent=e.message; } };
 $("logoutBtn").onclick = () => { LS.set("hack_code", null); team=null; show("v-home"); };
@@ -357,11 +362,11 @@ function renderImport(where){
   const c = $("importCard");
   if (!IMPORT) { c.classList.add("hidden"); return; }
   const fb = [...(IMPORT.weaknesses||[]), IMPORT.tip].filter(Boolean);
-  c.innerHTML = `<span class="pill">💼 من ${esc(CFG.investor.title)}</span>
-    <h2 style="margin-top:8px">${where==="team" ? "أُدرجت فكرتك في النموذج، وهذه ملاحظات المستشار لمعالجتها" : (IMPORT.ticket ? "🎟️ تهانينا بالتأهل، سجّل فريقك أدناه" : "فكرتك جاهزة للانتقال إلى الهاكاثون")}</h2>
+  c.innerHTML = `<span class="pill"><i data-icon="briefcase-business"></i> من ${esc(CFG.investor.title)}</span>
+    <h2 style="margin-top:8px">${where==="team" ? "أُدرجت فكرتك في النموذج، وهذه ملاحظات المستشار لمعالجتها" : (IMPORT.ticket ? '<i data-icon="ticket"></i> تهانينا بالتأهل، سجّل فريقك أدناه' : "فكرتك جاهزة للانتقال إلى الهاكاثون")}</h2>
     <div class="q">«${esc(IMPORT.idea)}»</div>
     ${IMPORT.investor ? `<p class="small muted">${esc(IMPORT.investor)}: ${IMPORT.decision==="invest" ? "متأهل" : "غير متأهل"}${IMPORT.score!=null?` · درجتك ${IMPORT.score}`:""} · «${esc(IMPORT.verdict)}»</p>` : ""}
-    ${fb.length ? `<h2 style="font-size:15px;margin-top:10px">🔧 عالج هذه النقاط في مشروعك</h2><ul class="clean small">${fb.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>` : ""}
+    ${fb.length ? `<h2 style="font-size:15px;margin-top:10px"><i data-icon="wrench"></i> عالج هذه النقاط في مشروعك</h2><ul class="clean small">${fb.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>` : ""}
     ${where==="home" ? `<p class="small muted" style="margin-top:8px">سجّل فريقك بالأسفل، وستجد الفكرة معبّأة في نموذج التقديم.</p>` : ""}
     ${where==="team" ? `<button class="btn sm ghost" id="dropImport" style="margin-top:10px">إخفاء</button>` : ""}`;
   c.classList.remove("hidden");
@@ -378,10 +383,10 @@ async function loadTeam(code, strict){
 let evalPoll = null, evalAsked = false;
 function renderAnnouncements(){
   const list = team.announcements || [];
-  $("annBox").innerHTML = list.length ? `<div class="card"><h2 style="font-size:17px">📣 الإعلانات والرسائل</h2>${list.map(a=>`<div class="ann ${a.personal?"me":""}"><span>${a.personal?"✉️":"📣"}</span><span><b>${esc(a.title)}</b>${a.body?`<br><span class="small muted" style="white-space:pre-wrap">${esc(a.body)}</span>`:""}<br><span class="small muted">${new Date(a.created_at).toLocaleString("ar-SA-u-nu-latn",{day:"numeric",month:"long",hour:"numeric",minute:"2-digit"})}</span></span></div>`).join("")}</div>` : "";
+  $("annBox").innerHTML = list.length ? `<div class="card"><h2 style="font-size:17px"><i data-icon="megaphone"></i> الإعلانات والرسائل</h2>${list.map(a=>`<div class="ann ${a.personal?"me":""}"><span>${a.personal?'<i data-icon="mail"></i>':'<i data-icon="megaphone"></i>'}</span><span><b>${esc(a.title)}</b>${a.body?`<br><span class="small muted" style="white-space:pre-wrap">${esc(a.body)}</span>`:""}<br><span class="small muted">${new Date(a.created_at).toLocaleString("ar-SA-u-nu-latn",{day:"numeric",month:"long",hour:"numeric",minute:"2-digit"})}</span></span></div>`).join("")}</div>` : "";
   const c = team.certs;
   const KIND = {participant:"شهادة مشاركة", finalist:"شهادة تأهل للتحكيم النهائي", winner1:"شهادة فوز · المركز الأول", winner2:"شهادة فوز · المركز الثاني", winner3:"شهادة فوز · المركز الثالث"};
-  $("certBox").innerHTML = c ? `<div class="card"><h2 style="font-size:17px">🏅 شهاداتكم: ${KIND[c.kind]||""}</h2>${c.list.map(x=>`<div class="certrow"><span>${esc(x.name)}</span><a class="btn sm" href="certificate.html?c=${encodeURIComponent(x.code)}" target="_blank">عرض وطباعة</a></div>`).join("")}</div>` : "";
+  $("certBox").innerHTML = c ? `<div class="card"><h2 style="font-size:17px"><i data-icon="award"></i> شهاداتكم: ${KIND[c.kind]||""}</h2>${c.list.map(x=>`<div class="certrow"><span>${esc(x.name)}</span><a class="btn sm" href="certificate.html?c=${encodeURIComponent(x.code)}" target="_blank">عرض وطباعة</a></div>`).join("")}</div>` : "";
 }
 async function checkPending(){
   const p = team.submissions.some(x => x.status === "pending" || x.status === "failed");
@@ -416,10 +421,10 @@ function renderTeam(){
     $("resultBox").innerHTML = resultCard(last, best);
     setTimeout(()=>document.querySelectorAll("#resultBox .bar i").forEach(i=>i.style.width=i.dataset.w),80);
     $("historyCard").classList.toggle("hidden", subs.length<2);
-    $("history").innerHTML = all.map(s=>`<div class="attempt"><span>المحاولة ${s.attempt} · ${esc(s.title)}</span><b class="gold">${s.status==="done"?s.total+"/100":"⏳ قيد التقييم"}</b></div>`).join("");
+    $("history").innerHTML = all.map(s=>`<div class="attempt"><span>المحاولة ${s.attempt} · ${esc(s.title)}</span><b class="gold">${s.status==="done"?s.total+"/100":"قيد التقييم"}</b></div>`).join("");
     $("historyCard").classList.toggle("hidden", all.length<2);
   } else { $("resultBox").innerHTML=""; $("historyCard").classList.add("hidden"); }
-  if (pend.length) $("resultBox").insertAdjacentHTML("afterbegin", `<div class="card loading"><div class="spinner"></div><b>⏳ المحاولة ${pend[0].attempt} قيد التقييم</b><br><span class="muted small">تم حفظ تقديمكم بأمان. التقييم يكتمل تلقائيًا وتتحدث هذه الصفحة وحدها${CFG.features?.mail?"، وسنرسل لكم النتيجة بالبريد":""}.</span></div>`);
+  if (pend.length) $("resultBox").insertAdjacentHTML("afterbegin", `<div class="card loading"><div class="spinner"></div><b>المحاولة ${pend[0].attempt} قيد التقييم</b><br><span class="muted small">تم حفظ تقديمكم بأمان. التقييم يكتمل تلقائيًا وتتحدث هذه الصفحة وحدها${CFG.features?.mail?"، وسنرسل لكم النتيجة بالبريد":""}.</span></div>`);
   if (dq) $("resultBox").insertAdjacentHTML("afterbegin", `<div class="card" style="border-color:var(--bad)"><b style="color:var(--bad)">تم إيقاف مشاركة هذا الفريق.</b> <span class="muted small">للاستفسار تواصلوا مع المنظمين.</span></div>`);
   checkPending();
   if (closed && t.phase==="open") $("resultBox").insertAdjacentHTML("beforeend", `<div class="card muted small">استخدمتم كل المحاولات. تُحتسب أعلى درجة لكم في الترتيب.</div>`);
@@ -427,19 +432,19 @@ function renderTeam(){
 }
 // ---------- الملفات ----------
 const kb = n => n >= 1048576 ? (n/1048576).toFixed(1)+" م.ب" : Math.max(1, Math.round(n/1024))+" ك.ب";
-const ICON = {pdf:"📕", pptx:"📊", docx:"📄", xlsx:"📗", png:"🖼️", jpg:"🖼️", jpeg:"🖼️"};
+const ICON = {pdf:"file-text", pptx:"presentation", docx:"file-text", xlsx:"chart-column", png:"image", jpg:"image", jpeg:"image"};
 const ext = n => (String(n).toLowerCase().match(/\.([a-z0-9]+)$/)||[])[1] || "";
 const uploading = {};
 function fileRow(f){
-  return `<div class="row"><span class="ic">${ICON[ext(f.name)]||"📎"}</span><span class="nm"><b>${esc(f.name)}</b><small>${kb(f.size)}</small></span>
+  return `<div class="row"><span class="ic">${glyph(ICON[ext(f.name)]||"paperclip")}</span><span class="nm"><b>${esc(f.name)}</b><small>${kb(f.size)}</small></span>
     ${f.url?`<a class="ib" href="${esc(f.url)}" target="_blank" rel="noopener">عرض</a>`:""}
     <button type="button" class="ib del" data-detach="${esc(f.key)}">حذف</button></div>`;
 }
 function pickBox(kind, label){
   const up = uploading[kind];
-  if (up) return `<div class="slot"><div class="row"><span class="ic">⏳</span><span class="nm"><b>${esc(up.name)}</b><small>جارٍ الرفع… ${Math.round(up.p*100)}%</small></span></div><div class="prog"><i style="width:${up.p*100}%"></i></div></div>`;
+  if (up) return `<div class="slot"><div class="row"><span class="ic"><i data-icon="hourglass"></i></span><span class="nm"><b>${esc(up.name)}</b><small>جارٍ الرفع… ${Math.round(up.p*100)}%</small></span></div><div class="prog"><i style="width:${up.p*100}%"></i></div></div>`;
   const accept = kind==="deck" ? ".pdf,application/pdf" : ".pdf,.pptx,.docx,.xlsx,.png,.jpg,.jpeg";
-  return `<div class="slot" data-drop="${kind}"><label class="pick"><input type="file" accept="${accept}" data-kind="${kind}"><span style="font-size:26px">⬆️</span><br><b>${label}</b><br><span class="muted small">أو اسحب الملف وأفلته هنا</span></label></div>`;
+  return `<div class="slot" data-drop="${kind}"><label class="pick"><input type="file" accept="${accept}" data-kind="${kind}"><span class="up"><i data-icon="upload"></i></span><br><b>${label}</b><br><span class="muted small">أو اسحب الملف وأفلته هنا</span></label></div>`;
 }
 function renderFiles(){
   const U = CFG.hackathon.uploads, files = team.files || [];
@@ -498,14 +503,14 @@ function resultCard(s, best){
       ${best.attempt!==s.attempt?`<span class="pill">أعلى درجة: ${best.total}</span>`:`<span class="pill ok">أعلى درجة لكم</span>`}</div>
     <div class="total" style="margin:10px 0">${s.total}<small> / 100</small></div>
     ${s.deck_read ? `<p class="small" style="text-align:center;color:var(--good)">✓ قرأ المحكّم الذكي عرضكم الاستثماري ضمن التقييم</p>` : ""}
-    ${s.feedback?.demo ? `<div style="border:1.5px solid var(--bad);border-radius:12px;padding:10px;margin:8px 0;font-size:14px"><b style="color:var(--bad)">⚠️ تقييم وهمي عشوائي</b>: الذكاء الاصطناعي غير مفعّل.</div>` : ""}
-    ${s.feedback?.reviewed ? `<p class="small muted" style="text-align:center">🔍 راجعه محكّم ذكي ثانٍ للتأكد من عدم التساهل</p>` : ""}
+    ${s.feedback?.demo ? `<div style="border:1.5px solid var(--bad);border-radius:12px;padding:10px;margin:8px 0;font-size:14px"><b style="color:var(--bad)"><i data-icon="triangle-alert"></i> تقييم وهمي عشوائي</b>: الذكاء الاصطناعي غير مفعّل.</div>` : ""}
+    ${s.feedback?.reviewed ? `<p class="small muted" style="text-align:center"><i data-icon="shield-check"></i> راجعه محكّم ذكي ثانٍ للتأكد من عدم التساهل</p>` : ""}
     ${R.map(r=>{ const v=s.scores?.[r.key]; if (v==null) return ""; const dt = s.feedback?.details?.[r.key]; return `<div class="rrow"><span>${esc(r.label)}</span><div class="bar"><i data-w="${v/r.max*100}%" style="width:0"></i></div><b>${v}/${r.max}</b></div>
-      ${dt?.reason?`<div class="why">${dt.capped?"🔒 ":""}${esc(dt.reason)}${dt.next?`<br><span class="nx">⬆️ ${esc(dt.next)}</span>`:""}</div>`:""}`}).join("")}
-    ${(s.feedback?.caps||[]).length?`<div class="caps"><b>🔒 قيود طُبّقت على الدرجة:</b> ${s.feedback.caps.map(esc).join("، ")}</div>`:""}
+      ${dt?.reason?`<div class="why">${dt.capped?'<i data-icon="lock"></i> ':""}${esc(dt.reason)}${dt.next?`<br><span class="nx"><i data-icon="arrow-up"></i> ${esc(dt.next)}</span>`:""}</div>`:""}`}).join("")}
+    ${(s.feedback?.caps||[]).length?`<div class="caps"><b><i data-icon="lock"></i> قيود طُبّقت على الدرجة:</b> ${s.feedback.caps.map(esc).join("، ")}</div>`:""}
     ${s.feedback?.summary?`<p style="margin-top:12px">${esc(s.feedback.summary)}</p>`:""}
-    <h2 style="margin-top:14px;font-size:16px">✅ نقاط القوة</h2><ul class="clean">${(s.feedback?.strengths||[]).map(x=>`<li>${esc(x)}</li>`).join("")}</ul>
-    <h2 style="margin-top:10px;font-size:16px">🔧 للتحسين قبل المحاولة القادمة</h2><ul class="clean">${(s.feedback?.improvements||[]).map(x=>`<li>${esc(x)}</li>`).join("")}</ul>
+    <h2 style="margin-top:14px;font-size:16px"><i data-icon="circle-check"></i> نقاط القوة</h2><ul class="clean">${(s.feedback?.strengths||[]).map(x=>`<li>${esc(x)}</li>`).join("")}</ul>
+    <h2 style="margin-top:10px;font-size:16px"><i data-icon="wrench"></i> للتحسين قبل المحاولة القادمة</h2><ul class="clean">${(s.feedback?.improvements||[]).map(x=>`<li>${esc(x)}</li>`).join("")}</ul>
   </div>`;
 }
 

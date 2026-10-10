@@ -110,8 +110,8 @@ window.APP = (() => {
   }
   function applyTheme(c) {
     const r = document.documentElement.style;
-    if (c.brand.accent) { r.setProperty("--accent", c.brand.accent); r.setProperty("--accent-ink", ink(c.brand.accent)); }
-    if (c.brand.bg) r.setProperty("--bg", c.brand.bg);
+    if (c.brand.accent) { r.setProperty("--brand-accent", c.brand.accent); r.setProperty("--accent-ink", ink(c.brand.accent)); }
+    if (c.brand.bg) r.setProperty("--brand-navy", c.brand.bg);
     document.querySelectorAll("[data-logo]").forEach((el) => {
       if (c.brand.logoUrl) { el.innerHTML = `<img src="${esc(c.brand.logoUrl)}" alt="${esc(c.brand.orgName)}">`; el.hidden = false; }
     });
@@ -125,14 +125,14 @@ window.APP = (() => {
     });
   }
   function disabled(msg) {
-    document.body.innerHTML = `<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;font-family:'IBM Plex Sans Arabic',system-ui;color:#9aa6c7">
-      <div><div style="font-size:48px">🔒</div><p style="font-size:18px;margin-top:10px">${esc(msg)}</p></div></div>`;
+    document.body.innerHTML = `<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;color:var(--muted)">
+      <div><i data-icon="lock" style="font-size:44px;color:var(--accent)"></i><p style="font-size:18px;margin-top:10px">${esc(msg)}</p></div></div>`;
   }
   function demoBadge() {
     if (window.top !== window) return; // لا تظهر داخل شاشة الجناح المتناوبة
     const b = document.createElement("div");
     b.textContent = "نسخة عرض تجريبية · البيانات محفوظة في هذا المتصفح فقط";
-    b.style.cssText = "position:fixed;top:10px;left:10px;z-index:99;font:12px 'IBM Plex Sans Arabic',system-ui;color:#9aa6c7;background:rgba(20,27,49,.9);border:1px solid #25304f;border-radius:999px;padding:4px 12px;pointer-events:none";
+    b.style.cssText = "position:fixed;top:10px;left:10px;z-index:99;font:12px 'IBM Plex Sans Arabic',system-ui;color:var(--muted);background:var(--card);border:1px solid var(--line);border-radius:999px;padding:4px 12px;pointer-events:none";
     document.body.appendChild(b);
   }
 
@@ -145,17 +145,18 @@ window.APP = (() => {
     const list = (c.announcements || []).filter((a) => a.audience === "all" && !hidden.includes(a.id));
     if (!list.length) return;
     const wrap = document.createElement("div");
-    wrap.style.cssText = "max-width:720px;margin:12px auto 0;padding:0 16px;font-family:'IBM Plex Sans Arabic',system-ui";
-    wrap.innerHTML = list.map((a) => `<div data-ann="${a.id}" style="display:flex;gap:10px;align-items:flex-start;background:color-mix(in srgb,var(--accent) 14%,#141b31);border:1px solid var(--accent);border-radius:14px;padding:10px 14px;margin-bottom:8px;color:#eef2ff;line-height:1.7">
-      <span style="font-size:20px">📣</span><span style="flex:1"><b>${esc(a.title)}</b>${a.body ? `<br><span style="font-size:14px;color:#c9d1ea;white-space:pre-wrap">${esc(a.body)}</span>` : ""}</span>
-      <button aria-label="إخفاء" style="background:none;border:0;color:#9aa6c7;font-size:18px;cursor:pointer">×</button></div>`).join("");
+    wrap.style.cssText = "max-width:720px;margin:14px auto 0;padding:0 16px";
+    wrap.innerHTML = list.map((a) => `<div data-ann="${a.id}" style="display:flex;gap:10px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-inline-start:4px solid var(--accent);border-radius:12px;padding:10px 14px;margin-bottom:8px;color:var(--text);line-height:1.7;box-shadow:var(--shadow)">
+      <i data-icon="megaphone" style="color:var(--accent);font-size:20px;margin-top:3px"></i><span style="flex:1"><b>${esc(a.title)}</b>${a.body ? `<br><span style="font-size:14px;color:var(--muted);white-space:pre-wrap">${esc(a.body)}</span>` : ""}</span>
+      <button aria-label="إخفاء" style="background:none;border:0;color:var(--muted);font-size:20px;cursor:pointer;line-height:1">×</button></div>`).join("");
     wrap.addEventListener("click", (e) => {
       const box = e.target.closest("[data-ann]");
       if (!box || e.target.tagName !== "BUTTON") return;
       hidden.push(Number(box.dataset.ann)); try { localStorage.setItem("ann_hidden", JSON.stringify(hidden)); } catch (err) {}
       box.remove();
     });
-    body.prepend(wrap);
+    const top = body.querySelector(".topbar");
+    top ? top.after(wrap) : body.prepend(wrap);
   }
   // شريط إعلانات للشاشات: <div data-ticker></div>
   function ticker(c) {
@@ -164,7 +165,7 @@ window.APP = (() => {
     const list = (c.announcements || []).filter((a) => a.audience === "all" || a.audience === "screens");
     el.hidden = !list.length;
     if (!list.length) { el.innerHTML = ""; el._k = ""; return; }
-    const html = list.map((a) => `<span>📣 <b>${esc(a.title)}</b>${a.body ? ` — ${esc(a.body)}` : ""}</span>`).join("");
+    const html = list.map((a) => `<span><i data-icon="megaphone"></i> <b>${esc(a.title)}</b>${a.body ? ` — ${esc(a.body)}` : ""}</span>`).join("");
     if (el._k === html) return; // لا نعيد التشغيل إن لم يتغير شيء
     el._k = html;
     // نسختان متطابقتان تكفي كل منهما عرض الشاشة ← حركة متصلة بلا فراغ

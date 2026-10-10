@@ -5,13 +5,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>المستثمر الذكي · الشاشة</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="hack.css">
 <script src="qrcode.min.js"></script>
+<script src="icons.js"></script>
 <script src="app.js"></script>
 <style>
-:root{--bg:#0b1020;--card:#141b31;--line:#25304f;--text:#eef2ff;--muted:#9aa6c7;--accent:#f5b83d;--good:#34d399;--bad:#f87171}
 *{box-sizing:border-box;margin:0}
 html,body{height:100%}
-body{font-family:"IBM Plex Sans Arabic",system-ui,sans-serif;background:radial-gradient(1400px 700px at 85% -10%,#1d2a55 0,transparent 60%),var(--bg);color:var(--text);overflow:hidden}
+body{font-family:"IBM Plex Sans Arabic",system-ui,sans-serif;background:var(--paper);color:var(--text);overflow:hidden}
 .grid{display:grid;grid-template-columns:1.1fr 1.3fr 1fr;grid-template-rows:auto 1fr;gap:1.4vw;height:100vh;padding:1.6vw}
 header{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:2vw}
 h1{font-size:3.2vw;font-weight:700}
@@ -23,7 +24,7 @@ h1 span{color:var(--accent)}
 .panel{background:var(--card);border:1px solid var(--line);border-radius:1.2vw;padding:1.4vw;overflow:hidden;display:flex;flex-direction:column;min-height:0}
 .panel h2{font-size:1.5vw;margin-bottom:1vw;color:var(--muted);font-weight:500}
 .rows{display:flex;flex-direction:column;gap:.7vw;overflow:hidden}
-.row{display:flex;align-items:center;gap:1vw;background:#0e1427;border-radius:.8vw;padding:.8vw 1vw;animation:pop .5s ease}
+.row{display:flex;align-items:center;gap:1vw;background:var(--card2);border-radius:.8vw;padding:.8vw 1vw;animation:pop .5s ease}
 .rank{font-size:1.6vw;font-weight:700;width:2.4vw;text-align:center;color:var(--muted)}
 .row:nth-child(1) .rank{color:#ffd166}.row:nth-child(2) .rank{color:#d7dce8}.row:nth-child(3) .rank{color:#e3a36f}
 .who{flex:1;min-width:0}
@@ -33,7 +34,7 @@ h1 span{color:var(--accent)}
 .out{color:var(--bad);font-size:1.1vw;font-weight:700}
 .spot{flex:1;display:flex;flex-direction:column;justify-content:center;text-align:center;gap:1vw}
 .spot .tag{align-self:center;font-size:1.1vw;padding:.4vw 1.2vw;border-radius:99px;font-weight:700}
-.tag.ok{background:rgba(52,211,153,.15);color:var(--good)}.tag.no{background:rgba(248,113,113,.15);color:var(--bad)}
+.tag.ok{background:color-mix(in srgb,var(--good) 15%,transparent);color:var(--good)}.tag.no{background:color-mix(in srgb,var(--bad) 15%,transparent);color:var(--bad)}
 .spot .name{font-size:2.6vw;font-weight:700}
 .spot .idea{font-size:1.5vw;color:var(--muted)}
 .spot .amt{font-size:3.6vw;font-weight:700;color:var(--accent);line-height:1.2}
@@ -48,39 +49,39 @@ h1 span{color:var(--accent)}
 .empty{color:var(--muted);font-size:1.2vw;text-align:center;margin-top:2vw}
 .flash{animation:flash 1.6s ease}
 @keyframes pop{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-@keyframes flash{0%{box-shadow:0 0 0 0 rgba(245,184,61,.7)}100%{box-shadow:0 0 0 2vw rgba(245,184,61,0)}}
+@keyframes flash{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 70%,transparent)}100%{box-shadow:0 0 0 2vw transparent}}
 [data-logo] img{max-height:3.6vw;max-width:14vw;display:block}
 .brandrow{display:flex;align-items:center;gap:1.4vw}
 .sub2{color:var(--muted);font-size:1.15vw}
 .gold{color:var(--accent)}
 h1 span[data-title]{color:var(--text)}
 h1 span[data-title] .gold{color:var(--accent)}
-[data-ticker]{position:fixed;bottom:0;left:0;right:0;background:color-mix(in srgb,var(--accent) 20%,#0b1020);border-top:2px solid var(--accent);color:var(--text);overflow:hidden;white-space:nowrap;z-index:5;font-size:1.4vw;padding:.6vw 0}
+[data-ticker]{position:fixed;bottom:0;left:0;right:0;background:color-mix(in srgb,var(--accent) 20%,var(--paper));border-top:2px solid var(--accent);color:var(--text);overflow:hidden;white-space:nowrap;z-index:5;font-size:1.4vw;padding:.6vw 0}
 [data-ticker] .tk-in{display:inline-flex;width:max-content;animation:tk 30s linear infinite}
 [data-ticker] .tk-c{display:inline-flex;flex:none}
 [data-ticker] .tk-c span{margin-left:4vw}
 @keyframes tk{from{transform:translateX(0)}to{transform:translateX(50%)}}
 </style>
 </head>
-<body data-screen>
+<body class="dark" data-screen>
 <div class="grid">
   <header>
-    <div class="brandrow"><div data-logo hidden></div><div><h1>💼 <span data-title="investor.title">المستثمر الذكي</span></h1><div class="sub2"><span data-text="brand.boothName"></span> · <span data-text="brand.eventName"></span></div></div></div>
+    <div class="brandrow"><div data-logo hidden></div><div><h1><i data-icon="briefcase-business"></i> <span data-title="investor.title">المستثمر الذكي</span></h1><div class="sub2"><span data-text="brand.boothName"></span> · <span data-text="brand.eventName"></span></div></div></div>
     <div class="stats">
       <div class="stat"><b id="sPitches">0</b><small>عرض</small></div>
-      <div class="stat"><b id="sDeals">0</b><small>تأهّل للهاكاثون 🎟️</small></div>
+      <div class="stat"><b id="sDeals">0</b><small>تأهّل للهاكاثون</small></div>
       <div class="stat"><b id="sTotal">0</b><small>ريال استثمارات</small></div>
     </div>
   </header>
 
   <section class="panel">
-    <h2>🏆 أعلى تقييمات الشركات</h2>
+    <h2><i data-icon="trophy"></i> أعلى التقييمات</h2>
     <div class="rows" id="top"></div>
   </section>
 
   <section class="panel" id="spotPanel">
-    <h2>⚡ آخر عرض</h2>
-    <div class="spot" id="spot"><p class="empty">بانتظار أول عرض… كن أنت الأول! 🚀</p></div>
+    <h2><i data-icon="zap"></i> آخر عرض</h2>
+    <div class="spot" id="spot"><p class="empty">بانتظار أول عرض… كن أنت الأول.</p></div>
     <h2 style="margin-top:1vw">آخر العروض</h2>
     <div class="rows" id="recent"></div>
   </section>
@@ -92,14 +93,14 @@ h1 span[data-title] .gold{color:var(--accent)}
       ١. امسح الرمز بجوالك<br>
       ٢. اكتب فكرتك<br>
       ٣. أجب عن سؤالين<br>
-      ٤. احصل على تقييمك وتأهّل 🎟️
+      ٤. احصل على تقييمك وتأهّل
     </div>
   </section>
 </div>
 
 <script>
 let INV = {};
-APP.ready.then(c => { INV = Object.fromEntries(c.investor.investors.map(i => [i.id, `${i.emoji} ${i.name}`])); document.title = c.investor.title; });
+APP.ready.then(c => { INV = Object.fromEntries(c.investor.investors.map(i => [i.id, `${glyph(i.emoji)} ${APP.esc(i.name)}`])); document.title = c.investor.title; });
 const $ = id => document.getElementById(id);
 const fmt = n => Number(n||0).toLocaleString("ar-SA-u-nu-latn");
 const esc = s => { const d=document.createElement("div"); d.textContent=s||""; return d.innerHTML; };
@@ -134,7 +135,7 @@ async function refresh(){
       if (key !== lastId) {
         const ok = latest.decision === "invest";
         $("spot").innerHTML = `
-          <span class="tag ${ok?"ok":"no"}">${latest.qualified?"🎟️ تأهّل للهاكاثون":ok?"✅ متأهل":"غير متأهل"}</span>
+          <span class="tag ${ok?"ok":"no"}">${latest.qualified?'<i data-icon="ticket"></i> تأهّل للهاكاثون':ok?"متأهل":"غير متأهل"}</span>
           <div class="name">${esc(latest.name)}</div>
           <div class="idea">«${esc(latest.title)}»</div>
           ${ok ? `<div class="amt">${fmt(latest.amount)} ريال <small style="font-size:1.4vw;color:var(--muted)">مقابل ${fmt(latest.equity)}%</small></div>` : ""}

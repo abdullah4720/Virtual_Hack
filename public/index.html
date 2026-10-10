@@ -5,99 +5,78 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>المستثمر الذكي</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="hack.css">
+<script src="icons.js"></script>
 <style>
-:root{
-  --bg:#0b1020;--card:#141b31;--line:#25304f;--text:#eef2ff;--muted:#9aa6c7;
-  --accent:#f5b83d;--accent-ink:#1a1204;--good:#34d399;--bad:#f87171;--me:#2b3a66;
-}
-*{box-sizing:border-box;margin:0}
-body{font-family:"IBM Plex Sans Arabic",system-ui,sans-serif;background:radial-gradient(1200px 600px at 80% -10%,#1d2a55 0,transparent 60%),var(--bg);color:var(--text);min-height:100dvh}
-.wrap{max-width:520px;margin:0 auto;padding:20px 16px 40px}
-header{text-align:center;padding:12px 0 20px}
-.logo{font-size:44px}
-h1{font-size:26px;font-weight:700;margin-top:4px}
-h1 span{color:var(--accent)}
-.sub{color:var(--muted);font-size:15px;margin-top:6px;line-height:1.7}
-.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:14px}
-label{display:block;font-size:14px;color:var(--muted);margin-bottom:8px}
-input,textarea{width:100%;font:inherit;font-size:16px;color:var(--text);background:#0e1427;border:1px solid var(--line);border-radius:12px;padding:12px 14px;outline:none}
-input:focus,textarea:focus{border-color:var(--accent)}
-textarea{min-height:120px;resize:vertical;line-height:1.7}
+.wrap{max-width:540px;padding-top:18px}
+textarea{min-height:120px}
 .count{font-size:12px;color:var(--muted);text-align:left;margin-top:4px}
-.investors{display:grid;gap:10px}
-.inv{display:flex;align-items:center;gap:12px;text-align:right;width:100%;font:inherit;color:var(--text);background:#0e1427;border:1.5px solid var(--line);border-radius:14px;padding:12px;cursor:pointer}
-.inv .em{font-size:30px}
-.inv b{display:block;font-size:16px}
-.inv small{color:var(--muted);font-size:13px}
-.inv[aria-pressed=true]{border-color:var(--accent);background:#1f2440}
-.btn{width:100%;font:inherit;font-size:17px;font-weight:700;border:0;border-radius:14px;padding:14px;background:var(--accent);color:var(--accent-ink);cursor:pointer;margin-top:6px}
-.btn:disabled{opacity:.5}
-.btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+.btn{margin-top:6px}
 .chat{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
-.msg{max-width:88%;padding:12px 14px;border-radius:16px;line-height:1.75;font-size:15.5px;white-space:pre-wrap;animation:pop .3s ease}
-.msg.inv-msg{align-self:flex-start;background:var(--card);border:1px solid var(--line);border-top-right-radius:4px}
+.msg{max-width:88%;padding:12px 14px;border-radius:16px;line-height:1.8;font-size:15.5px;white-space:pre-wrap;animation:pop .3s ease}
+.msg.inv-msg{align-self:flex-start;background:var(--card);border:1px solid var(--line);border-top-right-radius:4px;box-shadow:var(--shadow)}
 .msg.me{align-self:flex-end;background:var(--me);border-top-left-radius:4px}
-.msg .who{display:block;font-size:12px;color:var(--accent);margin-bottom:4px;font-weight:700}
+.msg .who{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--accent);margin-bottom:4px;font-weight:700}
 .typing{color:var(--muted);font-size:14px;padding:4px 8px}
 .typing::after{content:"";animation:dots 1.2s infinite}
 @keyframes dots{0%{content:""}33%{content:"."}66%{content:".."}100%{content:"..."}}
 @keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .result{text-align:center;padding:24px 18px}
-.badge{display:inline-block;font-size:14px;font-weight:700;padding:6px 14px;border-radius:999px;margin-bottom:12px}
-.badge.ok{background:rgba(52,211,153,.15);color:var(--good)}
-.badge.no{background:rgba(248,113,113,.15);color:var(--bad)}
-.big{font-size:34px;font-weight:700;color:var(--accent);line-height:1.3}
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:700;padding:5px 14px;border-radius:999px;margin-bottom:12px}
+.badge.ok{background:var(--gold-soft);color:var(--gold)}
+.badge.no{background:var(--soft);color:var(--muted)}
+.big{font-size:32px;font-weight:700;color:var(--text);line-height:1.3}
+.result.yes .big{color:var(--gold)}
 .val{color:var(--muted);font-size:14px;margin-top:4px}
-.verdict{font-size:17px;line-height:1.8;margin:16px 0}
-.score{display:flex;align-items:center;gap:10px;margin:8px 0 4px}
-.bar{flex:1;height:10px;background:#0e1427;border-radius:999px;overflow:hidden}
-.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),color-mix(in srgb,var(--accent) 55%,#fff));border-radius:999px;transition:width 1s ease}
-.list{text-align:right;margin-top:14px}
-.list h3{font-size:14px;color:var(--muted);margin-bottom:6px}
+.verdict{font-size:16.5px;line-height:1.9;margin:16px 0;color:var(--text)}
+.list{text-align:right;margin-top:16px}
+.list h3{font-size:14px;color:var(--muted);margin-bottom:6px;display:flex;align-items:center;gap:6px}
 .list li{margin:0 18px 6px 0;line-height:1.7;font-size:15px}
-.tip{background:#1f2440;border:1px dashed var(--accent);border-radius:14px;padding:12px;margin-top:14px;text-align:right;line-height:1.8}
-.err{color:var(--bad);font-size:14px;margin-top:8px;text-align:center}
+.tip{background:var(--soft);border-inline-start:3px solid var(--accent);border-radius:10px;padding:12px 14px;margin-top:16px;text-align:right;line-height:1.85}
+.tip .lu{color:var(--accent)}
+.err{text-align:center}
 .hint{color:var(--muted);font-size:13px;text-align:center;margin-top:12px;line-height:1.7}
-.hidden{display:none}
 .demo{font-size:12px;color:var(--muted);text-align:center;margin-top:8px}
-[data-logo] img{max-height:54px;max-width:200px}
-.bridge{display:block;margin-top:14px;text-decoration:none;color:inherit;text-align:center;border-color:var(--accent)!important}
-.bridge b{color:var(--accent)}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 @media (max-width:440px){.row2{grid-template-columns:1fr}}
-.steps{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;margin-top:12px;font-size:12.5px;color:var(--muted)}
-.steps span{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px 10px}
-.meet{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 14px;margin-bottom:12px;animation:pop .4s ease}
-.meet .em{font-size:30px}
+.meet{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 14px;margin-bottom:12px;animation:pop .4s ease;box-shadow:var(--shadow)}
+.av{display:grid;place-items:center;width:42px;height:42px;border-radius:12px;background:var(--soft);color:var(--accent);flex:none}
+.av .lu{width:22px;height:22px}
 .meet small{color:var(--muted)}
 .crit{display:grid;grid-template-columns:110px 1fr 46px;gap:8px;align-items:center;font-size:14px;margin:6px 0;text-align:right}
-.crit b{text-align:left}
-.thresh{position:relative;height:12px;background:#0e1427;border-radius:999px;margin:30px 0 6px;overflow:visible}
+.crit b{text-align:left;font-variant-numeric:tabular-nums}
+.thresh{position:relative;height:12px;background:color-mix(in srgb,var(--line) 70%,transparent);border-radius:999px;margin:30px 0 6px;overflow:visible}
 .thresh i{display:block;height:100%;border-radius:999px;transition:width 1s ease}
-.thresh .mark{position:absolute;top:-6px;bottom:-6px;width:2px;background:var(--text)}
+.thresh .mark{position:absolute;top:-6px;bottom:-6px;width:2px;height:auto;background:var(--text);display:block;margin:0}
+.thresh .mark::before,.thresh .mark::after{display:none}
 .thresh .mark span{position:absolute;top:-20px;transform:translateX(50%);font-size:11px;color:var(--muted);white-space:nowrap}
-.ticket{background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 22%,var(--card)),var(--card));border:1.5px dashed var(--accent);border-radius:18px;padding:20px;text-align:center;margin-bottom:14px;animation:pop .5s ease}
-.ticket .code{font-size:38px;font-weight:700;letter-spacing:6px;color:var(--accent);direction:ltr;font-family:ui-monospace,Menlo,monospace;margin:6px 0}
+.ticket{background:var(--card);border:1.5px dashed var(--gold);border-radius:18px;padding:22px 18px;text-align:center;margin-bottom:14px;animation:pop .5s ease;box-shadow:var(--shadow)}
+.ticket .tico{display:inline-grid;place-items:center;width:52px;height:52px;border-radius:14px;background:var(--gold-soft);color:var(--gold)}
+.ticket .tico .lu{width:26px;height:26px}
+.ticket h2{justify-content:center;margin:10px 0 4px;font-size:21px}
+.ticket .code{font-size:36px;font-weight:700;letter-spacing:6px;color:var(--navy);direction:ltr;font-family:ui-monospace,Menlo,monospace;margin:8px 0;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:6px}
 .ticket p{line-height:1.8}
 .why{font-size:13px;color:var(--muted);text-align:right;margin:-2px 0 10px;line-height:1.7}
 .why .nx{color:var(--text)}
-.caps{font-size:13px;text-align:right;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.3);border-radius:12px;padding:10px;margin-top:10px;line-height:1.8}
+.caps{font-size:13px;text-align:right;background:color-mix(in srgb,var(--bad) 5%,var(--card));border:1px solid color-mix(in srgb,var(--bad) 25%,transparent);border-radius:12px;padding:10px;margin-top:10px;line-height:1.8}
 .consent{display:flex;gap:8px;align-items:flex-start;font-size:14px;color:var(--muted);margin:4px 2px 10px;line-height:1.7;cursor:pointer}
 .consent input{width:18px;height:18px;margin-top:4px;accent-color:var(--accent);flex:none}
-.consent a{color:var(--accent)}
-.near{background:#1f2440;border-radius:14px;padding:14px;margin-bottom:14px;text-align:center;line-height:1.8}
+.near{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:14px;text-align:center;line-height:1.8;box-shadow:var(--shadow)}
+.near.warn{border-color:color-mix(in srgb,var(--bad) 35%,transparent);background:color-mix(in srgb,var(--bad) 4%,var(--card))}
 </style>
 <script src="app.js"></script>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <div data-logo hidden style="margin-bottom:8px"></div>
-    <div class="logo">💼</div>
+<header class="topbar">
+  <div class="in">
+    <div class="org"><span data-logo hidden></span><span data-text="brand.orgName"></span></div>
+    <div class="mark"><i data-icon="briefcase-business"></i></div>
     <h1 data-title="investor.title">المستثمر الذكي</h1>
     <p class="sub" data-text="investor.tagline"></p>
-    <div class="steps" id="journey"></div>
-  </header>
+    <div class="chips" id="journey"></div>
+  </div>
+</header>
+<div class="wrap">
 
   <!-- 1. البداية -->
   <section id="s-start">
@@ -112,18 +91,18 @@ textarea{min-height:120px;resize:vertical;line-height:1.7}
       <label for="idea">فكرتك في ثلاثة أسطر: ما المشكلة؟ وما الحل؟</label>
       <textarea id="idea" maxlength="500" placeholder="مثال: تطبيق يربط طلاب الجامعة الساكنين في الحي نفسه ليتشاركوا التنقل ويخفّضوا تكلفة الوقود."></textarea>
       <div class="count"><span id="ideaCount">0</span>/500</div>
-      <button class="btn ghost" id="randomIdea" type="button" style="margin-top:10px;font-size:15px">🎲 ليست لديك فكرة؟ اختر مشكلة عشوائية</button>
+      <button class="btn ghost" id="randomIdea" type="button" style="margin-top:10px;font-size:15px"><i data-icon="dices"></i> ليست لديك فكرة؟ اختر مشكلة عشوائية</button>
     </div>
     <label class="consent"><input type="checkbox" id="consent"> <span>أوافق على <a href="privacy.html" target="_blank">سياسة الخصوصية</a> واستخدام بياناتي لأغراض البرنامج</span></label>
     <div class="card hidden" id="otpBox" style="text-align:center">
-      <b>📧 أرسلنا رمز تحقق إلى بريدك</b>
+      <b><i data-icon="mail"></i> أرسلنا رمز تحقق إلى بريدك</b>
       <p class="hint" style="margin-top:4px" id="otpTo"></p>
       <input id="otpCode" dir="ltr" inputmode="numeric" maxlength="6" placeholder="------" style="text-align:center;letter-spacing:8px;font-size:22px;margin-top:8px">
       <button class="btn" id="otpBtn">تحقّق وابدأ</button>
       <button class="btn ghost" id="otpResend" style="font-size:14px;padding:8px">إعادة إرسال الرمز</button>
       <p class="err" id="otpErr"></p>
     </div>
-    <button class="btn" id="startBtn">اعرض فكرتي 🚀</button>
+    <button class="btn" id="startBtn">اعرض فكرتي <i data-icon="send"></i></button>
     <p class="err" id="startErr"></p>
   </section>
 
@@ -143,7 +122,7 @@ textarea{min-height:120px;resize:vertical;line-height:1.7}
   <section id="s-result" class="hidden">
     <div id="qualBox"></div>
     <div class="card result" id="resultCard"></div>
-    <p class="hint">📸 يمكنك تصوير الشاشة ومشاركتها، ومتابعة النتائج على الشاشة الكبيرة في الجناح.</p>
+    <p class="hint"><i data-icon="camera"></i> يمكنك تصوير الشاشة ومشاركتها، ومتابعة النتائج على الشاشة الكبيرة في الجناح.</p>
     <button class="btn ghost" id="againBtn" style="margin-top:14px"></button>
   </section>
 </div>
@@ -166,8 +145,8 @@ APP.ready.then(c => {
   $("randomIdea").classList.toggle("hidden", !PROBLEMS.length);
   const gate = c.modules.hackathon && c.hackathon.registration === "ticket";
   $("journey").innerHTML = gate
-    ? `<span>① اعرض فكرتك</span><span>② أجب عن سؤالين</span><span>③ ${c.investor.qualifyScore}+ = تتأهل إلى ${esc(c.hackathon.name)} 🎟️</span>`
-    : `<span>① اعرض فكرتك</span><span>② أجب عن سؤالين</span><span>③ احصل على تقييمك</span>`;
+    ? `<span><i data-icon="lightbulb"></i> اعرض فكرتك</span><span><i data-icon="message-square"></i> أجب عن سؤالين</span><span><i data-icon="ticket"></i> ${c.investor.qualifyScore}+ للتأهل إلى ${esc(c.hackathon.name)}</span>`
+    : `<span><i data-icon="lightbulb"></i> اعرض فكرتك</span><span><i data-icon="message-square"></i> أجب عن سؤالين</span><span><i data-icon="chart-column"></i> احصل على تقييمك</span>`;
   $("emailHint").textContent = `لكل بريد ${c.investor.maxAttempts} محاولات.` + (c.modules.hackathon ? " تُربط به محاولاتك وتأهلك." : "");
 }).catch(()=>{ $("startErr").textContent = "تعذّر تحميل الإعدادات، يُرجى تحديث الصفحة"; });
 
@@ -181,11 +160,11 @@ $("randomIdea").onclick = () => {
 };
 
 function show(id){ ["s-start","s-chat","s-result"].forEach(s=>$(s).classList.toggle("hidden", s!==id)); window.scrollTo(0,0); }
-function inv(){ return INVESTORS[state.investor] || {name:"المستشار", emoji:"🧑‍💼"}; }
+function inv(){ return INVESTORS[state.investor] || {name:"المستشار", emoji:"briefcase-business"}; }
 function addMsg(text, me){
   const m = document.createElement("div");
   m.className = "msg " + (me ? "me" : "inv-msg");
-  m.innerHTML = (me ? "" : `<span class="who">${esc(inv().emoji)} ${esc(inv().name)}</span>`) + esc(text);
+  m.innerHTML = (me ? "" : `<span class="who">${glyph(inv().emoji)} ${esc(inv().name)}</span>`) + esc(text);
   $("chat").appendChild(m);
   m.scrollIntoView({behavior:"smooth", block:"end"});
 }
@@ -245,7 +224,7 @@ async function begin(){
     const d = await call();
     state.investor = d.investor; attemptsLeft = d.attemptsLeft;
     show("s-chat");
-    $("meet").innerHTML = `<span class="em">${esc(inv().emoji)}</span><span><b>يقيّم فكرتك: ${esc(inv().name)}</b><br><small>${esc(inv().title||"")}${inv().desc?" · "+esc(inv().desc):""}</small></span>`;
+    $("meet").innerHTML = `<span class="av">${glyph(inv().emoji)}</span><span><b>يقيّم فكرتك: ${esc(inv().name)}</b><br><small>${esc(inv().title||"")}${inv().desc?" · "+esc(inv().desc):""}</small></span>`;
     addMsg(state.idea, true);
     state.questions.push(d.question); addMsg(d.question, false);
     $("answer").value=""; $("answerBox").classList.remove("hidden"); $("answer").focus();
@@ -294,37 +273,38 @@ function showResult(d){
   // بطاقة التأهل أو "قريب منها"
   if (d.ticket) {
     $("qualBox").innerHTML = `<div class="ticket">
-      <div style="font-size:40px">🎟️</div>
-      <h2 style="font-size:22px">مبروك! تأهلت إلى ${esc(H.name)}</h2>
+      <span class="tico"><i data-icon="ticket"></i></span>
+      <h2>تهانينا، تأهلت إلى ${esc(H.name)}</h2>
       <p class="muted" style="font-size:14px">${d.emailed ? `أرسلناه أيضًا إلى ${esc(state.email)}. ` : "احتفظ به، فهو رمز تسجيلك."}</p>
       <div class="code">${esc(d.ticket)}</div>
       <p style="font-size:14px">سجّل فريقك وأكمل بياناتك في صفحة ${esc(H.name)}. وستنتقل فكرتك وملاحظات المستشار معك.</p>
-      <a class="btn" id="goHack" href="hackathon.html?ticket=${encodeURIComponent(d.ticket)}" style="display:block;text-decoration:none;margin-top:12px">أكمل التسجيل في ${esc(H.name)} ←</a>
+      <a class="btn" id="goHack" href="hackathon.html?ticket=${encodeURIComponent(d.ticket)}" style="margin-top:12px">أكمل التسجيل في ${esc(H.name)} <i data-icon="arrow-left"></i></a>
     </div>`;
     try { localStorage.setItem("hack_import", JSON.stringify({
       ticket:d.ticket, dealId:d.dealId, name:state.name, email:state.email, idea:state.idea, title:r.title, investor:inv().name, decision:r.decision, amount:r.amount,
       verdict:r.verdict, strengths:r.strengths, weaknesses:r.weaknesses, tip:r.tip, score:r.score, at:Date.now() })); } catch(e){}
   } else if (gate && !r.qualified) {
     $("qualBox").innerHTML = `<div class="near"><b>ينقصك ${th - pct} درجة للتأهل إلى ${esc(H.name)}</b><br>
-      <span class="muted" style="font-size:14px">${attemptsLeft > 0 ? `طوّر فكرتك وفق الملاحظات وأعد المحاولة. المحاولات المتبقية: ${attemptsLeft}.` : "استنفدت محاولاتك بهذا البريد."}${d.emailed ? `<br>✉️ أرسلنا نتيجتك وأهم ما تحسّنه إلى ${esc(state.email)}.` : ""}</span></div>`;
+      <span class="muted" style="font-size:14px">${attemptsLeft > 0 ? `طوّر فكرتك وفق الملاحظات وأعد المحاولة. المحاولات المتبقية: ${attemptsLeft}.` : "استنفدت محاولاتك بهذا البريد."}${d.emailed ? `<br><i data-icon="mail"></i> أرسلنا نتيجتك وأهم ما تحسّنه إلى ${esc(state.email)}.` : ""}</span></div>`;
   } else $("qualBox").innerHTML = "";
 
+  $("resultCard").classList.toggle("yes", ok);
   $("resultCard").innerHTML = `
-    <span class="badge ${ok?"ok":"no"}">${ok ? "✅ تهانينا" : "📋 نتيجة التقييم"}</span>
-    <div style="font-size:15px;color:var(--muted)">${esc(inv().emoji)} ${esc(inv().name)} عن «${esc(r.title)}»</div>
+    <span class="badge ${ok?"ok":"no"}">${ok ? '<i data-icon="award"></i> تهانينا' : '<i data-icon="clipboard-list"></i> نتيجة التقييم'}</span>
+    <div style="font-size:15px;color:var(--muted)">${glyph(inv().emoji)} ${esc(inv().name)} عن «${esc(r.title)}»</div>
     ${ok ? `<div class="big">${gate ? "متأهل" : "قرار إيجابي"}</div><div class="val">عرض استثماري افتراضي: ${fmt(r.amount)} ريال مقابل ${fmt(r.equity)}%</div>` : `<div class="big">غير متأهل</div><div class="val">${attemptsLeft > 0 ? `${attemptsLeft===1?"لديك محاولة واحدة متبقية":attemptsLeft===2?"لديك محاولتان متبقيتان":`لديك ${attemptsLeft} محاولات متبقية`} لتطوير فكرتك وإعادة التقديم` : "استنفدت المحاولات المتاحة لهذا البريد"}</div>`}
     <p class="verdict">«${esc(r.verdict)}»</p>
     <div style="font-size:15px">درجة فكرتك: <b style="font-size:22px;color:var(--accent)">${pct}</b> / 100</div>
     <div class="thresh"><i id="scoreBar" style="width:0;background:${r.qualified?"var(--good)":"var(--accent)"}"></i>${gate?`<div class="mark" style="right:${th}%"><span style="${th>80?"transform:none;left:0":th<15?"transform:translateX(100%)":""}">حد التأهل ${th}</span></div>`:""}</div>
     <div style="margin-top:14px">${(r.criteria||[]).map(c=>`<div class="crit"><span>${esc(c.label)}</span><div class="bar"><i data-w="${(r.scores?.[c.key]||0)/c.max*100}%" style="width:0"></i></div><b>${r.scores?.[c.key]??0}/${c.max}</b></div>
-      ${c.reason?`<div class="why">${c.capped?"🔒 ":""}${esc(c.reason)}${c.next?`<br><span class="nx">⬆️ ${esc(c.next)}</span>`:""}</div>`:""}`).join("")}</div>
-    ${(r.capsApplied||[]).length?`<div class="caps"><b>🔒 قيود طُبّقت على الدرجة:</b> ${r.capsApplied.map(esc).join("، ")}</div>`:""}
-    <div class="list"><h3>✅ نقاط القوة</h3><ul>${r.strengths.map(s=>`<li>${esc(s)}</li>`).join("")}</ul></div>
-    <div class="list"><h3>🔧 فرص التحسين</h3><ul>${r.weaknesses.map(s=>`<li>${esc(s)}</li>`).join("")}</ul></div>
-    <div class="tip">💡 <b>توصية المستشار:</b> ${esc(r.tip)}</div>
+      ${c.reason?`<div class="why">${c.capped?'<i data-icon="lock"></i> ':""}${esc(c.reason)}${c.next?`<br><span class="nx"><i data-icon="arrow-up"></i> ${esc(c.next)}</span>`:""}</div>`:""}`).join("")}</div>
+    ${(r.capsApplied||[]).length?`<div class="caps"><b><i data-icon="lock"></i> قيود طُبّقت على الدرجة:</b> ${r.capsApplied.map(esc).join("، ")}</div>`:""}
+    <div class="list"><h3><i data-icon="circle-check"></i> نقاط القوة</h3><ul>${r.strengths.map(s=>`<li>${esc(s)}</li>`).join("")}</ul></div>
+    <div class="list"><h3><i data-icon="wrench"></i> فرص التحسين</h3><ul>${r.weaknesses.map(s=>`<li>${esc(s)}</li>`).join("")}</ul></div>
+    <div class="tip"><i data-icon="lightbulb"></i> <b>توصية المستشار:</b> ${esc(r.tip)}</div>
     <div style="margin-top:14px;font-size:13px;color:var(--muted)">${esc(state.name)} · ${esc(CFG.brand.eventName)} · ${esc(CFG.brand.orgName)}</div>
-    ${d.demo ? `<p class="demo" style="color:var(--bad);font-weight:700">⚠️ تقييم وهمي: الذكاء الاصطناعي غير مفعّل</p>` : ""}`;
-  if (d.demo) $("qualBox").insertAdjacentHTML("afterbegin", `<div class="near" style="border:1.5px solid var(--bad);color:var(--text)"><b style="color:var(--bad)">⚠️ هذا تقييم وهمي عشوائي للعرض فقط</b><br><span style="font-size:14px">الذكاء الاصطناعي غير مفعّل، فالأسئلة ثابتة والدرجات عشوائية. فعّله من لوحة التحكم ← نظرة عامة.</span></div>`);
+    ${d.demo ? `<p class="demo" style="color:var(--bad);font-weight:700"><i data-icon="triangle-alert"></i> تقييم وهمي: الذكاء الاصطناعي غير مفعّل</p>` : ""}`;
+  if (d.demo) $("qualBox").insertAdjacentHTML("afterbegin", `<div class="near warn"><b style="color:var(--bad)"><i data-icon="triangle-alert"></i> هذا تقييم وهمي عشوائي للعرض فقط</b><br><span style="font-size:14px">الذكاء الاصطناعي غير مفعّل، فالأسئلة ثابتة والدرجات عشوائية. فعّله من لوحة التحكم ← نظرة عامة.</span></div>`);
   $("againBtn").textContent = d.ticket ? "اعرض فكرة أخرى" : (attemptsLeft > 0 ? `أعد المحاولة (المتبقي: ${attemptsLeft})` : "اعرض فكرة ببريد آخر");
   show("s-result");
   setTimeout(()=>{ $("scoreBar").style.width = r.score+"%"; document.querySelectorAll("#resultCard .bar i").forEach(i=>i.style.width=i.dataset.w); }, 100);
