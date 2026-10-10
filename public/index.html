@@ -101,7 +101,6 @@ body.kiosk .hint{display:none}
       <label for="idea">فكرتك في ثلاثة أسطر: ما المشكلة؟ وما الحل؟</label>
       <textarea id="idea" maxlength="500" placeholder="مثال: تطبيق يربط طلاب الجامعة الساكنين في الحي نفسه ليتشاركوا التنقل ويخفّضوا تكلفة الوقود."></textarea>
       <div class="count"><span id="ideaCount">0</span>/500</div>
-      <button class="btn ghost" id="randomIdea" type="button" style="margin-top:10px;font-size:15px"><i data-icon="dices"></i> ليست لديك فكرة؟ اختر مشكلة عشوائية</button>
     </div>
     <label class="consent"><input type="checkbox" id="consent"> <span>أوافق على <a href="privacy.html" target="_blank">سياسة الخصوصية</a> واستخدام بياناتي لأغراض البرنامج</span></label>
     <div class="card hidden" id="otpBox" style="text-align:center">
@@ -152,8 +151,6 @@ APP.ready.then(c => {
   if (!c.modules.investor) return APP.disabled(`${c.investor.title} غير متاح حاليًا`);
   document.title = c.investor.title;
   INVESTORS = Object.fromEntries(c.investor.investors.map(i => [i.id, i]));
-  PROBLEMS = c.investor.problems;
-  $("randomIdea").classList.toggle("hidden", !PROBLEMS.length);
   const gate = c.modules.hackathon && c.hackathon.registration === "ticket";
   $("journey").innerHTML = gate
     ? `<span><i data-icon="lightbulb"></i> اعرض فكرتك</span><span><i data-icon="message-square"></i> أجب عن سؤالين</span><span><i data-icon="ticket"></i> ${c.investor.qualifyScore}+ للتأهل إلى ${esc(c.hackathon.name)}</span>`
@@ -167,11 +164,6 @@ if (KIOSK) document.body.classList.add("kiosk");
 $("name").value = KIOSK ? "" : (LS.get("si_name") || "");
 $("email").value = KIOSK ? "" : (LS.get("si_email") || "");
 $("idea").oninput = () => $("ideaCount").textContent = $("idea").value.length;
-$("randomIdea").onclick = () => {
-  const p = PROBLEMS[Math.floor(Math.random()*PROBLEMS.length)];
-  $("idea").value = "المشكلة: " + p + "\nالحل: ";
-  $("idea").focus(); $("idea").oninput();
-};
 
 // ---------- الجهاز اللوحي: إعادة الضبط التلقائية ----------
 let idleT = null;

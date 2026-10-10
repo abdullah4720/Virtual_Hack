@@ -263,7 +263,7 @@ const P = {
         <div class="grid2">${f("اللقب","investor.investors."+i+".title",{max:60,ph:"مثال: المستثمر المتشكك"})}${f("وصف قصير للزائر","investor.investors."+i+".desc",{max:120})}</div>
         ${f("الشخصية (تعليمات للذكاء الاصطناعي)","investor.investors."+i+".persona",{type:"textarea",rows:3,max:1500,help:"صِف أسلوبه وطريقة كلامه وما يهتم به."})}
         ${f("أسلوب القرار","investor.investors."+i+".style",{type:"textarea",rows:2,max:600,help:"متى يستثمر ومتى يرفض."})}</div>`).join("") + addBtn("investor.investors","إضافة مستثمر"))}
-      ${card("بنك المشاكل العشوائية", f("","investor.problems",{type:"lines",rows:8,help:"مشكلة في كل سطر. تظهر لمن يضغط «ما عندي فكرة؟»."}))}`;
+`;
   },
   hack(){
     const w = S.hackathon.weights;
