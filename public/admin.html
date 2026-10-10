@@ -208,7 +208,7 @@ const P = {
           <div><span>التقديم في الهاكاثون</span><span class="pill">${ph}</span></div>
           <div><span>إرسال البريد</span>${ok(sy.mail,"مفعّل","غير مفعّل (RESEND_API_KEY)")}</div>
           <div><span>استهلاك الذكاء الاصطناعي اليوم</span><span class="pill ${sy.usageToday > sy.dailyAiCalls*0.8 ? "no" : ""}">${fmt(sy.usageToday)} / ${fmt(sy.dailyAiCalls)}</span></div>
-          <div><span>اختبار الذكاء الاصطناعي</span><button class="ib" data-act="aitest">🧪 اختبر الآن</button></div><div id="aiTest" class="help" style="display:block;background:none;padding:0 4px"></div>
+          <div><span>اختبار الذكاء الاصطناعي</span><button class="ib" data-act="aitest">🧪 اختبر الآن</button></div><div id="aiTest" class="help" style="display:block;background:none;padding:0"></div>
           ${st.pendingEvals ? `<div><span>تقييمات معلّقة</span><button class="ib" data-act="reeval">⏳ ${st.pendingEvals} · أكمل التقييم الآن</button></div>` : ""}</div>`)}
         ${APP.demo ? card("🧠 تفعيل الذكاء الاصطناعي في النسخة التجريبية", sy.aiMode === "claude-account"
           ? `<p class="muted">الذكاء الاصطناعي يعمل الآن عبر حسابك في Claude. التقييمات حقيقية.</p>`
@@ -493,7 +493,7 @@ $("main").addEventListener("click", async e => {
     b.disabled = true; b.textContent = "جارٍ الاختبار…";
     try {
       const r = await api("ai-test", {});
-      $("aiTest").innerHTML = r.error ? `<span style="color:var(--bad)">❌ ${esc(r.error)}</span>` : r.results.map(x=>x.ok ? `<div>✅ ${esc(x.label)}: <span dir="ltr">${esc(x.model)}</span> يعمل (${(x.ms/1000).toFixed(1)} ث)</div>` : `<div style="color:var(--bad)">❌ ${esc(x.label)} (<span dir="ltr">${esc(x.model)}</span>): ${esc(x.error)}<div class="help" dir="ltr" style="text-align:left">${esc(x.raw)}</div></div>`).join("");
+      $("aiTest").innerHTML = r.error ? `<span style="color:var(--bad)">❌ ${esc(r.error)}</span>` : r.results.map(x=>x.ok ? `<div>✅ ${esc(x.label)}: <span dir="ltr">${esc(x.model)}</span> يعمل (${(x.ms/1000).toFixed(1)} ث)</div>` : `<div style="display:block;background:var(--card2);border-radius:10px;padding:10px 12px;margin-top:8px;line-height:1.9"><b style="color:var(--bad)">❌ ${esc(x.label)}</b> <bdi dir="ltr" class="muted">${esc(x.model)}</bdi><p style="unicode-bidi:plaintext;margin:4px 0">${esc(x.error)}</p><details><summary class="help" style="cursor:pointer">التفاصيل التقنية</summary><div class="help" dir="ltr" style="text-align:left;word-break:break-word">${esc(x.raw)}</div></details></div>`).join("");
     } catch(err){ $("aiTest").textContent = err.message; }
     b.disabled = false; b.textContent = "🧪 اختبر الآن"; return;
   }
