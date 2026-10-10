@@ -113,7 +113,7 @@ textarea.needfix{border-color:var(--bad);box-shadow:0 0 0 3px color-mix(in srgb,
     <div class="chat" id="chat"></div>
     <div class="card" id="answerBox">
       <label for="answer">إجابتك</label>
-      <textarea id="answer" maxlength="300" style="min-height:90px" placeholder="أجب باختصار ووضوح..."></textarea>
+      <textarea id="answer" maxlength="300" style="min-height:90px" placeholder="الرجاء الإجابة باختصار ووضوح..."></textarea>
       <button class="btn" id="answerBtn">أرسل الإجابة</button>
       <p class="err" id="chatErr"></p>
     </div>
@@ -185,7 +185,7 @@ $("startBtn").onclick = async () => {
   state.name = $("name").value.trim(); state.email = $("email").value.trim().toLowerCase(); state.idea = $("idea").value.trim();
   $("startErr").textContent = "";
   if (state.name.length < 2) return $("startErr").textContent = "يُرجى كتابة اسمك";
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(state.email)) return $("startErr").textContent = "اكتب بريدًا إلكترونيًا صحيحًا";
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(state.email)) return $("startErr").textContent = "الرجاء كتابة بريد إلكتروني صحيح";
   if (state.idea.length < 15) return $("startErr").textContent = "يُرجى توضيح فكرتك أكثر (المشكلة والحل)";
   state.consent = $("consent").checked;
   if (!state.consent) return $("startErr").textContent = "يلزم الموافقة على سياسة الخصوصية";
@@ -247,12 +247,12 @@ async function nextTurn(){
       // الإجابة لم تُقبل: يطلب المستشار توضيحًا مرة واحدة لهذا السؤال
       state.answers.pop(); state.clarified.push(d.clarify);
       addMsg(d.message, false);
-      $("answer").value=""; $("answer").placeholder = "أجب عن السؤال بمعلومة محددة..."; $("answerBox").classList.remove("hidden"); $("chatErr").textContent="";
+      $("answer").value=""; $("answer").placeholder = "الرجاء الإجابة بمعلومة محددة..."; $("answerBox").classList.remove("hidden"); $("chatErr").textContent="";
       $("answer").focus();
     } else if (d.step <= 2) {
       state.questions.push(d.question);
       addMsg(d.question, false);
-      $("answer").value=""; $("answer").placeholder = "أجب باختصار ووضوح..."; $("answerBox").classList.remove("hidden"); $("chatErr").textContent="";
+      $("answer").value=""; $("answer").placeholder = "الرجاء الإجابة باختصار ووضوح..."; $("answerBox").classList.remove("hidden"); $("chatErr").textContent="";
       $("answer").focus();
     } else {
       attemptsLeft = d.attemptsLeft;
@@ -282,10 +282,10 @@ function showResult(d){
   if (d.ticket) {
     $("qualBox").innerHTML = `<div class="ticket">
       <span class="tico"><i data-icon="ticket"></i></span>
-      <h2>تهانينا، تأهلت إلى ${esc(H.name)}</h2>
-      <p class="muted" style="font-size:14px">${d.emailed ? `أرسلناه أيضًا إلى ${esc(state.email)}. ` : "احتفظ به، فهو رمز تسجيلك."}</p>
+      <h2>مبروك، تأهلت إلى ${esc(H.name)}</h2>
+      <p class="muted" style="font-size:14px">${d.emailed ? `الرجاء الاحتفاظ بهذا الرمز، فهو رمز تسجيلك، وقد أُرسل أيضًا إلى ${esc(state.email)}.` : "الرجاء الاحتفاظ بهذا الرمز، فهو رمز تسجيلك."}</p>
       <div class="code">${esc(d.ticket)}</div>
-      <p style="font-size:14px">سجّل فريقك وأكمل بياناتك في صفحة ${esc(H.name)}. وستنتقل فكرتك وملاحظات المستشار معك.</p>
+      <p style="font-size:14px">الرجاء تسجيل أعضاء الفريق في صفحة ${esc(H.name)}، وستُضاف الفكرة وملاحظات المستشار تلقائيًا.</p>
       <a class="btn" id="goHack" href="hackathon.html?ticket=${encodeURIComponent(d.ticket)}" style="margin-top:12px">أكمل التسجيل في ${esc(H.name)} <i data-icon="arrow-left"></i></a>
     </div>`;
     try { localStorage.setItem("hack_import", JSON.stringify({
@@ -293,12 +293,12 @@ function showResult(d){
       verdict:r.verdict, strengths:r.strengths, weaknesses:r.weaknesses, tip:r.tip, score:r.score, at:Date.now() })); } catch(e){}
   } else if (gate && !r.qualified) {
     $("qualBox").innerHTML = `<div class="near"><b>ينقصك ${th - pct} درجة للتأهل إلى ${esc(H.name)}</b><br>
-      <span class="muted" style="font-size:14px">${attemptsLeft > 0 ? `طوّر فكرتك وفق الملاحظات وأعد المحاولة. المحاولات المتبقية: ${attemptsLeft}.` : "استنفدت محاولاتك بهذا البريد."}${d.emailed ? `<br><i data-icon="mail"></i> أرسلنا نتيجتك وأهم ما تحسّنه إلى ${esc(state.email)}.` : ""}</span></div>`;
+      <span class="muted" style="font-size:14px">${attemptsLeft > 0 ? `نأمل تطوير الفكرة وفق الملاحظات وإعادة المحاولة. المحاولات المتبقية: ${attemptsLeft}.` : "استنفدت محاولاتك بهذا البريد."}${d.emailed ? `<br><i data-icon="mail"></i> أرسلنا نتيجتك وأهم ما تحسّنه إلى ${esc(state.email)}.` : ""}</span></div>`;
   } else $("qualBox").innerHTML = "";
 
   $("resultCard").classList.toggle("yes", ok);
   $("resultCard").innerHTML = `
-    <span class="badge ${ok?"ok":"no"}">${ok ? '<i data-icon="award"></i> تهانينا' : '<i data-icon="clipboard-list"></i> نتيجة التقييم'}</span>
+    <span class="badge ${ok?"ok":"no"}">${ok ? '<i data-icon="award"></i> مبروك' : '<i data-icon="clipboard-list"></i> نتيجة التقييم'}</span>
     <div style="font-size:15px;color:var(--muted)">${glyph(inv().emoji)} ${esc(inv().name)} عن «${esc(r.title)}»</div>
     ${ok ? `<div class="big">${gate ? "متأهل" : "قرار إيجابي"}</div><div class="val">عرض استثماري افتراضي: ${fmt(r.amount)} ريال مقابل ${fmt(r.equity)}%</div>` : `<div class="big">غير متأهل</div><div class="val">${attemptsLeft > 0 ? `${attemptsLeft===1?"لديك محاولة واحدة متبقية":attemptsLeft===2?"لديك محاولتان متبقيتان":`لديك ${attemptsLeft} محاولات متبقية`} لتطوير فكرتك وإعادة التقديم` : "استنفدت المحاولات المتاحة لهذا البريد"}</div>`}
     <p class="verdict">«${esc(r.verdict)}»</p>
