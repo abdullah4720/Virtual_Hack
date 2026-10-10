@@ -1,7 +1,7 @@
 // لوحة التحكم: /api/admin?action=...   (تتطلب الترويسة x-admin-key)
 import { getSettings, saveSettings, ADMIN_KEY, judgeKey, phase, optionLabel } from "../lib/settings.js";
 import { DEFAULTS } from "../lib/defaults.js";
-import { select, insert, update, removeAll, removeOne, hasDb } from "../lib/db.js";
+import { select, insert, update, removeAll, removeOne, hasDb, schemaCheck } from "../lib/db.js";
 import { aiAvailable, aiMode, MODEL, EVAL_MODEL, askOnce, explainAiError } from "../lib/ai.js";
 import { T, standings, runEvaluation, ensureCerts, certKind } from "../lib/hackcore.js";
 import { createTicket, TICKETS } from "../lib/tickets.js";
@@ -11,6 +11,7 @@ import { notify, render as renderMail, teamEmails, mailLog, KINDS, COMMON_VARS, 
 import { runReminders, sendResults, remindJudges } from "../lib/campaigns.js";
 import { siteUrl } from "../lib/site.js";
 import { keyProblem } from "../lib/supabase.js";
+import { hashPassword } from "../lib/password.js";
 
 const clip = (s, n) => String(s ?? "").trim().slice(0, n);
 const csvCell = (v) => {
@@ -35,7 +36,7 @@ export default async function handler(req, res) {
 
     // ---------- نظرة عامة + الإعدادات ----------
     if (action === "get") {
-      const [deals, { teams, subs, rows }, tickets, ann, used] = await Promise.all([select("deals"), standings(s), select(TICKETS), select("announcements"), usageToday()]);
+      const [deals, { teams, subs, rows }, tickets, ann, used, missing] = await Promise.all([select("deals"), standings(s), select(TICKETS), select("announcements"), usageToday(), schemaCheck().catch(() => [])]);
       const invested = deals.filter((d) => d.decision === "invest");
       return res.status(200).json({
         settings: s,
@@ -50,7 +51,7 @@ export default async function handler(req, res) {
         system: {
           database: hasDb, ai: aiAvailable(), aiMode: aiMode(), model: MODEL, evalModel: EVAL_MODEL, mail: mailEnabled(),
           judgeKeySet: Boolean(await judgeKey()) || (s.hackathon.judges || []).length > 0, phase: phase(s),
-          usageToday: used, dailyAiCalls: s.limits.dailyAiCalls,
+          usageToday: used, dailyAiCalls: s.limits.dailyAiCalls, schemaMissing: missing,
         },
         stats: {
           pitches: deals.length, deals: invested.length, investedTotal: invested.reduce((a, d) => a + (Number(d.amount) || 0), 0),
@@ -92,6 +93,16 @@ export default async function handler(req, res) {
       const status = b.status === "disqualified" ? "disqualified" : "active";
       await update(T.teams, Number(b.id), { status, status_note: clip(b.note, 300) });
       return res.status(200).json({ ok: true });
+    }
+
+    // كلمة مرور مؤقتة لفريق (عند تعذّر الاستعادة بالبريد)
+    if (action === "team-password" && req.method === "POST") {
+      const [team] = await select(T.teams, { id: Number(b.id) });
+      if (!team) return res.status(404).json({ error: "الفريق غير موجود" });
+      const A = "abcdefghjkmnpqrstuvwxyz23456789";
+      const temp = Array.from(globalThis.crypto.getRandomValues(new Uint8Array(10)), (x) => A[x % A.length]).join("");
+      await update(T.teams, team.id, { password_hash: await hashPassword(temp) });
+      return res.status(200).json({ password: temp, email: team.email });
     }
 
     // رسالة لفريق محدد: إعلان شخصي + بريد

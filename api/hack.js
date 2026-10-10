@@ -8,6 +8,9 @@ import { findTicket, useTicket } from "../lib/tickets.js";
 import { checkLimits, recordUse } from "../lib/limits.js";
 import { notify, teamEmails, closesAtText } from "../lib/notify.js";
 import { siteUrl } from "../lib/site.js";
+import { hashPassword, verifyPassword, passwordProblem } from "../lib/password.js";
+import { count, removeOne } from "../lib/db.js";
+import { clientKey } from "../lib/limits.js";
 import { T, standings, runEvaluation, identifyJudge, judgeSees, withUrls, ensureCerts, certKind } from "../lib/hackcore.js";
 
 export { T, standings };
@@ -29,6 +32,17 @@ function publicSub(x) {
     video_url: x.video_url, scores: x.ai_scores, total: x.ai_total, feedback: x.ai_feedback, files: x.files || [], deck_read: x.deck_read,
   };
 }
+
+async function sha256(t) { const b = await globalThis.crypto.subtle.digest("SHA-256", new TextEncoder().encode(t)); return Array.from(new Uint8Array(b), (x) => x.toString(16).padStart(2, "0")).join(""); }
+const okEmail = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+// الفرق المرتبطة ببريد (قائد الفريق أو أحد الأعضاء)
+async function teamsByEmail(email) {
+  return (await select(T.teams)).filter((t) => t.email === email || (t.member_emails || []).includes(email));
+}
+// حماية الدخول: عدد المحاولات الفاشلة لكل جهاز في الساعة
+const LOGIN_FAILS = 10;
+const loginBlocked = async (req) => (await count("usage", { ip: clientKey(req), kind: "login-fail" }, new Date(Date.now() - 3600e3).toISOString())) >= LOGIN_FAILS;
+const loginFail = (req) => insert("usage", { ip: clientKey(req), kind: "login-fail" });
 
 async function teamByCode(code) {
   const [team] = await select(T.teams, { code: clip(code, 10).toUpperCase() });
@@ -109,11 +123,13 @@ export default async function handler(req, res) {
       if (name.length < 2) return res.status(400).json({ error: "اكتب اسم الفريق" });
       if (!members.length) return res.status(400).json({ error: "أضف اسم عضو واحد على الأقل" });
       if (!/^\S+@\S+\.\S+$/.test(email)) return res.status(400).json({ error: "البريد الإلكتروني غير صحيح" });
-      if (!opt) return res.status(400).json({ error: "اختر المسار والتحدي" });
+      if (!opt) return res.status(400).json({ error: "الرجاء اختيار المسار والتحدي" });
+      const pwErr = passwordProblem(b.password);
+      if (pwErr) return res.status(400).json({ error: pwErr });
       const existing = await select(T.teams);
       if (existing.some((t) => t.name.toLowerCase() === name.toLowerCase())) return res.status(409).json({ error: "اسم الفريق مستخدم، اختر اسمًا آخر" });
       const team = await insert(T.teams, {
-        code: genCode(), name, members, member_emails, email, phone, status: "active",
+        code: genCode(), name, members, member_emails, email, phone, status: "active", password_hash: await hashPassword(b.password),
         track: opt.track.id, challenge: opt.challenge?.id ?? null,
         source: ticket ? ticket.kind : "direct", deal_id: ticket?.deal_id ?? null, ticket: ticket?.code ?? null,
         consent_at: new Date().toISOString(),
@@ -122,6 +138,59 @@ export default async function handler(req, res) {
       const link = `${siteUrl(req)}/hackathon?code=${team.code}`;
       const emailed = (await notify(s, "registered", teamEmails(s, team), { team: name, track: optionLabel(s, opt.track.id, opt.challenge?.id), code: team.code, closesAt: closesAtText(s), link })).ok;
       return res.status(200).json({ code: team.code, emailed });
+    }
+
+    // ===================== الدخول بالبريد وكلمة المرور =====================
+    if (action === "login" && req.method === "POST") {
+      const email = clip(b.email, 80).toLowerCase();
+      if (await loginBlocked(req)) return res.status(429).json({ error: "محاولات دخول كثيرة. الرجاء المحاولة بعد ساعة، أو استخدام رمز الفريق." });
+      const teams = await teamsByEmail(email);
+      for (const t of teams) {
+        if (t.password_hash && (await verifyPassword(b.password, t.password_hash))) return res.status(200).json({ code: t.code, team: t.name });
+      }
+      await loginFail(req);
+      if (teams.length && !teams.some((t) => t.password_hash)) return res.status(401).json({ error: "لم تُعيَّن كلمة مرور لهذا الفريق بعد. الرجاء الدخول برمز الفريق ثم تعيين كلمة المرور من صفحة الفريق.", noPassword: true });
+      return res.status(401).json({ error: "البريد أو كلمة المرور غير صحيحة" });
+    }
+    // نسيت كلمة المرور: رمز من 6 أرقام يُرسل إلى البريد (صالح 15 دقيقة)
+    if (action === "forgot" && req.method === "POST") {
+      const email = clip(b.email, 80).toLowerCase();
+      if (!okEmail(email)) return res.status(400).json({ error: "الرجاء كتابة بريد إلكتروني صحيح" });
+      const recent = await count("otp", { email }, new Date(Date.now() - 900e3).toISOString());
+      if (recent >= 3) return res.status(429).json({ error: "أُرسلت رموز كثيرة لهذا البريد. الرجاء الانتظار 15 دقيقة." });
+      const teams = await teamsByEmail(email);
+      let sent = false;
+      if (teams.length) {
+        const code = String(100000 + (crypto.randomBytes(4).reduce((a, x) => a * 256 + x, 0) % 900000));
+        await insert("otp", { email, code_hash: await sha256(`reset|${email}|${code}`), expires_at: new Date(Date.now() + 900e3).toISOString() });
+        sent = (await notify(s, "passwordReset", email, { code, team: teams[0].name })).ok;
+      }
+      // رد موحّد كي لا يُكشف وجود البريد
+      return res.status(200).json({ ok: true, mail: sent || !teams.length ? undefined : false });
+    }
+    if (action === "reset" && req.method === "POST") {
+      const email = clip(b.email, 80).toLowerCase();
+      if (await loginBlocked(req)) return res.status(429).json({ error: "محاولات كثيرة. الرجاء المحاولة بعد ساعة." });
+      const pwErr = passwordProblem(b.password);
+      if (pwErr) return res.status(400).json({ error: pwErr });
+      const h = await sha256(`reset|${email}|${clip(b.code, 10)}`);
+      const row = (await select("otp", { email })).find((r) => r.code_hash === h && r.expires_at > new Date().toISOString());
+      if (!row) { await loginFail(req); return res.status(400).json({ error: "الرمز غير صحيح أو انتهت صلاحيته" }); }
+      await removeOne("otp", row.id);
+      const teams = await teamsByEmail(email);
+      if (!teams.length) return res.status(404).json({ error: "لا يوجد فريق مرتبط بهذا البريد" });
+      const hash = await hashPassword(b.password);
+      for (const t of teams) await update(T.teams, t.id, { password_hash: hash });
+      return res.status(200).json({ code: teams[0].code, team: teams[0].name });
+    }
+    // تعيين كلمة المرور أو تغييرها من صفحة الفريق (الدخول برمز الفريق يكفي للإثبات)
+    if (action === "set-password" && req.method === "POST") {
+      const team = await teamByCode(b.code);
+      if (!team) return res.status(404).json({ error: "رمز الفريق غير صحيح" });
+      const pwErr = passwordProblem(b.password);
+      if (pwErr) return res.status(400).json({ error: pwErr });
+      await update(T.teams, team.id, { password_hash: await hashPassword(b.password) });
+      return res.status(200).json({ ok: true });
     }
 
     if (action === "team") {
@@ -137,7 +206,7 @@ export default async function handler(req, res) {
         certs = { kind: certKind(s, row), list: team.members.map((m, i) => ({ name: m, code: codes[i] })) };
       }
       return res.status(200).json({
-        team: { name: team.name, members: team.members, track: team.track, challenge: team.challenge, label: optionLabel(s, team.track, team.challenge), source: team.source, status: team.status || "active" },
+        team: { name: team.name, members: team.members, email: team.email, hasPassword: Boolean(team.password_hash), track: team.track, challenge: team.challenge, label: optionLabel(s, team.track, team.challenge), source: team.source, status: team.status || "active" },
         submissions: subs.map(publicSub),
         files: await withUrls(team.files),
         announcements: ann.reverse().slice(0, 20).map(({ id, title, body, created_at, audience }) => ({ id, title, body, created_at, personal: audience.startsWith("team:") })),

@@ -167,3 +167,6 @@ create table if not exists mail_log (
 );
 create index if not exists mail_log_kind_ref_idx on mail_log (kind, ref);
 alter table mail_log enable row level security;
+
+-- ============ v4: الدخول بالبريد وكلمة المرور ============
+alter table hack_teams add column if not exists password_hash text;
