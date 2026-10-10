@@ -238,7 +238,7 @@ const P = {
       ${card("بيانات الجهة", `<div class="grid2">${f("اسم الجهة","brand.orgName",{ph:"مثال: جامعة القصيم"})}${f("اسم الفعالية","brand.eventName",{ph:"مثال: ملتقى ريادة الأعمال"})}</div>
         <div class="grid2">${f("اسم الجناح أو الموقع","brand.boothName",{ph:"مثال: جناح جامعة القصيم"})}${f("المنطقة الزمنية","brand.tzOffset",{type:"select",opts:[["+03:00","السعودية (UTC+3)"],["+04:00","الإمارات وعُمان (UTC+4)"],["+02:00","مصر (UTC+2)"],["+01:00","UTC+1"],["+00:00","UTC"]]})}</div>
 `)}
-      ${card(`<span style="display:flex;align-items:center;gap:8px"><i data-icon="image"></i> الشعارات (${(S.brand.logos||[]).length})</span>`, `<p class="muted small" style="margin-bottom:10px">تظهر بالترتيب في أعلى كل الصفحات والشاشات، وفي الشهادات والتقرير الختامي ورسائل البريد. يُفضَّل PNG بخلفية شفافة أو SVG.</p>
+      ${card(`<span style="display:flex;align-items:center;gap:8px"><i data-icon="image"></i> الشعارات (${(S.brand.logos||[]).length})</span>`, `<p class="muted small" style="margin-bottom:10px">تظهر بالترتيب في أعلى كل الصفحات والشاشات، وفي الشهادات والتقرير الختامي ورسائل البريد. الصيغ المقبولة: PDF أو SVG أو PNG أو JPG. تُزال الخلفية البيضاء من ملفات PDF و JPG ويُقصّ الفراغ حول الشعار تلقائيًا.</p>
         ${(S.brand.logos||[]).map((l,i)=>`<div class="item"><div class="head"><b>${esc(l.name)||"شعار"}</b>${tools("brand.logos",i,S.brand.logos.length)}</div>
           <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:8px">
             <span class="lprev navy">${lp(l.src)?`<img src="${attr(lp(l.src))}" alt="" class="${l.mono?"mono":""}">`:""}</span>
@@ -247,7 +247,7 @@ const P = {
           </div>
           <div class="grid2">${f("اسم الجهة","brand.logos."+i+".name",{max:60,ph:"مثال: جامعة القصيم"})}${/^https?:/.test(l.src)?f("رابط الصورة","brand.logos."+i+".src",{ltr:true,max:500}):`<div><label>المصدر</label><div class="help" style="padding-top:10px">صورة مرفوعة</div></div>`}</div>
           ${tog("أبيض على الشريط الكحلي والشاشات","brand.logos."+i+".mono","يُستحسن للشعارات الملوّنة كي تظهر بوضوح على الخلفية الداكنة. أوقفه لعرض الألوان الأصلية.")}</div>`).join("")}
-        <div class="grid2"><label class="add" style="display:flex;align-items:center;justify-content:center;gap:8px;margin:0;cursor:pointer"><i data-icon="upload"></i> رفع شعار من جهازك<input type="file" accept="image/png,image/svg+xml,image/jpeg,image/webp" data-logo-upload hidden></label><button class="add" data-act="add" data-list="brand.logos">+ إضافة شعار برابط</button></div>
+        <div class="grid2"><label class="add" style="display:flex;align-items:center;justify-content:center;gap:8px;margin:0;cursor:pointer"><i data-icon="upload"></i> رفع شعار من جهازك<input type="file" accept="image/png,image/svg+xml,image/jpeg,image/webp,application/pdf,.pdf" data-logo-upload hidden></label><button class="add" data-act="add" data-list="brand.logos">+ إضافة شعار برابط</button></div>
         <p class="help" id="logoMsg"></p>`)}
       ${card("الألوان", `<div class="grid2">${f("لون الأزرار والعناصر التفاعلية","brand.accent",{type:"color"})}${f("اللون الأساسي (الشريط العلوي والشاشات)","brand.bg",{type:"color"})}</div><p class="help">يُفضَّل لون أساسي داكن (كحلي مثلًا)، ولون تفاعلي متوسط الدرجة يظهر بوضوح على الأبيض.</p>`)}`;
   },
@@ -466,18 +466,55 @@ $("main").addEventListener("input", e => {
   if (k.startsWith("_")) { tmp[k]=v; if (k==="_q") { const pos = el.selectionStart; render(); const n=$("main").querySelector('[data-k="_q"]'); n.focus(); n.setSelectionRange(pos,pos); } return; }
   setP(S,k,v); computed(); dirty();
 });
+// قراءة الصفحة الأولى من ملف PDF كصورة (pdf.js يُحمَّل عند الحاجة فقط)
+async function pdfToCanvas(file) {
+  if (!window.pdfjsLib) await new Promise((ok, no) => { const s = document.createElement("script"); s.src = "vendor/pdf.min.js"; s.onload = ok; s.onerror = () => no(new Error("تعذّر تحميل قارئ PDF")); document.head.appendChild(s); });
+  pdfjsLib.GlobalWorkerOptions.workerSrc = "vendor/pdf.worker.min.js";
+  let doc;
+  try { doc = await pdfjsLib.getDocument({data: new Uint8Array(await file.arrayBuffer())}).promise; }
+  catch { throw new Error("تعذّرت قراءة ملف PDF. تأكّد أنه غير محمي بكلمة مرور."); }
+  const page = await doc.getPage(1), v1 = page.getViewport({scale: 1});
+  const vp = page.getViewport({scale: Math.min(6, 2000 / Math.max(v1.width, v1.height))});
+  const c = document.createElement("canvas"); c.width = Math.ceil(vp.width); c.height = Math.ceil(vp.height);
+  await page.render({canvasContext: c.getContext("2d"), viewport: vp, background: "rgba(0,0,0,0)"}).promise;
+  doc.destroy();
+  return c;
+}
+// إزالة الخلفية البيضاء المتصلة بالحواف، ثم قصّ الفراغ وتصغير الشعار إلى 800×400 كحد أقصى
+function fitLogo(src, clearWhite) {
+  const W0 = src.naturalWidth || src.width || 800, H0 = src.naturalHeight || src.height || 400;
+  const k0 = Math.min(1, 2000 / Math.max(W0, H0)), W = Math.max(1, Math.round(W0 * k0)), H = Math.max(1, Math.round(H0 * k0));
+  const a = document.createElement("canvas"); a.width = W; a.height = H;
+  const ax = a.getContext("2d", {willReadFrequently: true}); ax.drawImage(src, 0, 0, W, H);
+  const im = ax.getImageData(0, 0, W, H), d = im.data;
+  if (clearWhite) {
+    const white = i => d[i+3] < 10 || (d[i] > 235 && d[i+1] > 235 && d[i+2] > 235);
+    const seen = new Uint8Array(W * H), st = [];
+    for (let x = 0; x < W; x++) st.push(x, (H - 1) * W + x);
+    for (let y = 0; y < H; y++) st.push(y * W, y * W + W - 1);
+    while (st.length) { const p = st.pop(); if (seen[p] || !white(p * 4)) continue; seen[p] = 1; d[p*4+3] = 0;
+      const x = p % W; if (x > 0) st.push(p - 1); if (x < W - 1) st.push(p + 1); if (p >= W) st.push(p - W); if (p < W * (H - 1)) st.push(p + W); }
+  }
+  let x0 = W, y0 = H, x1 = -1, y1 = -1;
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (d[(y * W + x) * 4 + 3] > 8) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+  if (x1 < 0) throw new Error("الملف لا يحتوي على شعار ظاهر");
+  ax.putImageData(im, 0, 0);
+  const cw = x1 - x0 + 1, ch = y1 - y0 + 1, k = Math.min(1, 800 / cw, 400 / ch);
+  const c = document.createElement("canvas"); c.width = Math.max(1, Math.round(cw * k)); c.height = Math.max(1, Math.round(ch * k));
+  const cx = c.getContext("2d"); cx.imageSmoothingQuality = "high"; cx.drawImage(a, x0, y0, cw, ch, 0, 0, c.width, c.height);
+  return c;
+}
 $("main").addEventListener("change", async e => {
   if (e.target.dataset.k === "brand.logoUrl" || /^brand\.logos\.\d+\.(src|mono)$/.test(e.target.dataset.k||"")) render();
   if (e.target.hasAttribute("data-logo-upload") && e.target.files[0]) {
     const file = e.target.files[0], msg = $("logoMsg");
     msg.textContent = "جارٍ رفع الشعار…";
     try {
-      // تحويل الصورة (ومنها SVG) إلى PNG بحجم مناسب قبل الرفع
-      const url = URL.createObjectURL(file);
-      const img = await new Promise((ok, no) => { const im = new Image(); im.onload = () => ok(im); im.onerror = () => no(new Error("تعذّرت قراءة الصورة")); im.src = url; });
-      const k = Math.min(1, 800 / (img.naturalWidth || 800), 400 / (img.naturalHeight || 400));
-      const w = Math.max(1, Math.round((img.naturalWidth || 800) * k)), h = Math.max(1, Math.round((img.naturalHeight || 400) * k));
-      const c = document.createElement("canvas"); c.width = w; c.height = h; c.getContext("2d").drawImage(img, 0, 0, w, h);
+      // تحويل الشعار (PNG/JPG/SVG/PDF) إلى PNG مقصوص بحجم مناسب قبل الرفع
+      const isPdf = file.type === "application/pdf" || /\.pdf$/i.test(file.name);
+      if (file.size > 15e6) throw new Error("حجم الملف كبير جدًا (الحد 15 ميجابايت)");
+      const src = isPdf ? await pdfToCanvas(file) : await new Promise((ok, no) => { const im = new Image(); im.onload = () => ok(im); im.onerror = () => no(new Error("تعذّرت قراءة الصورة")); im.src = URL.createObjectURL(file); });
+      const c = fitLogo(src, isPdf || /jpe?g/i.test(file.type));
       const r = await api("logo-upload", {data: c.toDataURL("image/png")});
       (S.brand.logos ||= []).push({name: file.name.replace(/\.[^.]+$/, ""), src: r.src, mono: true});
       (D.logoPreview ||= {})[r.src] = r.preview;
