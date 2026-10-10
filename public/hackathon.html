@@ -358,9 +358,9 @@ function renderImport(where){
   if (!IMPORT) { c.classList.add("hidden"); return; }
   const fb = [...(IMPORT.weaknesses||[]), IMPORT.tip].filter(Boolean);
   c.innerHTML = `<span class="pill">💼 من ${esc(CFG.investor.title)}</span>
-    <h2 style="margin-top:8px">${where==="team" ? "عبّأنا فكرتك في النموذج، وهذه ملاحظات المستثمر لتعالجها" : (IMPORT.ticket ? "🎟️ تأهلت! سجّل فريقك بالأسفل" : "فكرتك جاهزة للانتقال إلى الهاكاثون")}</h2>
+    <h2 style="margin-top:8px">${where==="team" ? "أُدرجت فكرتك في النموذج، وهذه ملاحظات المستشار لمعالجتها" : (IMPORT.ticket ? "🎟️ تهانينا بالتأهل، سجّل فريقك أدناه" : "فكرتك جاهزة للانتقال إلى الهاكاثون")}</h2>
     <div class="q">«${esc(IMPORT.idea)}»</div>
-    ${IMPORT.investor ? `<p class="small muted">${esc(IMPORT.investor)}: ${IMPORT.decision==="invest" ? `استثمر ${APP.fmt(IMPORT.amount)} ريال` : "لم يستثمر"}${IMPORT.score!=null?` · درجتك ${IMPORT.score}`:""} · «${esc(IMPORT.verdict)}»</p>` : ""}
+    ${IMPORT.investor ? `<p class="small muted">${esc(IMPORT.investor)}: ${IMPORT.decision==="invest" ? "متأهل" : "غير متأهل"}${IMPORT.score!=null?` · درجتك ${IMPORT.score}`:""} · «${esc(IMPORT.verdict)}»</p>` : ""}
     ${fb.length ? `<h2 style="font-size:15px;margin-top:10px">🔧 عالج هذه النقاط في مشروعك</h2><ul class="clean small">${fb.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>` : ""}
     ${where==="home" ? `<p class="small muted" style="margin-top:8px">سجّل فريقك بالأسفل، وستجد الفكرة معبّأة في نموذج التقديم.</p>` : ""}
     ${where==="team" ? `<button class="btn sm ghost" id="dropImport" style="margin-top:10px">إخفاء</button>` : ""}`;

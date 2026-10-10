@@ -79,20 +79,20 @@ h1 span[data-title] .gold{color:var(--accent)}
   </section>
 
   <section class="panel" id="spotPanel">
-    <h2>⚡ آخر صفقة</h2>
+    <h2>⚡ آخر عرض</h2>
     <div class="spot" id="spot"><p class="empty">بانتظار أول عرض… كن أنت الأول! 🚀</p></div>
     <h2 style="margin-top:1vw">آخر العروض</h2>
     <div class="rows" id="recent"></div>
   </section>
 
   <section class="panel qr">
-    <h3>عندك فكرة؟<br>اعرضها على <span data-text="investor.title">المستثمر الذكي</span></h3>
+    <h3>لديك فكرة؟<br>اعرضها على <span data-text="investor.title">المستثمر الذكي</span></h3>
     <div class="box" id="qr"></div>
     <div class="steps">
       ١. امسح الرمز بجوالك<br>
-      ٢. اختر المستثمر واكتب فكرتك<br>
-      ٣. جاوب على سؤالين<br>
-      ٤. يستثمر… ولا يطلع؟ 👀
+      ٢. اكتب فكرتك<br>
+      ٣. أجب عن سؤالين<br>
+      ٤. احصل على تقييمك وتأهّل 🎟️
     </div>
   </section>
 </div>
@@ -122,11 +122,11 @@ async function refresh(){
       <div class="row"><span class="rank">${i+1}</span>
         <div class="who"><b>${esc(x.name)}</b><small>${esc(x.title)}</small></div>
         <span class="money">${short(x.valuation)}</span></div>`).join("")
-      : `<p class="empty">ما فيه صفقات بعد</p>`;
+      : `<p class="empty">لا توجد عروض بعد</p>`;
 
     $("recent").innerHTML = d.recent.slice(1,5).map(x=>`
       <div class="row"><div class="who"><b>${esc(x.name)} · ${esc(x.title)}</b><small>${INV[x.investor]||""}</small></div>
-      ${x.decision==="invest" ? `<span class="money">${short(x.amount)}</span>` : `<span class="out">طلع 🚪</span>`}</div>`).join("");
+      ${x.decision==="invest" ? `<span class="money">${short(x.amount)}</span>` : `<span class="out">غير متأهل</span>`}</div>`).join("");
 
     const latest = d.recent[0];
     if (latest) {
@@ -134,7 +134,7 @@ async function refresh(){
       if (key !== lastId) {
         const ok = latest.decision === "invest";
         $("spot").innerHTML = `
-          <span class="tag ${ok?"ok":"no"}">${latest.qualified?"🎟️ تأهّل للهاكاثون":ok?"🎉 صفقة جديدة":"🚪 المستثمر طلع"}</span>
+          <span class="tag ${ok?"ok":"no"}">${latest.qualified?"🎟️ تأهّل للهاكاثون":ok?"✅ متأهل":"غير متأهل"}</span>
           <div class="name">${esc(latest.name)}</div>
           <div class="idea">«${esc(latest.title)}»</div>
           ${ok ? `<div class="amt">${fmt(latest.amount)} ريال <small style="font-size:1.4vw;color:var(--muted)">مقابل ${fmt(latest.equity)}%</small></div>` : ""}

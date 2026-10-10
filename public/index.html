@@ -109,10 +109,10 @@ textarea{min-height:120px;resize:vertical;line-height:1.7}
       <p class="hint" style="text-align:right;margin-top:8px" id="emailHint"></p>
     </div>
     <div class="card">
-      <label for="idea">فكرتك في 3 أسطر: وش المشكلة؟ ووش الحل؟</label>
-      <textarea id="idea" maxlength="500" placeholder="مثال: تطبيق يربط طلاب الجامعة اللي ساكنين بنفس الحي عشان يتشاركون المشوار ويوفرون في البنزين."></textarea>
+      <label for="idea">فكرتك في ثلاثة أسطر: ما المشكلة؟ وما الحل؟</label>
+      <textarea id="idea" maxlength="500" placeholder="مثال: تطبيق يربط طلاب الجامعة الساكنين في الحي نفسه ليتشاركوا التنقل ويخفّضوا تكلفة الوقود."></textarea>
       <div class="count"><span id="ideaCount">0</span>/500</div>
-      <button class="btn ghost" id="randomIdea" type="button" style="margin-top:10px;font-size:15px">🎲 ما عندي فكرة؟ اسحب مشكلة عشوائية</button>
+      <button class="btn ghost" id="randomIdea" type="button" style="margin-top:10px;font-size:15px">🎲 ليست لديك فكرة؟ اختر مشكلة عشوائية</button>
     </div>
     <label class="consent"><input type="checkbox" id="consent"> <span>أوافق على <a href="privacy.html" target="_blank">سياسة الخصوصية</a> واستخدام بياناتي لأغراض البرنامج</span></label>
     <div class="card hidden" id="otpBox" style="text-align:center">
@@ -133,7 +133,7 @@ textarea{min-height:120px;resize:vertical;line-height:1.7}
     <div class="chat" id="chat"></div>
     <div class="card" id="answerBox">
       <label for="answer">إجابتك</label>
-      <textarea id="answer" maxlength="300" style="min-height:90px" placeholder="جاوب باختصار ووضوح..."></textarea>
+      <textarea id="answer" maxlength="300" style="min-height:90px" placeholder="أجب باختصار ووضوح..."></textarea>
       <button class="btn" id="answerBtn">أرسل الإجابة</button>
       <p class="err" id="chatErr"></p>
     </div>
@@ -143,7 +143,7 @@ textarea{min-height:120px;resize:vertical;line-height:1.7}
   <section id="s-result" class="hidden">
     <div id="qualBox"></div>
     <div class="card result" id="resultCard"></div>
-    <p class="hint">📸 صوّر الشاشة وشاركها! وتابع ترتيبك على الشاشة الكبيرة في الجناح.</p>
+    <p class="hint">📸 يمكنك تصوير الشاشة ومشاركتها، ومتابعة النتائج على الشاشة الكبيرة في الجناح.</p>
     <button class="btn ghost" id="againBtn" style="margin-top:14px"></button>
   </section>
 </div>
@@ -166,10 +166,10 @@ APP.ready.then(c => {
   $("randomIdea").classList.toggle("hidden", !PROBLEMS.length);
   const gate = c.modules.hackathon && c.hackathon.registration === "ticket";
   $("journey").innerHTML = gate
-    ? `<span>① اعرض فكرتك</span><span>② جاوب سؤالين</span><span>③ ${c.investor.qualifyScore}+ = تتأهل إلى ${esc(c.hackathon.name)} 🎟️</span>`
-    : `<span>① اعرض فكرتك</span><span>② جاوب سؤالين</span><span>③ يستثمر ولا يطلع؟</span>`;
-  $("emailHint").textContent = `لكل بريد ${c.investor.maxAttempts} محاولات.` + (c.modules.hackathon ? " نربط به محاولاتك وتأهلك." : "");
-}).catch(()=>{ $("startErr").textContent = "تعذر تحميل الإعدادات، حدّث الصفحة"; });
+    ? `<span>① اعرض فكرتك</span><span>② أجب عن سؤالين</span><span>③ ${c.investor.qualifyScore}+ = تتأهل إلى ${esc(c.hackathon.name)} 🎟️</span>`
+    : `<span>① اعرض فكرتك</span><span>② أجب عن سؤالين</span><span>③ احصل على تقييمك</span>`;
+  $("emailHint").textContent = `لكل بريد ${c.investor.maxAttempts} محاولات.` + (c.modules.hackathon ? " تُربط به محاولاتك وتأهلك." : "");
+}).catch(()=>{ $("startErr").textContent = "تعذّر تحميل الإعدادات، يُرجى تحديث الصفحة"; });
 
 $("name").value = LS.get("si_name") || "";
 $("email").value = LS.get("si_email") || "";
@@ -181,7 +181,7 @@ $("randomIdea").onclick = () => {
 };
 
 function show(id){ ["s-start","s-chat","s-result"].forEach(s=>$(s).classList.toggle("hidden", s!==id)); window.scrollTo(0,0); }
-function inv(){ return INVESTORS[state.investor] || {name:"المستثمر", emoji:"💼"}; }
+function inv(){ return INVESTORS[state.investor] || {name:"المستشار", emoji:"🧑‍💼"}; }
 function addMsg(text, me){
   const m = document.createElement("div");
   m.className = "msg " + (me ? "me" : "inv-msg");
@@ -191,22 +191,22 @@ function addMsg(text, me){
 }
 function typing(on){
   let t = $("typing");
-  if (on && !t){ t=document.createElement("div"); t.id="typing"; t.className="typing"; t.textContent=(state.investor?inv().name:"المستثمر")+" يفكّر"; $("chat").appendChild(t); t.scrollIntoView({behavior:"smooth",block:"end"}); }
+  if (on && !t){ t=document.createElement("div"); t.id="typing"; t.className="typing"; t.textContent=(state.investor?inv().name:"المستشار")+" يراجع إجابتك"; $("chat").appendChild(t); t.scrollIntoView({behavior:"smooth",block:"end"}); }
   if (!on && t) t.remove();
 }
 async function call(){
   const r = await fetch("api/pitch", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(state)});
   const d = await r.json();
-  if (!r.ok) { const e = new Error(d.error || "صار خطأ"); e.status = r.status; e.needVerify = d.needVerify; throw e; }
+  if (!r.ok) { const e = new Error(d.error || "حدث خطأ"); e.status = r.status; e.needVerify = d.needVerify; throw e; }
   return d;
 }
 
 $("startBtn").onclick = async () => {
   state.name = $("name").value.trim(); state.email = $("email").value.trim().toLowerCase(); state.idea = $("idea").value.trim();
   $("startErr").textContent = "";
-  if (state.name.length < 2) return $("startErr").textContent = "اكتب اسمك أول 🙂";
+  if (state.name.length < 2) return $("startErr").textContent = "يُرجى كتابة اسمك";
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(state.email)) return $("startErr").textContent = "اكتب بريدًا إلكترونيًا صحيحًا";
-  if (state.idea.length < 15) return $("startErr").textContent = "وضّح فكرتك أكثر (المشكلة والحل)";
+  if (state.idea.length < 15) return $("startErr").textContent = "يُرجى توضيح فكرتك أكثر (المشكلة والحل)";
   state.consent = $("consent").checked;
   if (!state.consent) return $("startErr").textContent = "يلزم الموافقة على سياسة الخصوصية";
   LS.set("si_name", state.name); LS.set("si_email", state.email);
@@ -245,7 +245,7 @@ async function begin(){
     const d = await call();
     state.investor = d.investor; attemptsLeft = d.attemptsLeft;
     show("s-chat");
-    $("meet").innerHTML = `<span class="em">${esc(inv().emoji)}</span><span><b>يقابلك الآن: ${esc(inv().name)}</b><br><small>${esc(inv().title||"")}${inv().desc?" · "+esc(inv().desc):""}</small></span>`;
+    $("meet").innerHTML = `<span class="em">${esc(inv().emoji)}</span><span><b>يقيّم فكرتك: ${esc(inv().name)}</b><br><small>${esc(inv().title||"")}${inv().desc?" · "+esc(inv().desc):""}</small></span>`;
     addMsg(state.idea, true);
     state.questions.push(d.question); addMsg(d.question, false);
     $("answer").value=""; $("answerBox").classList.remove("hidden"); $("answer").focus();
@@ -282,7 +282,7 @@ async function nextTurn(){
 $("answerBtn").onclick = sendAnswer;
 async function sendAnswer(){
   const a = $("answer").value.trim();
-  if (a.length < 3) return $("chatErr").textContent = "اكتب إجابتك 🙂";
+  if (a.length < 3) return $("chatErr").textContent = "يُرجى كتابة إجابتك";
   state.answers.push(a);
   addMsg(a, true);
   await nextTurn();
@@ -296,9 +296,9 @@ function showResult(d){
     $("qualBox").innerHTML = `<div class="ticket">
       <div style="font-size:40px">🎟️</div>
       <h2 style="font-size:22px">مبروك! تأهلت إلى ${esc(H.name)}</h2>
-      <p class="muted" style="font-size:14px">${d.emailed ? `أرسلناه أيضًا إلى ${esc(state.email)}. ` : "صوّره أو انسخه، فهو مفتاح تسجيلك."}</p>
+      <p class="muted" style="font-size:14px">${d.emailed ? `أرسلناه أيضًا إلى ${esc(state.email)}. ` : "احتفظ به، فهو رمز تسجيلك."}</p>
       <div class="code">${esc(d.ticket)}</div>
-      <p style="font-size:14px">سجّل فريقك وأكمل بياناتك في صفحة ${esc(H.name)}. فكرتك وملاحظات المستثمر بتنتقل معك.</p>
+      <p style="font-size:14px">سجّل فريقك وأكمل بياناتك في صفحة ${esc(H.name)}. وستنتقل فكرتك وملاحظات المستشار معك.</p>
       <a class="btn" id="goHack" href="hackathon.html?ticket=${encodeURIComponent(d.ticket)}" style="display:block;text-decoration:none;margin-top:12px">أكمل التسجيل في ${esc(H.name)} ←</a>
     </div>`;
     try { localStorage.setItem("hack_import", JSON.stringify({
@@ -306,13 +306,13 @@ function showResult(d){
       verdict:r.verdict, strengths:r.strengths, weaknesses:r.weaknesses, tip:r.tip, score:r.score, at:Date.now() })); } catch(e){}
   } else if (gate && !r.qualified) {
     $("qualBox").innerHTML = `<div class="near"><b>ينقصك ${th - pct} درجة للتأهل إلى ${esc(H.name)}</b><br>
-      <span class="muted" style="font-size:14px">${attemptsLeft > 0 ? `حسّن فكرتك حسب الملاحظات وجرّب مرة ثانية. باقي لك ${attemptsLeft} ${attemptsLeft===1?"محاولة":"محاولات"}.` : "استنفدت محاولاتك بهذا البريد."}${d.emailed ? `<br>✉️ أرسلنا نتيجتك وأهم ما تحسّنه إلى ${esc(state.email)}.` : ""}</span></div>`;
+      <span class="muted" style="font-size:14px">${attemptsLeft > 0 ? `طوّر فكرتك وفق الملاحظات وأعد المحاولة. المحاولات المتبقية: ${attemptsLeft}.` : "استنفدت محاولاتك بهذا البريد."}${d.emailed ? `<br>✉️ أرسلنا نتيجتك وأهم ما تحسّنه إلى ${esc(state.email)}.` : ""}</span></div>`;
   } else $("qualBox").innerHTML = "";
 
   $("resultCard").innerHTML = `
-    <span class="badge ${ok?"ok":"no"}">${ok ? "🎉 حصلت على استثمار!" : "🚪 المستثمر طلع"}</span>
+    <span class="badge ${ok?"ok":"no"}">${ok ? "✅ تهانينا" : "📋 نتيجة التقييم"}</span>
     <div style="font-size:15px;color:var(--muted)">${esc(inv().emoji)} ${esc(inv().name)} عن «${esc(r.title)}»</div>
-    ${ok ? `<div class="big">${fmt(r.amount)} ريال</div><div class="val">مقابل ${fmt(r.equity)}% · تقييم شركتك ${fmt(r.valuation)} ريال</div>` : `<div class="big">أنا خارج!</div>`}
+    ${ok ? `<div class="big">${gate ? "متأهل" : "قرار إيجابي"}</div><div class="val">عرض استثماري افتراضي: ${fmt(r.amount)} ريال مقابل ${fmt(r.equity)}%</div>` : `<div class="big">غير متأهل</div><div class="val">${attemptsLeft > 0 ? `${attemptsLeft===1?"لديك محاولة واحدة متبقية":attemptsLeft===2?"لديك محاولتان متبقيتان":`لديك ${attemptsLeft} محاولات متبقية`} لتطوير فكرتك وإعادة التقديم` : "استنفدت المحاولات المتاحة لهذا البريد"}</div>`}
     <p class="verdict">«${esc(r.verdict)}»</p>
     <div style="font-size:15px">درجة فكرتك: <b style="font-size:22px;color:var(--accent)">${pct}</b> / 100</div>
     <div class="thresh"><i id="scoreBar" style="width:0;background:${r.qualified?"var(--good)":"var(--accent)"}"></i>${gate?`<div class="mark" style="right:${th}%"><span style="${th>80?"transform:none;left:0":th<15?"transform:translateX(100%)":""}">حد التأهل ${th}</span></div>`:""}</div>
@@ -321,11 +321,11 @@ function showResult(d){
     ${(r.capsApplied||[]).length?`<div class="caps"><b>🔒 قيود طُبّقت على الدرجة:</b> ${r.capsApplied.map(esc).join("، ")}</div>`:""}
     <div class="list"><h3>✅ نقاط القوة</h3><ul>${r.strengths.map(s=>`<li>${esc(s)}</li>`).join("")}</ul></div>
     <div class="list"><h3>🔧 فرص التحسين</h3><ul>${r.weaknesses.map(s=>`<li>${esc(s)}</li>`).join("")}</ul></div>
-    <div class="tip">💡 <b>نصيحة المستثمر:</b> ${esc(r.tip)}</div>
+    <div class="tip">💡 <b>توصية المستشار:</b> ${esc(r.tip)}</div>
     <div style="margin-top:14px;font-size:13px;color:var(--muted)">${esc(state.name)} · ${esc(CFG.brand.eventName)} · ${esc(CFG.brand.orgName)}</div>
     ${d.demo ? `<p class="demo" style="color:var(--bad);font-weight:700">⚠️ تقييم وهمي: الذكاء الاصطناعي غير مفعّل</p>` : ""}`;
   if (d.demo) $("qualBox").insertAdjacentHTML("afterbegin", `<div class="near" style="border:1.5px solid var(--bad);color:var(--text)"><b style="color:var(--bad)">⚠️ هذا تقييم وهمي عشوائي للعرض فقط</b><br><span style="font-size:14px">الذكاء الاصطناعي غير مفعّل، فالأسئلة ثابتة والدرجات عشوائية. فعّله من لوحة التحكم ← نظرة عامة.</span></div>`);
-  $("againBtn").textContent = d.ticket ? "اعرض فكرة ثانية" : (attemptsLeft > 0 ? `جرّب مرة ثانية (${attemptsLeft} ${attemptsLeft===1?"محاولة":"محاولات"})` : "عرض فكرة ببريد آخر");
+  $("againBtn").textContent = d.ticket ? "اعرض فكرة أخرى" : (attemptsLeft > 0 ? `أعد المحاولة (المتبقي: ${attemptsLeft})` : "اعرض فكرة ببريد آخر");
   show("s-result");
   setTimeout(()=>{ $("scoreBar").style.width = r.score+"%"; document.querySelectorAll("#resultCard .bar i").forEach(i=>i.style.width=i.dataset.w); }, 100);
 }

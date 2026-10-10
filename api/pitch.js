@@ -48,7 +48,7 @@ const okEmail = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e);
 
 export const SCREEN = ENGINE_SCREEN.map(({ key, label, max }) => ({ key, label, max }));
 
-const DEMO_Q = ["طيب، مين بالضبط العميل اللي بيدفع لك؟ وليش بيدفع؟", "وكيف بتكسب فلوس؟ ومين منافسك اليوم؟"];
+const DEMO_Q = ["فكرة جديرة بالاهتمام. من العميل الذي سيدفع مقابل الحل تحديدًا، ولماذا سيدفع؟", "شكرًا على الإجابة. كيف سيحقق المشروع دخلًا، ومن منافسوك الحاليون؟"];
 function demoFinal(idea, s) {
   const scores = Object.fromEntries(SCREEN.map((c) => [c.key, Math.round(c.max * (0.35 + Math.random() * 0.6))]));
   const { minAmount: lo, maxAmount: hi } = s.investor;
@@ -57,11 +57,11 @@ function demoFinal(idea, s) {
     amount: Math.round((lo + Math.random() * (hi - lo)) / 50000) * 50000 || lo,
     equity: [10, 15, 20, 25, 30][Math.floor(Math.random() * 5)],
     title: clip(idea, 40),
-    verdict_invest: "الفكرة فيها شي! بس أبي أشوف أرقام أوضح.",
-    verdict_out: "الفكرة حلوة بس ما شفت العميل اللي بيدفع. أنا خارج!",
+    verdict_invest: "فكرة واعدة، وأنصح بدعمها بأرقام أوضح عن السوق والتكاليف.",
+    verdict_out: "الفكرة جيدة، لكنها تحتاج إلى تحديد العميل الذي سيدفع بوضوح قبل التأهل.",
     strengths: ["الفكرة تحل مشكلة حقيقية", "عرض واضح ومختصر"],
     weaknesses: ["نموذج الربح غير واضح", "العميل الأول غير محدد"],
-    tip: "تكلّم مع 10 عملاء محتملين قبل ما تبني أي شي.",
+    tip: "تحدّث مع عشرة عملاء محتملين قبل البدء في بناء الحل.",
   };
 }
 
@@ -85,11 +85,11 @@ export default async function handler(req, res) {
     const idea = clip(b.idea, 500);
     const questions = (b.questions || []).slice(0, 2).map((q) => clip(q, 300));
     const answers = (b.answers || []).slice(0, 2).map((a) => clip(a, 300));
-    if (name.length < 2) return res.status(400).json({ error: "اكتب اسمك" });
+    if (name.length < 2) return res.status(400).json({ error: "يُرجى كتابة اسمك" });
     if (!okEmail(email)) return res.status(400).json({ error: "اكتب بريدًا إلكترونيًا صحيحًا" });
-    if (idea.length < 15) return res.status(400).json({ error: "وضّح فكرتك أكثر (المشكلة والحل)" });
+    if (idea.length < 15) return res.status(400).json({ error: "يُرجى توضيح فكرتك أكثر (المشكلة والحل)" });
     if (!b.consent) return res.status(400).json({ error: "يلزم الموافقة على سياسة الخصوصية" });
-    if (verifyOn(s) && !tokenOk(email, b.token)) return res.status(401).json({ error: "تحقّق من بريدك أولًا", needVerify: true });
+    if (verifyOn(s) && !tokenOk(email, b.token)) return res.status(401).json({ error: "يُرجى التحقق من بريدك أولًا", needVerify: true });
 
     const used = await attemptsUsed(email);
     if (used >= I.maxAttempts) return res.status(429).json({ error: `استنفدت محاولاتك (${I.maxAttempts}) بهذا البريد.`, attemptsLeft: 0 });
@@ -105,7 +105,7 @@ export default async function handler(req, res) {
       if (!AI) question = DEMO_Q[step];
       else {
         try { question = (await screenQuestion(s, inv, { name, idea, questions, answers })).question; }
-        catch (e) { console.error("AI question failed", e.message); return res.status(503).json({ error: "المستثمر مشغول بمكالمة 😅 حاول بعد دقيقة، ولن تُحسب عليك محاولة.", retry: true }); }
+        catch (e) { console.error("AI question failed", e.message); return res.status(503).json({ error: "الخدمة مشغولة حاليًا. يُرجى المحاولة بعد دقيقة، ولن تُحتسب عليك محاولة.", retry: true }); }
         await recordUse(req, "pitch");
       }
       return res.status(200).json({ step: step + 1, question, investor: inv.id, attemptsLeft: I.maxAttempts - used });
@@ -166,6 +166,6 @@ export default async function handler(req, res) {
     });
   } catch (e) {
     console.error(e);
-    return res.status(500).json({ error: "المستثمر مشغول بمكالمة 😅 جرّب مرة ثانية" });
+    return res.status(500).json({ error: "حدث خطأ غير متوقع. يُرجى المحاولة مرة أخرى." });
   }
 }
