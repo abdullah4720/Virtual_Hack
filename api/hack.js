@@ -101,7 +101,7 @@ export default async function handler(req, res) {
 
     if (action === "register" && req.method === "POST") {
       if (ph === "closed") return res.status(403).json({ error: "انتهت فترة التسجيل" });
-      if (!b.consent) return res.status(400).json({ error: "يلزم الموافقة على سياسة الخصوصية" });
+      if (!b.consent) return res.status(400).json({ error: "الرجاء الموافقة على استخدام البيانات لأغراض البرنامج" });
       let ticket = null;
       if (H.registration === "ticket") {
         ticket = await findTicket(b.ticket);

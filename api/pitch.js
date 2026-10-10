@@ -88,7 +88,7 @@ export default async function handler(req, res) {
     if (name.length < 2) return res.status(400).json({ error: "يُرجى كتابة اسمك" });
     if (!okEmail(email)) return res.status(400).json({ error: "اكتب بريدًا إلكترونيًا صحيحًا" });
     if (idea.length < 15) return res.status(400).json({ error: "يُرجى توضيح فكرتك أكثر (المشكلة والحل)" });
-    if (!b.consent) return res.status(400).json({ error: "يلزم الموافقة على سياسة الخصوصية" });
+    if (!b.consent) return res.status(400).json({ error: "الرجاء الموافقة على استخدام البيانات لأغراض البرنامج" });
     if (verifyOn(s) && !tokenOk(email, b.token)) return res.status(401).json({ error: "يُرجى التحقق من بريدك أولًا", needVerify: true });
 
     const used = await attemptsUsed(email);

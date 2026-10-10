@@ -114,7 +114,7 @@ input[type=range]{accent-color:var(--accent);padding:0}
     <button data-p="notify"><i data-icon="mail"></i>الإشعارات والبريد</button>
     <button data-p="screens"><i data-icon="monitor"></i>الشاشات</button>
     <button data-p="welcome"><i data-icon="house"></i>صفحة الترحيب</button>
-    <button data-p="privacy"><i data-icon="shield-check"></i>الخصوصية والحماية</button>
+    <button data-p="privacy"><i data-icon="shield-check"></i>الحماية والحدود</button>
     <button data-p="reports"><i data-icon="chart-column"></i>التقارير والشهادات</button>
     <button data-p="data"><i data-icon="database"></i>البيانات</button>
   </nav>
@@ -202,7 +202,7 @@ const P = {
     const ph = {open:'<span class="dot ok"></span> مفتوح', soon:'<span class="dot wait"></span> لم يبدأ', closed:'<span class="dot no"></span> مُقفل'}[sy.phase];
     const links = [
       ["صفحة الترحيب (رمز QR الموحد)","welcome.html"],["المستثمر الذكي (الزوار)","index.html"],["الهاكاثون (الفرق)","hackathon.html"],["شاشة الجناح (المتحكَّم بها)","booth.html"],
-      ["لوحة البيانات","dashboard.html"],["لوحة اللجنة","judges.html"],["إعلان الفائزين","winners.html"],["التقرير الختامي","report.html"],["سياسة الخصوصية","privacy.html"]];
+      ["لوحة البيانات","dashboard.html"],["لوحة اللجنة","judges.html"],["إعلان الفائزين","winners.html"],["التقرير الختامي","report.html"]];
     return `<h1>نظرة عامة</h1><p class="lead">${esc(S.brand.orgName)} · ${esc(S.brand.eventName)}</p>
       ${(sy.schemaMissing||[]).length ? `<div class="card note warn"><b style="color:var(--bad)"><i data-icon="triangle-alert"></i> قاعدة البيانات تحتاج تحديثًا</b><p class="small" style="margin-top:4px">الرجاء فتح Supabase ← SQL Editor، ولصق محتوى ملف supabase.sql كاملًا من المستودع ثم الضغط على Run (التشغيل آمن ولا يحذف البيانات). الناقص: <span dir="ltr">${sy.schemaMissing.map(esc).join(", ")}</span></p></div>` : ""}
       <div class="stats">
@@ -407,8 +407,7 @@ const P = {
       ${rep("program.partners","الشركاء والرعاة",[["name","الاسم"],["logoUrl","رابط الشعار",{ltr:true,max:500}]],"إضافة شريك")}`;
   },
   privacy(){
-    return `<h1>الخصوصية والحماية</h1><p class="lead">نص سياسة الخصوصية الذي يوافق عليه المشاركون، وحدود الاستخدام التي تحمي رصيد الذكاء الاصطناعي.</p>
-      ${card("سياسة الخصوصية", f("النص","privacy.text",{type:"textarea",rows:8,max:5000,help:"كل سطر فقرة. تظهر في صفحة privacy.html ويوافق عليها المشارك قبل البدء."}) + f("جهة التواصل لطلبات البيانات","privacy.contact",{max:200,ph:"مثال: icip@qu.edu.sa"}))}
+    return `<h1>الحماية والحدود</h1><p class="lead">التحقق من البريد، وحدود الاستخدام التي تحمي رصيد الذكاء الاصطناعي.</p>
       ${card("التحقق من البريد", tog("التحقق برمز قبل عرض الفكرة","investor.verifyEmail", D.system.mail ? "يُرسل رمز من 6 أرقام إلى بريد الزائر. يمنع التحايل على حد المحاولات ببريد وهمي." : "يتطلب تفعيل الإرسال (RESEND_API_KEY و MAIL_FROM) وإلا يبقى معطّلًا"))}
       ${card("حدود الاستخدام", `<div class="grid3">${f("عروض المستثمر لكل جهاز في الساعة","limits.pitchesPerHour",{type:"num",min:1,max:1000})}${f("تقديمات الهاكاثون لكل جهاز في الساعة","limits.submitsPerHour",{type:"num",min:1,max:1000})}${f("سقف استدعاءات الذكاء الاصطناعي يوميًا","limits.dailyAiCalls",{type:"num",min:10,max:1000000})}</div>
         <p class="help">عند بلوغ السقف اليومي تتوقف التقييمات الجديدة برسالة واضحة حتى اليوم التالي. استهلاك اليوم: ${fmt(D.system.usageToday)}. ملاحظة: أجهزة شبكة الجناح قد تشترك في عنوان واحد، فارفع الحد لكل جهاز إن استخدم الزوار شبكة المعرض.</p>`)}`;

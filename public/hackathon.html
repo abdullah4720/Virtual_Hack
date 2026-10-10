@@ -149,7 +149,7 @@
       </div>
       <label>اختر المسار والتحدي</label>
       <div class="opts" id="tracks"></div>
-      <label class="consent"><input type="checkbox" id="regConsent"> <span>أوافق على <a href="privacy.html" target="_blank">سياسة الخصوصية</a> وعلى عرض اسم الفريق والمشروع في لوحات الترتيب</span></label>
+      <label class="consent"><input type="checkbox" id="regConsent"> <span>أوافق على استخدام بيانات الفريق لأغراض البرنامج، وعلى عرض اسم الفريق والمشروع في لوحات الترتيب</span></label>
       <div class="row2" style="margin-top:4px">
         <div><label for="tPass">كلمة المرور</label><input id="tPass" type="password" dir="ltr" autocomplete="new-password" placeholder="8 أحرف على الأقل"></div>
         <div><label for="tPass2">تأكيد كلمة المرور</label><input id="tPass2" type="password" dir="ltr" autocomplete="new-password"></div>
@@ -356,7 +356,7 @@ $("tTicket").addEventListener("change", checkTicket);
 
 $("regBtn").onclick = async () => {
   $("regErr").textContent="";
-  if (!$("regConsent").checked) return $("regErr").textContent = "يلزم الموافقة على سياسة الخصوصية";
+  if (!$("regConsent").checked) return $("regErr").textContent = "الرجاء الموافقة على استخدام البيانات لأغراض البرنامج";
   const t = CFG.hackathon.tracks.find(x=>x.id===chosen.track);
   if (!t) return $("regErr").textContent = "الرجاء اختيار المسار";
   if (t.challenges.length && !chosen.challenge) return $("regErr").textContent = "الرجاء اختيار التحدي داخل المسار";

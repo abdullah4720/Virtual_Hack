@@ -102,7 +102,7 @@ body.kiosk .hint{display:none}
       <textarea id="idea" maxlength="500" placeholder="مثال: تطبيق يربط طلاب الجامعة الساكنين في الحي نفسه ليتشاركوا التنقل ويخفّضوا تكلفة الوقود."></textarea>
       <div class="count"><span id="ideaCount">0</span>/500</div>
     </div>
-    <label class="consent"><input type="checkbox" id="consent"> <span>أوافق على <a href="privacy.html" target="_blank">سياسة الخصوصية</a> واستخدام بياناتي لأغراض البرنامج</span></label>
+    <label class="consent"><input type="checkbox" id="consent"> <span>أوافق على استخدام بياناتي لأغراض البرنامج</span></label>
     <div class="card hidden" id="otpBox" style="text-align:center">
       <b><i data-icon="mail"></i> أرسلنا رمز تحقق إلى بريدك</b>
       <p class="hint" style="margin-top:4px" id="otpTo"></p>
@@ -224,7 +224,7 @@ $("startBtn").onclick = async () => {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(state.email)) return $("startErr").textContent = "الرجاء كتابة بريد إلكتروني صحيح";
   if (state.idea.length < 15) return $("startErr").textContent = "يُرجى توضيح فكرتك أكثر (المشكلة والحل)";
   state.consent = $("consent").checked;
-  if (!state.consent) return $("startErr").textContent = "يلزم الموافقة على سياسة الخصوصية";
+  if (!state.consent) return $("startErr").textContent = "الرجاء الموافقة على استخدام البيانات لأغراض البرنامج";
   if (!KIOSK) { LS.set("si_name", state.name); LS.set("si_email", state.email); }
   // التحقق من البريد (إن كان مفعّلًا)
   if (CFG.features?.verifyEmail) {
