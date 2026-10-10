@@ -96,8 +96,8 @@ node dev.js
 | `ANTHROPIC_API_KEY` | مفتاح Claude API |
 | `ANTHROPIC_MODEL` | اختياري للمحادثة، الافتراضي `claude-sonnet-5-5` |
 | `ANTHROPIC_EVAL_MODEL` | اختياري للتقييم، الافتراضي `claude-opus-5-5` |
-| `SUPABASE_URL` | من Supabase ← Project Settings ← API |
-| `SUPABASE_SERVICE_KEY` | مفتاح `service_role` (يبقى في الخادم فقط) |
+| `SUPABASE_URL` | رابط المشروع، مثل `https://xxxx.supabase.co` |
+| `SUPABASE_SERVICE_KEY` | **المفتاح السري** `sb_secret_...` (أو `service_role` القديم) من Settings ← API Keys. ليس المفتاح العام `sb_publishable_...` |
 | `RESEND_API_KEY` | اختياري لإرسال البريد (التذاكر، رموز الفرق، النتائج، الدعوات) |
 | `MAIL_FROM` | المرسل، مثل `هاكاثون <noreply@domain.sa>`، والنطاق موثّق في Resend |
 | `SITE_URL` | اختياري: رابط الموقع في الرسائل (يُستنتج تلقائيًا إن غاب) |

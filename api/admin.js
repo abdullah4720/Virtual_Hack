@@ -10,6 +10,7 @@ import { mailEnabled } from "../lib/mailer.js";
 import { notify, render as renderMail, teamEmails, mailLog, KINDS, COMMON_VARS, LOG } from "../lib/notify.js";
 import { runReminders, sendResults, remindJudges } from "../lib/campaigns.js";
 import { siteUrl } from "../lib/site.js";
+import { keyProblem } from "../lib/supabase.js";
 
 const clip = (s, n) => String(s ?? "").trim().slice(0, n);
 const csvCell = (v) => {
@@ -22,6 +23,7 @@ export default async function handler(req, res) {
   res.setHeader("Cache-Control", "no-store");
   if (!ADMIN_KEY) return res.status(503).json({ error: "لم يُضبط ADMIN_KEY في متغيرات البيئة" });
   if (req.headers["x-admin-key"] !== ADMIN_KEY) return res.status(401).json({ error: "مفتاح الإدارة غير صحيح" });
+  if (keyProblem) return res.status(503).json({ error: keyProblem });
 
   const q = new URL(req.url, "http://x").searchParams;
   const action = q.get("action");
