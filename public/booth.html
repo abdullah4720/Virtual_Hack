@@ -59,7 +59,7 @@ function countdown(c){
   const d = full(`<div style="display:flex;gap:3vw;align-items:center">${(c.brand.logos||[]).map(l=>`<img src="${esc(l.url)}" alt="" class="${l.mono?"mono":""}" style="max-height:6vw;max-width:22vw">`).join("")}</div><div class="k">${esc(c.hackathon.name)}</div>
     <div class="t">${H.phase==="soon"?"يبدأ التقديم بعد":H.phase==="open"?"يُقفل التقديم بعد":"انتهى التقديم"}</div>
     <div class="units" id="u"></div><div class="qr" id="qr"></div><div class="k">امسح الرمز وابدأ</div>`);
-  try { new QRCode(d.querySelector("#qr"), {text: new URL("welcome.html", location.href).href, width: 400, height: 400}); } catch(e){}
+  try { new QRCode(d.querySelector("#qr"), {text: (location.protocol === "file:" ? new URL("welcome.html", location.href) : new URL("welcome", location.href)).href, width: 400, height: 400}); } catch(e){}
   const u = d.querySelector("#u");
   const f = () => {
     if (!target) { u.innerHTML = `<div><b><i data-icon="trophy"></i></b><span>ترقّبوا إعلان الفائزين</span></div>`; return; }

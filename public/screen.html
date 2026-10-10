@@ -91,7 +91,7 @@ h1 span[data-title] .gold{color:var(--accent)}
     <div class="box" id="qr"></div>
     <div class="steps">
       ١. امسح الرمز بجوالك<br>
-      ٢. اكتب فكرتك<br>
+      ٢. اختر «المستثمر الذكي» واكتب فكرتك<br>
       ٣. أجب عن سؤالين<br>
       ٤. احصل على تقييمك وتأهّل
     </div>
@@ -106,8 +106,8 @@ const fmt = n => Number(n||0).toLocaleString("ar-SA-u-nu-latn");
 const esc = s => { const d=document.createElement("div"); d.textContent=s||""; return d.innerHTML; };
 const short = n => n>=1e6 ? (n/1e6).toLocaleString("ar-SA-u-nu-latn",{maximumFractionDigits:1})+" مليون" : fmt(n);
 
-// رابط صفحة الزائر (يمكن تغييره بإضافة ?url=...)
-const visitorUrl = new URLSearchParams(location.search).get("url") || new URL("index.html", location.href).href;
+// رمز QR موحد يقود إلى صفحة الترحيب (يمكن تغييره بإضافة ?url=...)
+const visitorUrl = new URLSearchParams(location.search).get("url") || (location.protocol === "file:" ? new URL("welcome.html", location.href) : new URL("welcome", location.href)).href;
 try { new QRCode($("qr"), {text: visitorUrl, width: 400, height: 400, correctLevel: QRCode.CorrectLevel.M}); }
 catch(e){ $("qr").textContent = visitorUrl; }
 
