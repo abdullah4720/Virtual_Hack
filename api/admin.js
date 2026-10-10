@@ -3,7 +3,7 @@ import { getSettings, saveSettings, ADMIN_KEY, judgeKey, phase, optionLabel } fr
 import { DEFAULTS } from "../lib/defaults.js";
 import { select, insert, update, removeAll, removeOne, hasDb, schemaCheck } from "../lib/db.js";
 import { aiAvailable, aiMode, MODEL, EVAL_MODEL, askOnce, explainAiError } from "../lib/ai.js";
-import { T, standings, runEvaluation, ensureCerts, certKind } from "../lib/hackcore.js";
+import { T, standings, runEvaluation, ensureCerts, certKind, expectedJudges, judgingOrder } from "../lib/hackcore.js";
 import { createTicket, TICKETS } from "../lib/tickets.js";
 import { usageToday, USAGE } from "../lib/limits.js";
 import { mailEnabled } from "../lib/mailer.js";
@@ -240,6 +240,42 @@ export default async function handler(req, res) {
     }
     if (action === "remind-judges" && req.method === "POST") {
       return res.status(200).json(await remindJudges(s, site));
+    }
+
+    // ---------- إدارة التحكيم: المشاريع، الإسناد، تقدّم كل محكّم ----------
+    if (action === "judging") {
+      const { rows } = await standings(s);
+      const J = s.hackathon.judging;
+      const pool = rows.filter((r) => r.finalist && r.team.status !== "disqualified");
+      const projects = pool.map((r) => {
+        const exp = expectedJudges(s, r.team);
+        const scored = new Set(r.judges.map((x) => x.judge_id));
+        const vals = r.judges.filter((x) => !x.coi).map((x) => x.score);
+        return {
+          id: r.team.id, name: r.team.name, title: r.best.title, label: r.label, track: r.team.track, rank: r.rank,
+          ai: r.best.ai_total, committee: J.assign[String(r.team.id)] || null, order: judgingOrder(s, r.team),
+          expected: exp.map((j) => ({ id: j.id, name: j.name, done: scored.has(j.id) })),
+          done: exp.filter((j) => scored.has(j.id)).length,
+          scores: r.judges.map((x) => ({ judge_id: x.judge_id, judge: x.judge, score: x.score, coi: x.coi, note: x.note, at: x.at })),
+          judgeAvg: r.judgeAvg, final: r.final, finalRank: r.finalRank ?? null,
+          spread: vals.length > 1 ? Math.max(...vals) - Math.min(...vals) : 0, flagged: r.flagged,
+        };
+      });
+      const judges = (s.hackathon.judges || []).map((j) => {
+        const mine = pool.filter((r) => expectedJudges(s, r.team).some((x) => x.id === j.id));
+        const own = mine.map((r) => r.judges.find((x) => x.judge_id === j.id)).filter(Boolean);
+        const last = own.map((x) => x.at).filter(Boolean).sort().pop() || null;
+        return { id: j.id, name: j.name, email: j.email, total: mine.length, done: own.length, coi: own.filter((x) => x.coi).length, last };
+      });
+      const others = rows.length - pool.length;
+      return res.status(200).json({ projects, judges, others, submitted: rows.length });
+    }
+    if (action === "judge-reset" && req.method === "POST") {
+      const team = Number(b.team_id);
+      if (!team) return res.status(400).json({ error: "الفريق غير محدد" });
+      const all = (await select(T.scores)).filter((x) => x.team_id === team && (b.judge_id ? x.judge_id === b.judge_id : !b.judge || x.judge === b.judge));
+      for (const x of all) await removeOne(T.scores, x.id);
+      return res.status(200).json({ ok: true, removed: all.length });
     }
 
     // ---------- بيانات التقرير الختامي والكتيّب ----------

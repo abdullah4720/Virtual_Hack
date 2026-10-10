@@ -12,7 +12,7 @@ import { resolveLogos } from "../lib/logos.js";
 import { hashPassword, verifyPassword, passwordProblem } from "../lib/password.js";
 import { count } from "../lib/db.js";
 import { clientKey } from "../lib/limits.js";
-import { T, standings, runEvaluation, identifyJudge, judgeSees, withUrls, ensureCerts, certKind } from "../lib/hackcore.js";
+import { T, standings, runEvaluation, identifyJudge, judgeSees, judgingOrder, withUrls, ensureCerts, certKind } from "../lib/hackcore.js";
 
 export { T, standings };
 const clip = (s, n) => String(s ?? "").trim().slice(0, n);
@@ -280,18 +280,21 @@ export default async function handler(req, res) {
 
       if (action === "judge") {
         const { rows, active, subs } = await standings(s);
-        const mine = rows.filter((r) => judge.admin || judgeSees(judge, r.team));
+        const mine = rows.filter((r) => judge.admin || judgeSees(judge, r.team, s));
+        // ترتيب العرض المحدد في إدارة التحكيم، ثم الترتيب العام
+        mine.sort((a, c) => (judgingOrder(s, a.team) ?? 1e4 + a.rank) - (judgingOrder(s, c.team) ?? 1e4 + c.rank));
         for (const r of mine) r.files = await withUrls(r.best.files || r.team.files, 4 * 3600);
         const ann = (await select("announcements")).filter((a) => a.active && (a.audience === "judges" || a.audience === "all"));
         const finals = mine.filter((r) => r.finalist);
         return res.status(200).json({
           config: publicSettings(s),
           me: { name: judge.name, id: judge.id, tracks: judge.tracks, admin: Boolean(judge.admin), personal: Boolean(judge.personal) },
+          open: H.judging?.open !== false,
           progress: { done: finals.filter((r) => r.judges.some((j) => j.judge_id === judge.id)).length, total: finals.length },
           announcements: ann.reverse().slice(0, 5).map(({ id, title, body, created_at }) => ({ id, title, body, created_at })),
           stats: { teams: active.length, submissions: subs.length },
           rows: mine.map((r) => ({
-            id: r.team.id, rank: r.rank, finalist: r.finalist, team: r.team.name, members: r.team.members,
+            id: r.team.id, rank: r.rank, finalist: r.finalist, order: judgingOrder(s, r.team), team: r.team.name, members: r.team.members,
             email: r.team.email, phone: r.team.phone, challenge: r.label, source: r.team.source, attempts: r.attempts,
             submission: { ...publicSub(r.best), flagged: r.flagged, files: r.files },
             judges: r.judges, judgeAvg: r.judgeAvg, final: r.final,
@@ -302,11 +305,12 @@ export default async function handler(req, res) {
 
       if (action === "score" && req.method === "POST") {
         if (judge.admin) return res.status(403).json({ error: "التقييم للمحكّمين فقط" });
+        if (H.judging?.open === false) return res.status(403).json({ error: "التحكيم مغلق حاليًا. الرجاء التواصل مع المنظمين." });
         const { rows } = await standings(s);
         const row = rows.find((r) => r.team.id === Number(b.team_id));
         if (!row) return res.status(404).json({ error: "الفريق غير موجود" });
         if (!row.finalist) return res.status(400).json({ error: "هذا الفريق ليس ضمن المتأهلين" });
-        if (!judgeSees(judge, row.team)) return res.status(403).json({ error: "هذا الفريق خارج المسارات المسندة إليك" });
+        if (!judgeSees(judge, row.team, s)) return res.status(403).json({ error: "هذا المشروع غير مسند إليك" });
         const coi = Boolean(b.coi);
         let criteria = null, score = 0;
         if (!coi) {

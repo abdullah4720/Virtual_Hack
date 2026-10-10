@@ -74,6 +74,19 @@ input[type=range]{accent-color:var(--accent);padding:0}
 .lprev img.mono{filter:brightness(0) invert(1)}
 .login{max-width:420px;margin:14vh auto}
 .help{font-size:12.5px;color:var(--muted);margin-top:4px}
+.jchips{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
+.jchip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:13.5px;cursor:pointer;background:var(--card);color:var(--muted);user-select:none;font:inherit;font-size:13.5px}
+.jchip.on{background:var(--soft);border-color:var(--accent);color:var(--accent);font-weight:700}
+.jdots{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.jdots span{font-size:11.5px;padding:1px 8px;border-radius:999px;background:var(--card2);border:1px solid var(--line);color:var(--muted)}
+.jdots span.ok{background:color-mix(in srgb,var(--good) 12%,transparent);border-color:transparent;color:var(--good)}
+.jprog{display:grid;grid-template-columns:minmax(120px,1.2fr) 2fr auto;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.jprog:last-child{border-bottom:0}
+.jprog .bar{height:8px}
+.steps4{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;counter-reset:s}
+.steps4 div{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:13.5px;line-height:1.6}
+.steps4 div b{display:block;color:var(--accent);font-size:12.5px}
+.tbl tr.det td{background:var(--card2);white-space:normal}
 .tbl{width:100%;border-collapse:collapse;font-size:14px}
 .tbl th{color:var(--muted);font-weight:500;text-align:right;padding:8px;border-bottom:1px solid var(--line);white-space:nowrap}
 .tbl td{padding:8px;border-bottom:1px solid var(--line);white-space:nowrap}
@@ -110,6 +123,7 @@ input[type=range]{accent-color:var(--accent);padding:0}
     <button data-p="tickets"><i data-icon="ticket"></i>التأهيل والدعوات</button>
     <button data-p="participants"><i data-icon="users"></i>المشاركون</button>
     <button data-p="judges"><i data-icon="scale"></i>المحكّمون</button>
+    <button data-p="judging"><i data-icon="clipboard-check"></i>إدارة التحكيم</button>
     <button data-p="announce"><i data-icon="megaphone"></i>الإعلانات</button>
     <button data-p="notify"><i data-icon="mail"></i>الإشعارات والبريد</button>
     <button data-p="screens"><i data-icon="monitor"></i>الشاشات</button>
@@ -188,9 +202,10 @@ const NEW = {
   "program.faq": () => ({q:"", a:""}),
   "program.partners": () => ({name:"", logoUrl:""}),
   "brand.logos": () => ({name:"", src:"https://", mono:true}),
+  "hackathon.judging.committees": () => ({id:uid("com"), name:`اللجنة ${(S.hackathon.judging.committees||[]).length+1}`, judges:[]}),
 };
 function genKey(n=10){ const a="ABCDEFGHJKMNPQRSTUVWXYZ23456789"; return Array.from(crypto.getRandomValues(new Uint8Array(n)),x=>a[x%a.length]).join(""); }
-let TEAMS = null, CERTS = null, LOGS = null, PASSLIST = null; const OPEN = new Set();
+let TEAMS = null, CERTS = null, LOGS = null, PASSLIST = null, JG = null; const OPEN = new Set();
 const when = d => new Date(d).toLocaleString("ar-SA-u-nu-latn",{day:"numeric",month:"short",hour:"numeric",minute:"2-digit"});
 
 // ---------- الأقسام ----------
@@ -322,6 +337,69 @@ const P = {
         <div><label>&nbsp;</label><button class="btn ghost" data-act="genkey"><i data-icon="dices"></i> توليد مفتاح</button></div></div>
         <div class="links" style="margin-top:12px"><div><span>رابط لوحة اللجنة</span><code>${esc(abs("judges.html"))}</code><a class="ib" href="judges.html" target="_blank">فتح</a><button class="ib" data-copy="${attr(abs("judges.html"))}">نسخ</button></div></div>`)}`;
   },
+  judging(){
+    const J = S.hackathon.judging, JD = S.hackathon.judges, TR = S.hackathon.tracks, C = J.committees || [];
+    const jn = id => (JD.find(j=>j.id===id)||{}).name || "—";
+    const unsaved = JSON.stringify(S.hackathon) !== JSON.stringify(JSON.parse(saved).hackathon);
+    const MODES = [["all","كل محكّم يقيّم كل المشاريع (موصى به لعدد قليل من المشاريع)"],["tracks","حسب المسارات المحددة لكل محكّم في «المحكّمون»"],["committees","لجان تحكيم: يُسنَد كل مشروع إلى لجنة يقيّمه أعضاؤها"]];
+    let h = `<h1>إدارة التحكيم</h1><p class="lead">توزيع المشاريع على المحكّمين، ومتابعة سير التحكيم لحظة بلحظة، ومراجعة الدرجات قبل نشر النتائج.</p>
+      <div class="steps4" style="margin-bottom:14px"><div><b>١</b>أضف المحكّمين من «المحكّمون» وأرسل لهم الدعوات</div><div><b>٢</b>حدّد نطاق التحكيم وطريقة التوزيع</div><div><b>٣</b>${J.mode==="committees"?"أنشئ اللجان وأسند المشاريع":"راجع ترتيب عرض المشاريع"}</div><div><b>٤</b>تابع التقدّم، ثم أغلق التحكيم وانشر النتائج</div></div>`;
+    if (unsaved) h += `<div class="note warn" style="margin-bottom:14px">لديك تغييرات غير محفوظة. الرجاء حفظ التغييرات ليراها المحكّمون ويتحدّث التقدّم أدناه.</div>`;
+    h += card(`<span style="display:flex;align-items:center;gap:8px"><i data-icon="settings"></i> إعدادات التحكيم</span>`, `<div class="grid2">
+        ${f("المشاريع التي تدخل التحكيم","hackathon.judging.scope",{type:"select",opts:[["top",`أفضل ${S.hackathon.finalists} مشاريع حسب تقييم الذكاء الاصطناعي`],["all","كل المشاريع المقدَّمة"]]})}
+        ${J.scope==="top"?f("عدد المشاريع المتأهلة للتحكيم","hackathon.finalists",{type:"num",min:1,max:50}):`<div class="help" style="align-self:end">كل فريق قدّم مشروعه (وغير مستبعد) يدخل التحكيم.</div>`}</div>
+        ${f("طريقة توزيع المشاريع على المحكّمين","hackathon.judging.mode",{type:"select",opts:MODES})}
+        ${tog("التحكيم مفتوح","hackathon.judging.open","عند الإيقاف: يرى المحكّمون المشاريع ودرجاتهم، ولا يستطيعون الحفظ أو التعديل. أوقفه بعد اكتمال التحكيم وقبل نشر النتائج.")}
+        <p class="help" style="margin-top:8px">الدرجة النهائية = ${S.hackathon.weights.ai}% الذكاء الاصطناعي + ${100-S.hackathon.weights.ai}% متوسط اللجنة (يُعدَّل الوزن من «الهاكاثون: الإعدادات»). درجة من أقرّ بتعارض المصالح لا تُحتسب.</p>`);
+    if (J.mode==="committees") {
+      const cnt = id => Object.values(J.assign||{}).filter(x=>x===id).length;
+      h += card(`<span style="display:flex;align-items:center;gap:8px"><i data-icon="users-round"></i> لجان التحكيم (${C.length})</span>`, `<p class="muted small" style="margin-bottom:10px">تضم كل لجنة عددًا من المحكّمين، ويُسنَد المشروع إلى لجنة واحدة يقيّمه جميع أعضائها. يمكن أن يكون المحكّم عضوًا في أكثر من لجنة.</p>
+        ${C.map((c,i)=>`<div class="item"><div class="head"><b>${esc(c.name)} <span class="pill">${c.judges.length} محكّم · ${cnt(c.id)} مشروع</span></b>${tools("hackathon.judging.committees",i,C.length)}</div>
+          ${f("اسم اللجنة","hackathon.judging.committees."+i+".name",{max:60})}
+          <label>الأعضاء</label><div class="jchips">${JD.length?JD.map(j=>`<button type="button" class="jchip ${c.judges.includes(j.id)?"on":""}" data-act="cmem" data-c="${i}" data-j="${attr(j.id)}">${c.judges.includes(j.id)?glyph("check"):glyph("plus")} ${esc(j.name)}</button>`).join(""):`<span class="help">أضف المحكّمين أولًا من «المحكّمون».</span>`}</div></div>`).join("")}
+        ${addBtn("hackathon.judging.committees","إضافة لجنة")}`);
+      const sel = tmp._atComs || C.map(c=>c.id);
+      h += card(`<span style="display:flex;align-items:center;gap:8px"><i data-icon="shuffle"></i> أداة الإسناد</span>`, C.length ? `<div class="grid2">
+          ${f("نطاق المشاريع","_atTrack",{type:"select",opts:[["","كل المسارات"],...TR.map(t=>[t.id,t.title])]})}
+          ${f("طريقة التوزيع","_atMode",{type:"select",opts:[["spread","توزيع متوازن على اللجان المختارة"],["single","كل المشاريع للجنة واحدة (أول لجنة مختارة)"]]})}</div>
+        <label>اللجان المشاركة</label><div class="jchips">${C.map(c=>`<button type="button" class="jchip ${sel.includes(c.id)?"on":""}" data-act="atcom" data-id="${attr(c.id)}">${esc(c.name)}${c.judges.length?"":" · بلا أعضاء"}</button>`).join("")}</div>
+        <label class="toggle" style="margin-top:10px"><span><b>إعادة إسناد المشاريع المسندة مسبقًا</b><div class="help">عند الإيقاف تُسنَد المشاريع غير المسندة فقط.</div></span><input type="checkbox" data-k="_atOver" data-type="bool" ${tmp._atOver?"checked":""}></label>
+        <p class="help">التوزيع المتوازن يوزّع المشاريع بالتناوب حسب ترتيبها في تقييم الذكاء الاصطناعي، فتحصل كل لجنة على مزيج متقارب من المستويات.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn sm" data-act="runassign"><i data-icon="split"></i> تنفيذ الإسناد</button><button class="btn sm ghost" data-act="renumber"><i data-icon="list-ordered"></i> إعادة ترقيم العرض</button><button class="btn sm ghost red" data-act="clearassign">إلغاء كل الإسنادات</button></div>` : `<p class="muted">أنشئ لجنة واحدة على الأقل.</p>`);
+    }
+    if (!JG) return h + `<p class="muted">جارٍ تحميل بيانات التحكيم…</p>`;
+    const ord = p => Number(getP(S,"hackathon.judging.order."+p.id)) || 1e4+p.rank, Pj = [...JG.projects].sort((a,b)=>ord(a)-ord(b));
+    const need = Pj.reduce((a,p)=>a+p.expected.length,0), done = Pj.reduce((a,p)=>a+p.done,0);
+    const full = Pj.filter(p=>p.expected.length && p.done>=p.expected.length).length, none = Pj.filter(p=>!p.expected.length).length, wide = Pj.filter(p=>p.spread>=25).length;
+    h += `<div class="stats"><div class="stat"><b>${fmt(Pj.length)}</b><span>مشروع في التحكيم${JG.others?` (من ${fmt(JG.submitted)} مقدَّم)`:""}</span></div>
+      <div class="stat"><b>${fmt(done)}<small style="font-size:15px;color:var(--muted)"> / ${fmt(need)}</small></b><span>تقييم منجز</span><div class="bar" style="margin-top:6px"><i style="width:${need?Math.round(done*100/need):0}%"></i></div></div>
+      <div class="stat"><b style="color:var(--good)">${fmt(full)}</b><span>مشروع اكتمل تحكيمه</span></div>
+      <div class="stat"><b style="color:${none?"var(--bad)":"var(--navy)"}">${fmt(none)}</b><span>مشروع بلا محكّم</span></div>
+      <div class="stat"><b style="color:${wide?"var(--gold)":"var(--navy)"}">${fmt(wide)}</b><span>تباين كبير بين المحكّمين</span></div></div>`;
+    h += card(`<span style="display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%"><span style="display:flex;align-items:center;gap:8px"><i data-icon="clipboard-check"></i> المشاريع وسير التحكيم</span><button class="ib" data-act="jrefresh"><i data-icon="refresh-cw"></i> تحديث</button></span>`, Pj.length ? `<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>العرض</th><th>المشروع</th><th>الذكاء الاصطناعي</th>${J.mode==="committees"?"<th>اللجنة</th>":""}<th>التقدّم</th><th>متوسط اللجنة</th><th>النهائية</th><th></th></tr></thead><tbody>
+      ${Pj.map(p=>{ const cid = getP(S,"hackathon.judging.assign."+p.id)||"", open = OPEN.has("jg:"+p.id), c = C.find(x=>x.id===cid);
+        const comp = p.expected.length && p.done>=p.expected.length;
+        return `<tr><td><input type="number" min="1" dir="ltr" style="width:64px;padding:6px 8px" data-k="hackathon.judging.order.${p.id}" data-type="num" value="${getP(S,"hackathon.judging.order."+p.id)??""}" placeholder="${p.rank}"></td>
+        <td><b>${esc(p.name)}</b>${p.flagged?' <span class="pill no"><i data-icon="triangle-alert"></i></span>':""}<div class="help">${esc(p.title||"")}<br>${esc(p.label)}</div></td>
+        <td><b class="gold">${p.ai}</b><div class="help">الترتيب ${p.rank}</div></td>
+        ${J.mode==="committees"?`<td><select data-k="hackathon.judging.assign.${p.id}" style="min-width:150px;padding:7px 9px"><option value="">— بلا لجنة —</option>${C.map(x=>`<option value="${attr(x.id)}" ${x.id===cid?"selected":""}>${esc(x.name)}</option>`).join("")}</select>${c?`<div class="help">${esc(c.judges.map(jn).join("، ")||"بلا أعضاء")}</div>`:""}</td>`:""}
+        <td>${p.expected.length?`<span class="pill ${comp?"ok":p.done?"warn":""}">${p.done} من ${p.expected.length}</span><div class="jdots">${p.expected.map(j=>`<span class="${j.done?"ok":""}">${j.done?"✓ ":""}${esc(j.name)}</span>`).join("")}</div>`:`<span class="pill no">بلا محكّم</span>`}</td>
+        <td>${p.judgeAvg??"—"}${p.spread>=25?`<div><span class="pill warn" title="الفرق بين أعلى وأدنى درجة">تباين ${p.spread}</span></div>`:""}</td>
+        <td><b>${p.final??"—"}</b>${p.finalRank&&p.final!=null?`<div class="help">المركز ${p.finalRank}</div>`:""}</td>
+        <td><button class="ib" data-act="jopen" data-id="${p.id}">${open?"إخفاء":"الدرجات"}</button></td></tr>
+        ${open?`<tr class="det"><td colspan="${J.mode==="committees"?8:7}">${p.scores.length?`<table class="tbl" style="background:var(--card);border-radius:10px"><thead><tr><th>المحكّم</th><th>الدرجة</th><th>الملاحظة</th><th>الوقت</th><th></th></tr></thead><tbody>${p.scores.map(x=>`<tr><td>${esc(x.judge||jn(x.judge_id))}</td><td>${x.coi?'<span class="pill warn">تعارض مصالح</span>':`<b>${x.score}</b> / 100`}</td><td style="white-space:normal;max-width:340px">${esc(x.note||"—")}</td><td>${x.at?when(x.at):"—"}</td><td><button class="ib del" data-act="jreset" data-team="${p.id}" data-judge="${attr(x.judge_id||"")}" data-name="${attr(x.judge||"")}">إلغاء التقييم</button></td></tr>`).join("")}</tbody></table>
+          <div style="margin-top:8px"><button class="ib del" data-act="jreset" data-team="${p.id}">مسح كل تقييمات المشروع</button></div>`:`<p class="muted small">لم يقيّمه أحد بعد.</p>`}
+          ${p.expected.filter(j=>!j.done).length?`<p class="help" style="margin-top:6px">بانتظار: ${esc(p.expected.filter(j=>!j.done).map(j=>j.name).join("، "))}</p>`:""}</td></tr>`:""}`; }).join("")}
+      </tbody></table></div><p class="help" style="margin-top:8px">«العرض» يحدد تسلسل ظهور المشاريع للمحكّمين (فارغ = حسب ترتيب الذكاء الاصطناعي). إلغاء التقييم يحذف درجة المحكّم ليقيّم من جديد.</p>`
+      : `<p class="muted">لا توجد مشاريع في التحكيم بعد. تظهر هنا بعد أن تقدّم الفرق مشاريعها.</p>`);
+    const JJ = JG.judges;
+    h += card(`<span style="display:flex;align-items:center;gap:8px"><i data-icon="gauge"></i> تقدّم المحكّمين</span>`, JJ.length ? JJ.map(j=>`<div class="jprog"><div><b>${esc(j.name)}</b><div class="help">${j.last?"آخر تقييم "+when(j.last):"لم يبدأ بعد"}${j.coi?` · ${j.coi} تعارض مصالح`:""}</div></div>
+        <div class="bar"><i style="width:${j.total?Math.round(j.done*100/j.total):0}%;${j.total&&j.done>=j.total?"background:var(--good)":""}"></i></div>
+        <span class="pill ${j.total&&j.done>=j.total?"ok":j.total?"":"no"}">${j.total?`${j.done} من ${j.total}`:"لا مشاريع مسندة"}</span></div>`).join("")
+      + `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">${D.system.mail?`<button class="btn sm ghost" data-act="remindjudges"><i data-icon="bell"></i> تذكير من لم يكمل</button>`:""}<a class="btn sm ghost" href="judges.html" target="_blank"><i data-icon="eye"></i> لوحة اللجنة (ادخل بمفتاح الإدارة للمراقبة)</a><button class="btn sm ghost" data-act="export" data-what="scores"><i data-icon="download"></i> تصدير الدرجات</button></div>`
+      : `<p class="muted">لا يوجد محكّمون. أضفهم من «المحكّمون».</p>`);
+    return h;
+  },
   participants(){
     if (!TEAMS) return `<h1>المشاركون</h1><p class="muted">جارٍ التحميل…</p>`;
     const q = (tmp._q||"").trim().toLowerCase();
@@ -442,6 +520,7 @@ function computed(){
   if (el) { el.textContent = `المجموع ${sum} / 100`; el.className = "sum " + (sum===100?"ok":"no"); }
   if ($("wAi")) { $("wAi").textContent = S.hackathon.weights.ai+"%"; $("wJ").textContent = (100-S.hackathon.weights.ai)+"%"; }
 }
+async function loadJudging(){ try { JG = await api("judging"); } catch(e){ JG = {projects:[], judges:[], others:0, submitted:0, error:e.message}; } if (pane === "judging") render(); }
 function dirty(msg, cls=""){
   const d = JSON.stringify(S) !== saved;
   $("saveBtn").disabled = !d; $("discardBtn").disabled = !d;
@@ -452,6 +531,7 @@ function dirty(msg, cls=""){
 $("nav").onclick = async e => {
   const b = e.target.closest("button[data-p]"); if (!b) return; pane = b.dataset.p; render(); scrollTo(0,0);
   if (pane === "participants") { TEAMS = (await api("teams")).teams; render(); }
+  if (pane === "judging") await loadJudging();
   if (pane === "reports") CERTS = null;
   if (pane === "notify") { LOGS = await api("mail-log").catch(()=>null); render(); }
 };
@@ -520,6 +600,7 @@ $("main").addEventListener("change", async e => {
       render(); dirty("أُضيف الشعار. الرجاء حفظ التغييرات.", "ok");
     } catch(err){ msg.textContent = err.message; }
   }
+  if (/^(hackathon\.judging\.(scope|mode|assign\.)|_atTrack|_atMode|_atOver)/.test(e.target.dataset.k||"")) render();
   if (e.target.hasAttribute("data-icon-field")) { const pv = $("main").querySelector(`[data-prev="${e.target.dataset.k}"]`); if (pv) pv.innerHTML = glyph(e.target.value); }
   if (e.target.dataset.jt != null) {
     const j = S.hackathon.judges[Number(e.target.dataset.jt)], id = e.target.value;
@@ -541,6 +622,38 @@ $("main").addEventListener("click", async e => {
     if (act==="down" && i<arr.length-1) [arr[i+1],arr[i]] = [arr[i],arr[i+1]];
     render(); dirty();
     if (act==="add") { const items = $("main").querySelectorAll(`[data-k^="${list}.${arr.length-1}."]`); items[0]?.focus(); }
+    return;
+  }
+  // ---------- إدارة التحكيم ----------
+  if (act==="jopen") { const k="jg:"+b.dataset.id; OPEN.has(k)?OPEN.delete(k):OPEN.add(k); render(); return; }
+  if (act==="jrefresh") { await loadJudging(); return; }
+  if (act==="cmem") { const c = S.hackathon.judging.committees[Number(b.dataset.c)], j = b.dataset.j; c.judges = c.judges.includes(j) ? c.judges.filter(x=>x!==j) : [...c.judges, j]; render(); dirty(); return; }
+  if (act==="atcom") { const all = S.hackathon.judging.committees.map(c=>c.id); let sel = tmp._atComs || all; sel = sel.includes(b.dataset.id) ? sel.filter(x=>x!==b.dataset.id) : [...sel, b.dataset.id]; tmp._atComs = all.filter(x=>sel.includes(x)); render(); return; }
+  if (act==="runassign" || act==="renumber" || act==="clearassign") {
+    const J = S.hackathon.judging; J.assign ||= {}; J.order ||= {};
+    if (!JG) return alert("الرجاء الانتظار حتى تحميل المشاريع");
+    if (act==="clearassign") { if (!confirm("إلغاء إسناد كل المشاريع للجان؟")) return; J.assign = {}; J.order = {}; render(); dirty("أُلغيت الإسنادات. الرجاء حفظ التغييرات."); return; }
+    if (act==="runassign") {
+      const coms = (tmp._atComs || J.committees.map(c=>c.id)).filter(id => J.committees.some(c=>c.id===id));
+      if (!coms.length) return alert("الرجاء اختيار لجنة واحدة على الأقل");
+      const empty = J.committees.filter(c => coms.includes(c.id) && !c.judges.length);
+      if (empty.length && !confirm(`${empty.map(c=>c.name).join("، ")} بلا أعضاء، ولن تُقيَّم مشاريعها. المتابعة؟`)) return;
+      const list = JG.projects.filter(p => (!tmp._atTrack || p.track===tmp._atTrack) && (tmp._atOver || !J.assign[p.id])).sort((a,c)=>a.rank-c.rank);
+      if (!list.length) return alert("لا توجد مشاريع مطابقة للنطاق المحدد (أو كلها مسندة مسبقًا).");
+      const n = coms.length;
+      // توزيع متعرّج (1،2،3،3،2،1…) ليحصل كل لجنة على مستويات متقاربة
+      list.forEach((p, i) => { const r = Math.floor(i / n), k = i % n; J.assign[p.id] = (tmp._atMode==="single") ? coms[0] : coms[r % 2 ? n-1-k : k]; });
+    }
+    // الترقيم: داخل كل لجنة حسب الترتيب السابق ثم ترتيب الذكاء الاصطناعي
+    const groups = {};
+    for (const p of [...JG.projects].sort((a,c)=>(Number(J.order[a.id])||1e4+a.rank)-(Number(J.order[c.id])||1e4+c.rank))) (groups[J.assign[p.id]||""] ||= []).push(p);
+    J.order = {}; for (const arr of Object.values(groups)) arr.forEach((p,i)=>J.order[p.id]=i+1);
+    render(); dirty(act==="runassign" ? "تم الإسناد. الرجاء حفظ التغييرات ليظهر للمحكّمين." : "أُعيد الترقيم. الرجاء حفظ التغييرات.", "ok"); return;
+  }
+  if (act==="jreset") {
+    const one = b.dataset.judge || b.dataset.name;
+    if (!confirm(one ? `إلغاء تقييم «${b.dataset.name||"المحكّم"}» لهذا المشروع؟ تُحذف درجته ويستطيع التقييم من جديد.` : "مسح كل تقييمات هذا المشروع؟ لا يمكن التراجع.")) return;
+    try { await api("judge-reset", {team_id: Number(b.dataset.team), judge_id: b.dataset.judge || undefined, judge: !b.dataset.judge && b.dataset.name || undefined}); await loadJudging(); } catch(err){ alert(err.message); }
     return;
   }
   if (act==="nopen") { const k=b.dataset.k; OPEN.has(k)?OPEN.delete(k):OPEN.add(k); render(); return; }
@@ -669,7 +782,7 @@ $("saveBtn").onclick = async () => {
   try {
     const r = await api("save", {settings: S});
     S = JSON.parse(JSON.stringify(r.settings)); saved = JSON.stringify(S);
-    D.settings = JSON.parse(saved); D = await api("get"); render(); dirty("✓ تم الحفظ، والتغييرات ظاهرة الآن في كل الصفحات", "ok");
+    D.settings = JSON.parse(saved); D = await api("get"); if (pane === "judging") JG = await api("judging").catch(()=>JG); render(); dirty("✓ تم الحفظ، والتغييرات ظاهرة الآن في كل الصفحات", "ok");
   } catch(e){ dirty("لم يتم الحفظ: " + ((e.data?.errors||[]).join("، ") || e.message), "err"); $("saveBtn").disabled=false; }
 };
 $("discardBtn").onclick = () => { if (!confirm("التراجع عن كل التغييرات غير المحفوظة؟")) return; S = JSON.parse(saved); render(); dirty(); };

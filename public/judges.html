@@ -108,13 +108,14 @@ async function load(){
   DATA = await api("judge");
   $("loginView").classList.add("hidden"); $("mainView").classList.remove("hidden");
   const c = DATA.config.hackathon, me = DATA.me;
-  const tr = me.tracks?.length ? me.tracks.map(id => c.tracks.find(t=>t.id===id)?.title).filter(Boolean).join("، ") : "كل المسارات";
+  const mode = c.judging?.mode || "tracks";
+  const tr = mode === "committees" ? "المشاريع المسندة إليك" : mode === "all" ? "كل المشاريع" : me.tracks?.length ? me.tracks.map(id => c.tracks.find(t=>t.id===id)?.title).filter(Boolean).join("، ") : "كل المسارات";
   $("meta").textContent = `${me.admin ? "الإدارة (عرض فقط)" : me.name} · ${tr} · ${DATA.stats.teams} فريق`;
   $("annBox").innerHTML = (DATA.announcements||[]).map(a=>`<div class="ann"><b><i data-icon="megaphone"></i> ${esc(a.title)}</b>${a.body?`<br><span class="small" style="white-space:pre-wrap">${esc(a.body)}</span>`:""}</div>`).join("");
   const p = DATA.progress, pct = p.total ? Math.round(p.done/p.total*100) : 0;
   $("progressCard").innerHTML = me.admin ? `<b>عرض الإدارة</b><div class="muted small">ترى كل المشاريع ودرجات المحكّمين، والتقييم للمحكّمين فقط.</div>` :
     `<div style="display:flex;justify-content:space-between"><b>تقدّمك في التقييم</b><b class="gold">${p.done} / ${p.total}</b></div><div class="prog"><i style="width:${pct}%"></i></div>${p.done===p.total&&p.total?`<p class="small" style="color:var(--good);margin-top:6px">✓ أنهيت تقييم كل المتأهلين المسندين إليك. شكرًا لك!</p>`:""}`;
-  $("guide").innerHTML = `قيّم كل مشروع متأهل <b>لكل معيار</b> وفق المعايير المعلنة، ويُحسب المجموع من 100 تلقائيًا. إذا كانت لديك علاقة بأحد أعضاء الفريق فحدّد <b>«لدي تعارض مصالح»</b> ولن تُحتسب درجتك. الدرجة النهائية = ${c.weights.ai}% تقييم الذكاء الاصطناعي + ${c.weights.judges}% متوسط درجات اللجنة. يمكنك تعديل تقييمك بإعادة الحفظ.`;
+  $("guide").innerHTML = (DATA.open === false ? `<div class="ann" style="margin-bottom:8px"><b><i data-icon="lock"></i> التحكيم مغلق حاليًا</b><br><span class="small">يمكنك الاطلاع على المشاريع وتقييماتك، ولا يمكن الحفظ أو التعديل.</span></div>` : "") + `قيّم كل مشروع متأهل <b>لكل معيار</b> وفق المعايير المعلنة، ويُحسب المجموع من 100 تلقائيًا. إذا كانت لديك علاقة بأحد أعضاء الفريق فحدّد <b>«لدي تعارض مصالح»</b> ولن تُحتسب درجتك. الدرجة النهائية = ${c.weights.ai}% تقييم الذكاء الاصطناعي + ${c.weights.judges}% متوسط درجات اللجنة. ${DATA.open === false ? "" : "يمكنك تعديل تقييمك بإعادة الحفظ."}`;
   render();
 }
 function render(){
@@ -128,10 +129,10 @@ function render(){
         <div class="tot"><span>المجموع</span><span class="gold"><span class="sum-out">${mine && !mine.coi ? mine.score : 0}</span> / 100</span></div>
         <textarea class="nt" maxlength="600" placeholder="ملاحظاتك للفريق أو للجنة (اختياري)" style="min-height:70px">${esc(mine?.note ?? "")}</textarea>
         <label class="coi"><input type="checkbox" class="coi-in" ${mine?.coi?"checked":""}> لدي تعارض مصالح مع هذا الفريق</label>
-        <button class="btn sm save" style="width:100%">${mine ? "تحديث التقييم" : "حفظ التقييم"}</button><p class="err msg"></p></div>` : "";
+        ${DATA.open === false ? `<p class="muted small" style="margin-top:8px"><i data-icon="lock"></i> التحكيم مغلق</p>` : `<button class="btn sm save" style="width:100%">${mine ? "تحديث التقييم" : "حفظ التقييم"}</button>`}<p class="err msg"></p></div>` : "";
     return `<details class="team ${r.finalist?"fin":""}" data-id="${r.id}" ${open.has(r.id)?"open":""}>
       <summary class="sum">
-        <span class="rk">${r.rank}</span>
+        <span class="rk">${r.order ?? r.rank}</span>
         <span><b>${esc(r.team)}</b> ${r.finalist?'<span class="pill">متأهل</span>':""} ${mine?'<span class="done-badge">✓ قيّمته</span>':""} ${s.flagged?'<span class="pill no"><i data-icon="triangle-alert"></i> محاولة تلاعب محتملة</span>':""}
           <div class="muted small">${esc(s.title)} · ${esc(r.challenge)} · ${r.attempts} محاولة</div></span>
         <span class="num"><b>${s.total}</b><small>الذكاء الاصطناعي</small></span>
@@ -160,7 +161,7 @@ function render(){
   document.querySelectorAll("details.team").forEach(d=>{
     const id = Number(d.dataset.id);
     d.ontoggle = () => d.open ? open.add(id) : open.delete(id);
-    const btn = d.querySelector(".save"); if (!btn) return;
+    const btn = d.querySelector(".save"); if (!btn) { d.querySelectorAll(".box input,.box textarea").forEach(i=>i.disabled=true); return; }
     const ins = [...d.querySelectorAll("[data-c]")], out = d.querySelector(".sum-out"), coi = d.querySelector(".coi-in");
     const recalc = () => { out.textContent = coi.checked ? 0 : ins.reduce((a,i)=>a+(Number(i.value)||0),0); ins.forEach(i=>i.disabled=coi.checked); };
     ins.forEach(i=>i.oninput=recalc); coi.onchange=recalc; recalc();
