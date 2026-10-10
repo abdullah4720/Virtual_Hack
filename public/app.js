@@ -90,10 +90,20 @@ window.APP = (() => {
     return new Response(body, { status, headers: out });
   }
 
+  // معرّف ثابت لهذا المتصفح (لحدود الاستخدام لكل جهاز) ومفتاح الكشك إن وُجد
+  const DEVICE = (() => { try { let d = localStorage.getItem("device_id"); if (!d) { d = Array.from(crypto.getRandomValues(new Uint8Array(12)), (b) => b.toString(16).padStart(2, "0")).join(""); localStorage.setItem("device_id", d); } return d; } catch (e) { return ""; } })();
+  const KIOSK = (() => { try { const k = new URLSearchParams(location.search).get("kiosk"); if (k) sessionStorage.setItem("kiosk", k); return k || sessionStorage.getItem("kiosk") || ""; } catch (e) { return ""; } })();
+  self.kiosk = KIOSK;
   window.fetch = async (url, opts) => {
     const s = typeof url === "string" ? url : url.url;
     const local = !/^[a-z]+:/i.test(s) || s.startsWith(location.origin);
     if (!local || !API.test(s)) return realFetch(url, opts);
+    // إضافة معرّف الجهاز ومفتاح الكشك لطلبات المنصة
+    opts = { ...(opts || {}) };
+    const h = new Headers(opts.headers || {});
+    if (DEVICE && !h.has("x-device-id")) h.set("x-device-id", DEVICE);
+    if (KIOSK && !h.has("x-kiosk-key")) h.set("x-kiosk-key", KIOSK);
+    opts.headers = Object.fromEntries(h.entries());
     return (await mode) === "demo" ? demoFetch(s, opts) : realFetch(url, opts);
   };
 

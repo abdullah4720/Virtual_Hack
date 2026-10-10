@@ -369,6 +369,12 @@ const P = {
     return `<h1>الشاشات</h1><p class="lead">تحكّم في ما يظهر على شاشة الجناح (booth) لحظيًا. تتحدث الشاشة خلال 15 ثانية من الحفظ.</p>
       ${card("ماذا تعرض شاشة الجناح الآن؟", f("الوضع","booth.mode",{type:"select",opts:[["rotate","تناوب تلقائي بين الشاشات المختارة"],["investor","المستثمر الذكي فقط"],["hackathon","ترتيب الهاكاثون فقط"],["dashboard","لوحة البيانات فقط"],["countdown","عدّ تنازلي (فتح/إقفال التقديم)"],["announcement","آخر إعلان بملء الشاشة"]]}))}
       ${card("شاشات التناوب", tog("شاشة المستثمر الذكي","booth.screens.investor") + tog("شاشة ترتيب الهاكاثون","booth.screens.hackathon") + tog("لوحة البيانات","booth.screens.dashboard") + f("مدة كل شاشة (ثانية)","booth.rotateSeconds",{type:"num",min:8,max:300}))}
+      ${card(`<span style="display:flex;align-items:center;gap:8px"><i data-icon="smartphone"></i> الجهاز اللوحي في الجناح</span>`, `<p class="muted small">يعرض الزائر فكرته على جهاز لوحي ثابت في الجناح. في هذا الوضع: تُمسح بيانات الزائر تلقائيًا بعد انتهائه أو بعد مدة من عدم الاستخدام، ولا يُطبَّق على الجهاز حد المحاولات في الساعة، ويظهر للمتأهل رمز QR ليكمل تسجيل فريقه من جواله.</p>
+        ${B.kioskKey ? `<div class="links" style="margin-top:10px"><div><span>رابط الجهاز اللوحي</span><code>${esc(abs("index.html?kiosk="+B.kioskKey))}</code><a class="ib" href="index.html?kiosk=${attr(B.kioskKey)}" target="_blank">فتح</a><button class="ib" data-copy="${attr(abs("index.html?kiosk="+B.kioskKey))}">نسخ</button></div></div>
+          <div class="grid2" style="margin-top:10px">${f("إعادة الضبط بعد عدم الاستخدام (ثانية)","booth.kioskIdle",{type:"num",min:30,max:600})}<div><label>&nbsp;</label><button class="btn ghost" data-act="kioskkey"><i data-icon="refresh-cw"></i> توليد رابط جديد (يُبطل القديم)</button></div></div>`
+        : `<button class="btn" data-act="kioskkey" style="margin-top:10px"><i data-icon="key-round"></i> إنشاء رابط الجهاز اللوحي</button>`}
+        <p class="help">الرابط سري: لا يُعرض للزوار. بعد إنشائه الرجاء حفظ التغييرات ثم فتحه على الجهاز اللوحي، ويُستحسن تثبيت الجهاز على وضع الشاشة الكاملة (Guided Access في iPad).</p>`)}
+      ${card(`<span style="display:flex;align-items:center;gap:8px"><i data-icon="monitor"></i> الشاشة الكبيرة</span>`, `<p class="muted small">افتح «شاشة الجناح» على الشاشة الكبيرة واضغط F11 (أو انقر على الشاشة) للعرض الكامل. تتناوب تلقائيًا بين الشاشات المختارة أعلاه، وتعرض رمز QR ليعرض الزوار أفكارهم من جوالاتهم، وتتحدث مباشرة مع كل عرض جديد من الجهاز اللوحي أو الجوالات.</p>`)}
       ${card("روابط الشاشات", `<div class="links">${[["شاشة الجناح (المتحكَّم بها)","booth.html"],["لوحة البيانات","dashboard.html"],["شاشة المستثمر","screen.html"],["شاشة الهاكاثون","hack-screen.html"],["إعلان الفائزين","winners.html"]].map(([l,p])=>`<div><span>${l}</span><code>${esc(abs(p))}</code><a class="ib" href="${p}" target="_blank">فتح</a><button class="ib" data-copy="${attr(abs(p))}">نسخ</button></div>`).join("")}</div>`)}`;
   },
   welcome(){
@@ -518,6 +524,7 @@ $("main").addEventListener("click", async e => {
     }
     tmp._judgesBulk = ""; render(); dirty(n ? `أُضيف ${n} محكّم. الرجاء حفظ التغييرات.` : "لم يُضف أحد (تحقق من الأسطر أو أنهم مضافون مسبقًا)", n ? "ok" : "err"); return;
   }
+  if (act==="kioskkey") { if (S.booth.kioskKey && !confirm("سيتوقف الرابط الحالي للجهاز اللوحي. متابعة؟")) return; S.booth.kioskKey = genKey(16); render(); dirty("أُنشئ رابط الجهاز اللوحي. الرجاء حفظ التغييرات.", "ok"); return; }
   if (act==="genkey") { S.hackathon.judgeKey = genKey(); render(); dirty(); return; }
   if (act==="reeval") { b.disabled = true; b.textContent = "جارٍ التقييم…"; try { const r = await api("reeval", {}); D = await api("get"); render(); dirty(`اكتمل تقييم ${r.evaluated}${r.remaining?`، وبقي ${r.remaining}`:""}`, "ok"); } catch(err){ alert(err.message); } return; }
   if (act==="tstatus") {

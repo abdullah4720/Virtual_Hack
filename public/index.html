@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="hack.css">
 <script src="icons.js"></script>
+<script src="qrcode.min.js"></script>
 <style>
 .wrap{max-width:540px;padding-top:18px}
 textarea{min-height:120px}
@@ -63,6 +64,14 @@ textarea{min-height:120px}
 .consent input{width:18px;height:18px;margin-top:4px;accent-color:var(--accent);flex:none}
 .near{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:14px;text-align:center;line-height:1.8;box-shadow:var(--shadow)}
 textarea.needfix{border-color:var(--bad);box-shadow:0 0 0 3px color-mix(in srgb,var(--bad) 15%,transparent)}
+/* الجهاز اللوحي في الجناح */
+body.kiosk .wrap{max-width:640px}
+body.kiosk .msg{font-size:17px}
+body.kiosk .hint{display:none}
+.kqr{display:flex;gap:16px;align-items:center;justify-content:center;flex-wrap:wrap;margin-top:12px;background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:14px;text-align:right}
+.kqr #ticketQR{background:#fff;padding:8px;border-radius:10px;line-height:0}
+.kqr p{max-width:260px;line-height:1.8;font-size:15px}
+.kbar{position:fixed;bottom:0;left:0;right:0;background:var(--navy);color:#fff;font-size:13px;text-align:center;padding:6px;z-index:6}
 .near.warn{border-color:color-mix(in srgb,var(--bad) 35%,transparent);background:color-mix(in srgb,var(--bad) 4%,var(--card))}
 </style>
 <script src="app.js"></script>
@@ -111,6 +120,7 @@ textarea.needfix{border-color:var(--bad);box-shadow:0 0 0 3px color-mix(in srgb,
   <section id="s-chat" class="hidden">
     <div class="meet" id="meet"></div>
     <div class="chat" id="chat"></div>
+    <p class="note hidden" id="queueNote" style="font-size:14px;margin-bottom:12px;text-align:center"></p>
     <div class="card" id="answerBox">
       <label for="answer">إجابتك</label>
       <textarea id="answer" maxlength="300" style="min-height:90px" placeholder="الرجاء الإجابة باختصار ووضوح..."></textarea>
@@ -151,8 +161,11 @@ APP.ready.then(c => {
   $("emailHint").textContent = `لكل بريد ${c.investor.maxAttempts} محاولات.` + (c.modules.hackathon ? " تُربط به محاولاتك وتأهلك." : "");
 }).catch(()=>{ $("startErr").textContent = "تعذّر تحميل الإعدادات، يُرجى تحديث الصفحة"; });
 
-$("name").value = LS.get("si_name") || "";
-$("email").value = LS.get("si_email") || "";
+const KIOSK = Boolean(APP.kiosk);
+if (KIOSK) document.body.classList.add("kiosk");
+// على الجهاز اللوحي المشترك لا نتذكر بيانات الزائر السابق
+$("name").value = KIOSK ? "" : (LS.get("si_name") || "");
+$("email").value = KIOSK ? "" : (LS.get("si_email") || "");
 $("idea").oninput = () => $("ideaCount").textContent = $("idea").value.length;
 $("randomIdea").onclick = () => {
   const p = PROBLEMS[Math.floor(Math.random()*PROBLEMS.length)];
@@ -160,7 +173,27 @@ $("randomIdea").onclick = () => {
   $("idea").focus(); $("idea").oninput();
 };
 
-function show(id){ ["s-start","s-chat","s-result"].forEach(s=>$(s).classList.toggle("hidden", s!==id)); window.scrollTo(0,0); }
+// ---------- الجهاز اللوحي: إعادة الضبط التلقائية ----------
+let idleT = null;
+function kioskReset(){
+  ["name","email","idea","answer"].forEach(id => { $(id).value = ""; });
+  $("consent").checked = false; $("idea").oninput?.();
+  state.investor = ""; state.questions = []; state.answers = []; state.clarified = []; state.token = "";
+  $("chat").innerHTML = ""; $("meet").innerHTML = ""; $("qualBox").innerHTML = ""; $("resultCard").innerHTML = "";
+  ["startErr","chatErr"].forEach(id => $(id) && ($(id).textContent = ""));
+  try { sessionStorage.clear(); if (APP.kiosk) sessionStorage.setItem("kiosk", APP.kiosk); } catch(e){}
+  show("s-start");
+}
+function kioskIdle(){
+  if (!KIOSK) return;
+  clearTimeout(idleT);
+  const busy = !$("s-start").classList.contains("hidden") && !$("name").value && !$("idea").value;
+  if (busy) return; // لا شيء لمسحه
+  idleT = setTimeout(kioskReset, (CFG?.booth?.kioskIdle || 90) * 1000);
+}
+if (KIOSK) ["pointerdown","keydown","input","scroll"].forEach(ev => addEventListener(ev, kioskIdle, {passive:true}));
+
+function show(id){ ["s-start","s-chat","s-result"].forEach(s=>$(s).classList.toggle("hidden", s!==id)); window.scrollTo(0,0); if (typeof kioskIdle === "function") kioskIdle(); }
 function inv(){ return INVESTORS[state.investor] || {name:"المستشار", emoji:"briefcase-business"}; }
 function addMsg(text, me){
   const m = document.createElement("div");
@@ -177,8 +210,19 @@ function typing(on){
 async function call(){
   const r = await fetch("api/pitch", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(state)});
   const d = await r.json();
-  if (!r.ok) { const e = new Error(d.error || "حدث خطأ"); e.status = r.status; e.needVerify = d.needVerify; throw e; }
+  if (!r.ok) { const e = new Error(d.error || "حدث خطأ"); e.status = r.status; e.needVerify = d.needVerify; e.retry = d.retry || r.status === 502 || r.status === 504; throw e; }
   return d;
+}
+// طابور انتظار: عند ازدحام الخدمة يُعاد الطلب تلقائيًا مع عدّاد، بدل رسالة خطأ
+async function callQ(note){
+  for (let i = 0; ; i++) {
+    try { const d = await call(); note(""); return d; }
+    catch(e){
+      if (!e.retry || i >= 5) { note(""); throw e; }
+      for (let t = 6 + i * 5; t > 0; t--) { note(`الطلبات كثيرة في هذه اللحظة، وسيُعاد إرسال طلبك تلقائيًا خلال ${t} ثانية… الرجاء عدم إغلاق الصفحة.`); await new Promise(r => setTimeout(r, 1000)); }
+      note("جارٍ إعادة الإرسال…");
+    }
+  }
 }
 
 $("startBtn").onclick = async () => {
@@ -189,7 +233,7 @@ $("startBtn").onclick = async () => {
   if (state.idea.length < 15) return $("startErr").textContent = "يُرجى توضيح فكرتك أكثر (المشكلة والحل)";
   state.consent = $("consent").checked;
   if (!state.consent) return $("startErr").textContent = "يلزم الموافقة على سياسة الخصوصية";
-  LS.set("si_name", state.name); LS.set("si_email", state.email);
+  if (!KIOSK) { LS.set("si_name", state.name); LS.set("si_email", state.email); }
   // التحقق من البريد (إن كان مفعّلًا)
   if (CFG.features?.verifyEmail) {
     state.token = SS.get("otp:" + state.email) || "";
@@ -222,7 +266,7 @@ async function begin(){
   $("startBtn").disabled = true;
   try {
     typing(false);
-    const d = await call();
+    const d = await callQ(t => { $("startErr").textContent = t; $("startErr").style.color = t ? "var(--muted)" : ""; });
     state.investor = d.investor; attemptsLeft = d.attemptsLeft;
     show("s-chat");
     $("meet").innerHTML = `<span class="av">${glyph(inv().emoji)}</span><span><b>يقيّم فكرتك: ${esc(inv().name)}</b><br><small>${esc(inv().title||"")}${inv().desc?" · "+esc(inv().desc):""}</small></span>`;
@@ -241,7 +285,7 @@ async function nextTurn(){
   $("answerBox").classList.add("hidden");
   typing(true);
   try {
-    const d = await call();
+    const d = await callQ(t => { $("queueNote").textContent = t; $("queueNote").classList.toggle("hidden", !t); });
     typing(false);
     if (d.clarify != null) {
       // الإجابة لم تُقبل: يطلب المستشار توضيحًا مرة واحدة لهذا السؤال
@@ -286,9 +330,11 @@ function showResult(d){
       <p class="muted" style="font-size:14px">${d.emailed ? `الرجاء الاحتفاظ بهذا الرمز، فهو رمز تسجيلك، وقد أُرسل أيضًا إلى ${esc(state.email)}.` : "الرجاء الاحتفاظ بهذا الرمز، فهو رمز تسجيلك."}</p>
       <div class="code">${esc(d.ticket)}</div>
       <p style="font-size:14px">الرجاء تسجيل أعضاء الفريق في صفحة ${esc(H.name)}، وستُضاف الفكرة وملاحظات المستشار تلقائيًا.</p>
-      <a class="btn" id="goHack" href="hackathon.html?ticket=${encodeURIComponent(d.ticket)}" style="margin-top:12px">أكمل التسجيل في ${esc(H.name)} <i data-icon="arrow-left"></i></a>
+      ${KIOSK ? `<div class="kqr"><div id="ticketQR"></div><p><b>الرجاء مسح الرمز بالجوال</b><br>لتسجيل أعضاء الفريق من جوالك، وستُضاف الفكرة والملاحظات تلقائيًا.</p></div>`
+        : `<a class="btn" id="goHack" href="hackathon.html?ticket=${encodeURIComponent(d.ticket)}" style="margin-top:12px">أكمل التسجيل في ${esc(H.name)} <i data-icon="arrow-left"></i></a>`}
     </div>`;
-    try { localStorage.setItem("hack_import", JSON.stringify({
+    if (KIOSK) { try { new QRCode($("ticketQR"), {text: new URL("hackathon.html?ticket=" + encodeURIComponent(d.ticket), location.href).href, width: 200, height: 200}); } catch(e){} }
+    else try { localStorage.setItem("hack_import", JSON.stringify({
       ticket:d.ticket, dealId:d.dealId, name:state.name, email:state.email, idea:state.idea, title:r.title, investor:inv().name, decision:r.decision, amount:r.amount,
       verdict:r.verdict, strengths:r.strengths, weaknesses:r.weaknesses, tip:r.tip, score:r.score, at:Date.now() })); } catch(e){}
   } else if (gate && !r.qualified) {
@@ -313,11 +359,12 @@ function showResult(d){
     <div style="margin-top:14px;font-size:13px;color:var(--muted)">${esc(state.name)} · ${esc(CFG.brand.eventName)} · ${esc(CFG.brand.orgName)}</div>
     ${d.demo ? `<p class="demo" style="color:var(--bad);font-weight:700"><i data-icon="triangle-alert"></i> تقييم وهمي: الذكاء الاصطناعي غير مفعّل</p>` : ""}`;
   if (d.demo) $("qualBox").insertAdjacentHTML("afterbegin", `<div class="near warn"><b style="color:var(--bad)"><i data-icon="triangle-alert"></i> هذا تقييم وهمي عشوائي للعرض فقط</b><br><span style="font-size:14px">الذكاء الاصطناعي غير مفعّل، فالأسئلة ثابتة والدرجات عشوائية. فعّله من لوحة التحكم ← نظرة عامة.</span></div>`);
-  $("againBtn").textContent = d.ticket ? "اعرض فكرة أخرى" : (attemptsLeft > 0 ? `أعد المحاولة (المتبقي: ${attemptsLeft})` : "اعرض فكرة ببريد آخر");
+  if (KIOSK) $("againBtn").innerHTML = '<i data-icon="rotate-ccw"></i> انتهيت، ابدأ عرضًا جديدًا';
+  else $("againBtn").textContent = d.ticket ? "اعرض فكرة أخرى" : (attemptsLeft > 0 ? `أعد المحاولة (المتبقي: ${attemptsLeft})` : "اعرض فكرة ببريد آخر");
   show("s-result");
   setTimeout(()=>{ $("scoreBar").style.width = r.score+"%"; document.querySelectorAll("#resultCard .bar i").forEach(i=>i.style.width=i.dataset.w); }, 100);
 }
-$("againBtn").onclick = () => { if (attemptsLeft === 0) $("email").value = ""; $("idea").value = attemptsLeft > 0 && !$("qualBox").querySelector(".ticket") ? state.idea : ""; $("idea").oninput(); show("s-start"); };
+$("againBtn").onclick = () => { if (KIOSK) return kioskReset(); if (attemptsLeft === 0) $("email").value = ""; $("idea").value = attemptsLeft > 0 && !$("qualBox").querySelector(".ticket") ? state.idea : ""; $("idea").oninput(); show("s-start"); };
 </script>
 </body>
 </html>

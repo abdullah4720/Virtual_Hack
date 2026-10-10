@@ -90,5 +90,10 @@ APP.ready.then(apply);
 setInterval(async () => { const c = await APP.refreshConfig(); if (c) apply(c); }, 15000);
 setTimeout(() => location.reload(), 3 * 3600e3);
 </script>
+<script>
+// الشاشة الكبيرة: نقرة واحدة للعرض الكامل، وإخفاء المؤشر عند عدم الحركة
+document.addEventListener("click", () => { if (!document.fullscreenElement) document.documentElement.requestFullscreen?.().catch(()=>{}); });
+let curT; document.addEventListener("mousemove", () => { document.body.style.cursor = ""; clearTimeout(curT); curT = setTimeout(() => document.body.style.cursor = "none", 3000); });
+</script>
 </body>
 </html>
