@@ -298,7 +298,8 @@ const P = {
       ${card(`أعضاء اللجنة (${J.length})`, J.map((j,i)=>`<div class="item"><div class="head"><b>${esc(j.name)||"محكّم جديد"}</b>${tools("hackathon.judges",i,J.length)}</div>
         <div class="grid3">${f("الاسم","hackathon.judges."+i+".name",{max:60})}${f("البريد","hackathon.judges."+i+".email",{ltr:true,max:100})}${f("المفتاح الشخصي","hackathon.judges."+i+".key",{ltr:true,max:40})}</div>
         <label>المسارات المسندة (بدون اختيار = كل المسارات)</label><div style="display:flex;flex-wrap:wrap;gap:10px">${TR.map(t=>`<label style="display:flex;gap:6px;align-items:center;margin:0;color:var(--text)"><input type="checkbox" data-jt="${i}" value="${attr(t.id)}" ${j.tracks.includes(t.id)?"checked":""} style="width:18px;height:18px;accent-color:var(--accent)"> ${glyph(t.icon)} ${esc(t.title)}</label>`).join("")}</div>
-        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button class="ib" data-copy="${attr(`أهلًا ${j.name}، رابط لوحة التحكيم: ${abs("judges.html")}\nمفتاحك الشخصي: ${j.key}`)}"><i data-icon="copy"></i> نسخ الدعوة</button>${D.system.mail&&j.email?`<button class="ib" data-act="jinvite" data-id="${attr(j.id)}"><i data-icon="mail"></i> إرسال الدعوة بالبريد</button>`:""}</div></div>`).join("") + addBtn("hackathon.judges","إضافة محكّم"))}
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button class="ib" data-copy="${attr(`أهلًا ${j.name}، رابط لوحة التحكيم: ${abs("judges.html")}\nمفتاحك الشخصي: ${j.key}`)}"><i data-icon="copy"></i> نسخ الدعوة</button>${D.system.mail&&j.email?`<button class="ib" data-act="jinvite" data-id="${attr(j.id)}"><i data-icon="mail"></i> إرسال الدعوة بالبريد</button>`:""}</div></div>`).join("") + addBtn("hackathon.judges","إضافة محكّم")
+        + `<details style="margin-top:12px"><summary style="cursor:pointer;color:var(--accent);font-weight:700">إضافة عدة محكّمين دفعة واحدة</summary>${f("سطر لكل محكّم: الاسم، البريد","_judgesBulk",{type:"textarea",rows:4,max:5000,ph:"د. أحمد العتيبي، ahmad@qu.edu.sa\nأ. منى الحربي، mona@qu.edu.sa"})}<button class="btn ghost sm" data-act="jbulk" style="margin-top:8px">إضافة إلى القائمة</button><p class="help">يُولَّد مفتاح شخصي لكل محكّم تلقائيًا. بعد الإضافة: حدّد مساراتهم إن لزم، ثم احفظ التغييرات وأرسل الدعوات.</p></details>`)}
       ${D.system.mail && J.length ? `<div class="grid2" style="margin-bottom:14px"><button class="btn ghost" data-act="jinvite"><i data-icon="mail"></i> إرسال الدعوات لكل المحكّمين (بعد الحفظ)</button><button class="btn ghost" data-act="remindjudges"><i data-icon="scale"></i> تذكير من لم يكمل التقييم</button></div>` : ""}
       ${card("مفتاح مشترك (اختياري)", `<div class="grid2">${f("المفتاح المشترك","hackathon.judgeKey",{ltr:true,max:80,help:"بديل سريع: من يدخل به يكتب اسمه، ويرى كل المسارات. الحسابات الشخصية أدق."})}
         <div><label>&nbsp;</label><button class="btn ghost" data-act="genkey"><i data-icon="dices"></i> توليد مفتاح</button></div></div>
@@ -398,14 +399,14 @@ const P = {
   },
   data(){
     return `<h1>البيانات</h1><p class="lead">تصدير النتائج لإعداد التقارير، أو تهيئة المنصة لفعالية جديدة.</p>
-      ${card("تصدير (CSV يفتح في Excel)", `<div class="grid2"><button class="btn ghost" data-act="export" data-what="teams">⬇️ فرق الهاكاثون ونتائجها</button><button class="btn ghost" data-act="export" data-what="deals">⬇️ عروض المستثمر الذكي</button></div>`)}
+      ${card("تصدير (CSV يفتح في Excel)", `<div class="grid3"><button class="btn ghost" data-act="export" data-what="teams"><i data-icon="download"></i> فرق الهاكاثون ونتائجها</button><button class="btn ghost" data-act="export" data-what="deals"><i data-icon="download"></i> عروض المستثمر الذكي</button><button class="btn ghost" data-act="export" data-what="scores"><i data-icon="download"></i> درجات المحكّمين</button></div><p class="help">ملف الفرق يتضمن: الأعضاء وبريدهم ورمز الفريق، ودرجة كل معيار، ومتوسط اللجنة، والدرجة النهائية، والترتيب.</p>`)}
       ${card("حذف البيانات", `<p class="muted small">يحذف المشاركات نهائيًا ولا يمكن التراجع. الإعدادات لا تتأثر. صدّر البيانات أولًا.</p>
         <div class="grid2" style="margin-top:10px">${f("اكتب «حذف» للتأكيد","_confirm",{ph:"حذف"})}${f("ما الذي يُحذف؟","_scope",{type:"select",opts:[["investor","عروض المستثمر الذكي"],["hackathon","فرق الهاكاثون وتقديماتها ودرجات اللجنة"],["all","كل البيانات"]]})}</div>
         <button class="btn red" data-act="reset" style="margin-top:12px">حذف البيانات</button><p class="err" id="resetMsg"></p>`, "danger")}
       ${card("استعادة الإعدادات الافتراضية", `<p class="muted small">تعيد كل الإعدادات إلى القالب الأصلي (لا تحذف البيانات). تحتاج الحفظ بعدها.</p><button class="btn ghost" data-act="defaults" style="margin-top:10px">استعادة القالب</button>`)}`;
   },
 };
-let tmp = {_people:"", _testTo:"", _confirm:"", _scope:"investor", _count:5, _label:"", _q:"", _aTitle:"", _aBody:"", _aAud:"all", _aEmail:false};
+let tmp = {_judgesBulk:"", _people:"", _testTo:"", _confirm:"", _scope:"investor", _count:5, _label:"", _q:"", _aTitle:"", _aBody:"", _aAud:"all", _aEmail:false};
 
 function render(){
   document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("on", b.dataset.p===pane));
@@ -505,6 +506,18 @@ $("main").addEventListener("click", async e => {
     } catch(err){ $("aiTest").textContent = err.message; }
     b.disabled = false; b.innerHTML = '<i data-icon="flask-conical"></i> اختبر الآن'; return;
   }
+  if (act==="jbulk") {
+    const lines = String(tmp._judgesBulk||"").split("\n").map(l=>l.trim()).filter(Boolean);
+    let n = 0;
+    for (const l of lines) {
+      const email = (l.match(/[^\s,،<>]+@[^\s,،<>]+\.[^\s,،<>]+/)||[""])[0];
+      const name = l.replace(email,"").replace(/[,،<>\-–:]+/g," ").trim();
+      if (!name) continue;
+      if (S.hackathon.judges.some(j => (email && j.email === email) || j.name === name)) continue;
+      S.hackathon.judges.push({...NEW["hackathon.judges"](), name, email}); n++;
+    }
+    tmp._judgesBulk = ""; render(); dirty(n ? `أُضيف ${n} محكّم. الرجاء حفظ التغييرات.` : "لم يُضف أحد (تحقق من الأسطر أو أنهم مضافون مسبقًا)", n ? "ok" : "err"); return;
+  }
   if (act==="genkey") { S.hackathon.judgeKey = genKey(); render(); dirty(); return; }
   if (act==="reeval") { b.disabled = true; b.textContent = "جارٍ التقييم…"; try { const r = await api("reeval", {}); D = await api("get"); render(); dirty(`اكتمل تقييم ${r.evaluated}${r.remaining?`، وبقي ${r.remaining}`:""}`, "ok"); } catch(err){ alert(err.message); } return; }
   if (act==="tstatus") {
@@ -535,7 +548,7 @@ $("main").addEventListener("click", async e => {
   if (act==="export") {
     const r = await fetch(`api/admin?action=export&what=${b.dataset.what}`, {headers:{"x-admin-key":KEY}});
     const blob = await r.blob(); const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob); a.download = b.dataset.what==="deals" ? "investor-pitches.csv" : "hackathon-teams.csv"; a.click(); return;
+    a.href = URL.createObjectURL(blob); a.download = {deals:"investor-pitches.csv", scores:"judges-scores.csv"}[b.dataset.what] || "hackathon-teams.csv"; a.click(); return;
   }
   if (act==="savekey") { const k = $("demoKey").value.trim(); if (!/^sk-ant-/.test(k)) return alert("المفتاح يبدأ بـ sk-ant-"); APP.setDemoKey(k); location.reload(); return; }
   if (act==="clearkey") { APP.setDemoKey(null); location.reload(); return; }

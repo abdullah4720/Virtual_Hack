@@ -299,17 +299,27 @@ export default async function handler(req, res) {
         return res.status(200).end(toCSV(
           ["التاريخ", "الاسم", "البريد", "متأهل", "الفكرة", "المستثمر", "القرار", "المبلغ", "الحصة %", "التقييم", "الدرجة", "تعليق المستثمر"],
           deals.map((d) => [d.created_at, d.name, d.email || "", d.qualified ? "نعم" : "لا", d.idea || d.title, s.investor.investors.find((i) => i.id === d.investor)?.name || d.investor,
-            d.decision === "invest" ? "استثمار" : "خارج", d.amount, d.equity, d.valuation, d.score, d.verdict])));
+            d.qualified ? "متأهل" : "غير متأهل", d.amount, d.equity, d.valuation, d.score, d.verdict])));
+      }
+      // درجات المحكّمين: صف لكل محكّم × فريق (آخر تقييم)
+      if (what === "scores") {
+        const { rows } = await standings(s);
+        const R = s.hackathon.rubric;
+        res.setHeader("Content-Disposition", 'attachment; filename="judges-scores.csv"');
+        const out = [];
+        for (const r of rows) for (const j of r.judges) out.push([j.judge, r.team.name, r.best.title, r.label, ...R.map((c) => j.criteria?.[c.key] ?? ""), j.coi ? "" : j.score, j.coi ? "تعارض مصالح" : "", j.note || ""]);
+        return res.status(200).end(toCSV(["المحكّم", "الفريق", "المشروع", "المسار", ...R.map((c) => `${c.label} (${c.max})`), "المجموع", "ملاحظة", "تعليق المحكّم"], out));
       }
       const { rows, teams } = await standings(s);
       const byId = new Map(rows.map((r) => [r.team.id, r]));
       res.setHeader("Content-Disposition", 'attachment; filename="hackathon-teams.csv"');
       return res.status(200).end(toCSV(
-        ["الترتيب", "الفريق", "الحالة", "الأعضاء", "البريد", "الجوال", "المسار والتحدي", "المصدر", "المشروع", "المحاولات", "درجة الذكاء الاصطناعي", "متوسط اللجنة", "النهائية", "متأهل", "تنبيه تلاعب"],
+        ["الترتيب", "الفريق", "الحالة", "الأعضاء", "البريد", "بريد الأعضاء", "الجوال", "رمز الفريق", "المسار والتحدي", "المصدر", "المشروع", "المحاولات", ...s.hackathon.rubric.map((c) => `${c.label} (${c.max})`), "درجة الذكاء الاصطناعي", "عدد المحكّمين", "متوسط اللجنة", "النهائية", "متأهل للتحكيم", "الترتيب النهائي", "ملخص التقييم", "تنبيه تلاعب", "تاريخ التسجيل"],
         teams.map((t) => {
           const r = byId.get(t.id);
-          return [r?.rank ?? "", t.name, t.status === "disqualified" ? "مستبعد" : "نشط", t.members, t.email, t.phone, optionLabel(s, t.track, t.challenge),
-            { investor: "المستثمر الذكي", invite: "دعوة" }[t.source] || "مباشر", r?.best.title ?? "", r?.attempts ?? 0, r?.best.ai_total ?? "", r?.judgeAvg ?? "", r?.final ?? "", r?.finalist ? "نعم" : "", r?.flagged ? "نعم" : ""];
+          return [r?.rank ?? "", t.name, t.status === "disqualified" ? "مستبعد" : "نشط", t.members, t.email, t.member_emails || [], t.phone, t.code, optionLabel(s, t.track, t.challenge),
+            { investor: "المستثمر الذكي", invite: "دعوة" }[t.source] || "مباشر", r?.best.title ?? "", r?.attempts ?? 0, ...s.hackathon.rubric.map((c) => r?.best.ai_scores?.[c.key] ?? ""), r?.best.ai_total ?? "",
+            r ? r.judges.filter((j) => !j.coi).length : "", r?.judgeAvg ?? "", r?.final ?? "", r?.finalist ? "نعم" : "", r?.finalRank ?? "", r?.best.ai_feedback?.summary ?? "", r?.flagged ? "نعم" : "", t.created_at];
         })));
     }
 
