@@ -151,3 +151,19 @@ create table if not exists announcements (
 alter table usage enable row level security;
 alter table otp enable row level security;
 alter table announcements enable row level security;
+
+-- ============ v3: الإشعارات ============
+-- بريد أعضاء الفريق (اختياري لكل عضو)
+alter table hack_teams add column if not exists member_emails jsonb not null default '[]';
+
+-- سجل البريد: كل رسالة وحالتها، ويمنع تكرار التذكيرات والنتائج (kind + ref)
+create table if not exists mail_log (
+  id bigint generated always as identity primary key,
+  created_at timestamptz not null default now(),
+  kind text not null, ref text,
+  recipients text, subject text,
+  status text not null,   -- sending | sent | failed | skipped
+  error text
+);
+create index if not exists mail_log_kind_ref_idx on mail_log (kind, ref);
+alter table mail_log enable row level security;

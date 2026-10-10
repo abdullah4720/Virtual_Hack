@@ -6,7 +6,7 @@ import { createUpload, stat, remove, TYPES, extOf, safeName } from "../lib/files
 import { aiAvailable } from "../lib/ai.js";
 import { findTicket, useTicket } from "../lib/tickets.js";
 import { checkLimits, recordUse } from "../lib/limits.js";
-import { sendMail, layout, codeBox, escHtml } from "../lib/mailer.js";
+import { notify, teamEmails, closesAtText } from "../lib/notify.js";
 import { siteUrl } from "../lib/site.js";
 import { T, standings, runEvaluation, identifyJudge, judgeSees, withUrls, ensureCerts, certKind } from "../lib/hackcore.js";
 
@@ -96,7 +96,13 @@ export default async function handler(req, res) {
         if (ticket.used_by_team) return res.status(409).json({ error: "رمز التأهل استُخدم لتسجيل فريق من قبل" });
       }
       const name = clip(b.name, 40);
-      const members = (Array.isArray(b.members) ? b.members : []).map((m) => clip(m, 50)).filter(Boolean).slice(0, H.maxMembers);
+      // الأعضاء مع بريد اختياري لكل عضو
+      const rawM = Array.isArray(b.members) ? b.members : [], rawE = Array.isArray(b.memberEmails) ? b.memberEmails : [];
+      const pairs = rawM.map((m, i) => [clip(m, 50), clip(rawE[i], 80).toLowerCase()]).filter(([m]) => m).slice(0, H.maxMembers);
+      const members = pairs.map(([m]) => m);
+      const badMail = pairs.find(([, e]) => e && !/^\S+@\S+\.\S+$/.test(e));
+      if (badMail) return res.status(400).json({ error: `بريد العضو «${badMail[0]}» غير صحيح` });
+      const member_emails = [...new Set(pairs.map(([, e]) => e).filter(Boolean))];
       const email = clip(b.email, 80).toLowerCase();
       const phone = clip(b.phone, 20);
       const opt = findOption(s, b.track, b.challenge);
@@ -107,16 +113,14 @@ export default async function handler(req, res) {
       const existing = await select(T.teams);
       if (existing.some((t) => t.name.toLowerCase() === name.toLowerCase())) return res.status(409).json({ error: "اسم الفريق مستخدم، اختر اسمًا آخر" });
       const team = await insert(T.teams, {
-        code: genCode(), name, members, email, phone, status: "active",
+        code: genCode(), name, members, member_emails, email, phone, status: "active",
         track: opt.track.id, challenge: opt.challenge?.id ?? null,
         source: ticket ? ticket.kind : "direct", deal_id: ticket?.deal_id ?? null, ticket: ticket?.code ?? null,
         consent_at: new Date().toISOString(),
       });
       if (ticket) await useTicket(ticket, team.id);
       const link = `${siteUrl(req)}/hackathon?code=${team.code}`;
-      const emailed = await sendMail(email, `رمز فريق «${name}» في ${H.name}`, layout(s, `أهلًا بفريق «${name}»`,
-        `<p>تم تسجيل فريقكم في ${escHtml(H.name)} بمسار: ${escHtml(optionLabel(s, opt.track.id, opt.challenge?.id))}.</p><p>هذا رمز الفريق، تدخلون به وتقدّمون مشروعكم. شاركوه مع أعضاء الفريق:</p>${codeBox(team.code)}`,
-        { url: link, label: "صفحة الفريق" }));
+      const emailed = (await notify(s, "registered", teamEmails(s, team), { team: name, track: optionLabel(s, opt.track.id, opt.challenge?.id), code: team.code, closesAt: closesAtText(s), link })).ok;
       return res.status(200).json({ code: team.code, emailed });
     }
 

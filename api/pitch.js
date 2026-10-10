@@ -6,7 +6,8 @@ import { createTicket } from "../lib/tickets.js";
 import { aiAvailable } from "../lib/ai.js";
 import { SCREEN as ENGINE_SCREEN, screenQuestion, screenFinal } from "../lib/evaluator.js";
 import { checkLimits, recordUse } from "../lib/limits.js";
-import { mailEnabled, sendMail, layout, codeBox, escHtml } from "../lib/mailer.js";
+import { mailEnabled } from "../lib/mailer.js";
+import { notify } from "../lib/notify.js";
 import { insert, count } from "../lib/db.js";
 import { siteUrl } from "../lib/site.js";
 import crypto from "node:crypto";
@@ -31,7 +32,7 @@ async function otpHandler(s, req, res, action) {
     if (recent >= 3) return res.status(429).json({ error: "أُرسلت رموز كثيرة لهذا البريد. انتظر 10 دقائق." });
     const code = String(crypto.randomInt(100000, 999999));
     await insert("otp", { email, code_hash: sha(`${email}|${code}`), expires_at: new Date(Date.now() + 600e3).toISOString() });
-    const ok = await sendMail(email, `رمز التحقق: ${code}`, layout(s, "رمز التحقق من بريدك", `<p>استخدم هذا الرمز لبدء عرض فكرتك على ${escHtml(s.investor.title)}. صالح لمدة 10 دقائق.</p>${codeBox(code)}`));
+    const ok = (await notify(s, "otp", email, { code })).ok;
     if (!ok) return res.status(503).json({ error: "تعذّر إرسال الرمز، حاول بعد قليل" });
     return res.status(200).json({ sent: true });
   }
@@ -146,18 +147,22 @@ export default async function handler(req, res) {
     });
 
     // تذكرة التأهل للهاكاثون
-    let ticket = null;
+    let ticket = null, mail = { ok: false };
+    const attemptsLeft = Math.max(0, I.maxAttempts - used - 1);
+    const site = siteUrl(req);
     if (qualified && s.modules.hackathon && phase(s) !== "closed") {
       ticket = (await createTicket({ kind: "investor", name, email, deal_id: deal?.id ?? null })).code;
-      const link = `${siteUrl(req)}/hackathon?ticket=${ticket}`;
-      await sendMail(email, `🎟️ تأهلت إلى ${s.hackathon.name}`, layout(s, `مبروك ${name}! تأهلت إلى ${s.hackathon.name}`,
-        `<p>حصلت فكرتك «${escHtml(result.title)}» على <b>${score}</b> من 100. هذا رمز التأهل الخاص بك، تسجّل به فريقك:</p>${codeBox(ticket)}<p>فكرتك وملاحظات المستثمر بتنتقل معك عند التسجيل.</p>`,
-        { url: link, label: `سجّل فريقك في ${s.hackathon.name}` }));
+      mail = await notify(s, "qualified", email, { name, idea: result.title, score, qualify: qualifyScore, code: ticket, link: `${site}/hackathon?ticket=${ticket}` });
+    } else if (!qualified && AI) {
+      // من لم يتأهل: درجته وما ينقصه وأهم ما يحسّنه (لا تُرسل للتقييمات الوهمية)
+      const next = (ev?.criteria || []).filter((c) => c.next).sort((a, c) => a.points / a.max - c.points / c.max).map((c) => c.next);
+      const tips = [...next, ...result.weaknesses].filter(Boolean).slice(0, 3).map((t) => `• ${t}`).join("\n") || `• ${result.tip}`;
+      mail = await notify(s, "notQualified", email, { name, idea: result.title, score, qualify: qualifyScore, missing: qualifyScore - score, tips, attemptsLeft, link: `${site}/` });
     }
 
     return res.status(200).json({
       step: 3, result, ticket, dealId: deal?.id ?? null,
-      attemptsLeft: Math.max(0, I.maxAttempts - used - 1), demo: !AI, emailed: Boolean(ticket && mailEnabled()),
+      attemptsLeft, demo: !AI, emailed: Boolean(mail.ok),
     });
   } catch (e) {
     console.error(e);

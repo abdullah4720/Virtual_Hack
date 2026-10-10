@@ -306,7 +306,7 @@ function showResult(d){
       verdict:r.verdict, strengths:r.strengths, weaknesses:r.weaknesses, tip:r.tip, score:r.score, at:Date.now() })); } catch(e){}
   } else if (gate && !r.qualified) {
     $("qualBox").innerHTML = `<div class="near"><b>ينقصك ${th - pct} درجة للتأهل إلى ${esc(H.name)}</b><br>
-      <span class="muted" style="font-size:14px">${attemptsLeft > 0 ? `حسّن فكرتك حسب الملاحظات وجرّب مرة ثانية. باقي لك ${attemptsLeft} ${attemptsLeft===1?"محاولة":"محاولات"}.` : "استنفدت محاولاتك بهذا البريد."}</span></div>`;
+      <span class="muted" style="font-size:14px">${attemptsLeft > 0 ? `حسّن فكرتك حسب الملاحظات وجرّب مرة ثانية. باقي لك ${attemptsLeft} ${attemptsLeft===1?"محاولة":"محاولات"}.` : "استنفدت محاولاتك بهذا البريد."}${d.emailed ? `<br>✉️ أرسلنا نتيجتك وأهم ما تحسّنه إلى ${esc(state.email)}.` : ""}</span></div>`;
   } else $("qualBox").innerHTML = "";
 
   $("resultCard").innerHTML = `

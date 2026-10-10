@@ -6,7 +6,9 @@ import { aiAvailable, aiMode, MODEL, EVAL_MODEL } from "../lib/ai.js";
 import { T, standings, runEvaluation, ensureCerts, certKind } from "../lib/hackcore.js";
 import { createTicket, TICKETS } from "../lib/tickets.js";
 import { usageToday, USAGE } from "../lib/limits.js";
-import { mailEnabled, sendMail, layout, codeBox, escHtml } from "../lib/mailer.js";
+import { mailEnabled } from "../lib/mailer.js";
+import { notify, render as renderMail, teamEmails, mailLog, KINDS, COMMON_VARS, LOG } from "../lib/notify.js";
+import { runReminders, sendResults, remindJudges } from "../lib/campaigns.js";
 import { siteUrl } from "../lib/site.js";
 
 const clip = (s, n) => String(s ?? "").trim().slice(0, n);
@@ -36,6 +38,7 @@ export default async function handler(req, res) {
       return res.status(200).json({
         settings: s,
         defaults: DEFAULTS,
+        notifyKinds: KINDS, notifyCommon: COMMON_VARS,
         tickets: tickets.slice(-300).reverse().map((t) => ({
           code: t.code, kind: t.kind, name: t.name, email: t.email, label: t.label, used: Boolean(t.used_by_team), created_at: t.created_at,
           score: t.deal_id ? deals.find((d) => d.id === t.deal_id)?.score ?? null : null,
@@ -96,7 +99,7 @@ export default async function handler(req, res) {
       const title = clip(b.title, 120), body = clip(b.body, 2000);
       if (!title) return res.status(400).json({ error: "اكتب عنوان الرسالة" });
       await insert("announcements", { title, body, audience: `team:${team.id}`, active: true });
-      const emailed = await sendMail(team.email, title, layout(s, title, `<p style="white-space:pre-wrap">${escHtml(body)}</p>`, { url: `${site}/hackathon?code=${team.code}`, label: "صفحة الفريق" }));
+      const emailed = (await notify(s, "message", teamEmails(s, team), { title, body, link: `${site}/hackathon?code=${team.code}` })).ok;
       return res.status(200).json({ ok: true, emailed });
     }
 
@@ -108,9 +111,8 @@ export default async function handler(req, res) {
       await insert("announcements", { title, body, audience, active: true });
       let emailed = 0;
       if (b.email) {
-        const html = layout(s, title, `<p style="white-space:pre-wrap">${escHtml(body)}</p>`);
-        if (audience === "judges") for (const j of s.hackathon.judges || []) emailed += (await sendMail(j.email, title, html)) ? 1 : 0;
-        else if (audience !== "screens") for (const t of (await select(T.teams)).filter((t) => t.status !== "disqualified")) emailed += (await sendMail(t.email, title, html)) ? 1 : 0;
+        if (audience === "judges") for (const j of s.hackathon.judges || []) emailed += (await notify(s, "announcement", j.email, { title, body, link: `${site}/judges` })).ok ? 1 : 0;
+        else if (audience !== "screens") for (const t of (await select(T.teams)).filter((t) => t.status !== "disqualified")) emailed += (await notify(s, "announcement", teamEmails(s, t), { title, body, link: `${site}/hackathon?code=${t.code}` })).ok ? 1 : 0;
       }
       return res.status(200).json({ ok: true, emailed });
     }
@@ -129,9 +131,7 @@ export default async function handler(req, res) {
       let sent = 0;
       for (const j of list) {
         const tracks = j.tracks?.length ? j.tracks.map((id) => s.hackathon.tracks.find((t) => t.id === id)?.title).filter(Boolean).join("، ") : "كل المسارات";
-        sent += (await sendMail(j.email, `دعوة للتحكيم في ${s.hackathon.name}`, layout(s, `أهلًا ${j.name}`,
-          `<p>يسعدنا انضمامك إلى لجنة تحكيم ${escHtml(s.hackathon.name)}. المسارات المسندة إليك: <b>${escHtml(tracks)}</b>.</p><p>مفتاح الدخول الخاص بك:</p>${codeBox(j.key)}`,
-          { url: `${site}/judges`, label: "لوحة التحكيم" }))) ? 1 : 0;
+        sent += (await notify(s, "judgeInvite", j.email, { name: j.name, tracks, code: j.key, link: `${site}/judges` }, { force: true })).ok ? 1 : 0;
       }
       return res.status(200).json({ sent, total: list.length, mail: mailEnabled() });
     }
@@ -155,9 +155,42 @@ export default async function handler(req, res) {
       for (const r of rows.filter((x) => x.finalist)) {
         const title = `🎉 تأهل فريق «${r.team.name}» للتحكيم النهائي`;
         await insert("announcements", { title, body: `مبروك! مشروعكم «${r.best.title}» ضمن أفضل ${s.hackathon.finalists} مشاريع، وسيقيّمه أعضاء لجنة التحكيم.`, audience: `team:${r.team.id}`, active: true });
-        sent += (await sendMail(r.team.email, title, layout(s, title, `<p>مشروعكم «${escHtml(r.best.title)}» ضمن أفضل ${s.hackathon.finalists} مشاريع في ${escHtml(s.hackathon.name)}، وسيقيّمه أعضاء لجنة التحكيم. تابعوا الإعلانات في صفحة الفريق.</p>`, { url: `${site}/hackathon?code=${r.team.code}`, label: "صفحة الفريق" }))) ? 1 : 0;
+        sent += (await notify(s, "finalists", teamEmails(s, r.team), { team: r.team.name, project: r.best.title, finalists: s.hackathon.finalists, link: `${site}/hackathon?code=${r.team.code}` }, { ref: r.team.id })).ok ? 1 : 0;
       }
       return res.status(200).json({ ok: true, emailed: sent });
+    }
+
+    // ---------- الإشعارات ----------
+    if (action === "mail-log") {
+      const rows = await mailLog(200);
+      const all = await select(LOG);
+      const by = (st) => all.filter((x) => x.status === st).length;
+      return res.status(200).json({ log: rows, totals: { sent: by("sent"), failed: by("failed"), skipped: by("skipped"), sending: by("sending") }, mail: mailEnabled() });
+    }
+    // معاينة رسالة بنص القالب الحالي (حتى قبل الحفظ) وبيانات تجريبية
+    if (action === "notify-preview" && req.method === "POST") {
+      const kind = String(b.kind || "");
+      if (!KINDS[kind]) return res.status(400).json({ error: "نوع رسالة غير معروف" });
+      const vars = { ...KINDS[kind].sample, link: `${site}/` };
+      if (kind === "winner" || kind === "results") vars.certs = [{ name: "سارة", url: `${site}/certificate?c=C-SAMPLE01` }, { name: "محمد", url: `${site}/certificate?c=C-SAMPLE02` }];
+      const tpl = b.template && typeof b.template === "object" ? { subject: clip(b.template.subject, 200), title: clip(b.template.title, 200), body: clip(b.template.body, 3000), cta: clip(b.template.cta, 60) } : null;
+      const out = renderMail(s, kind, vars, tpl);
+      if (b.to) {
+        const r = await notify(s, kind, String(b.to), vars, { force: true, override: tpl });
+        return res.status(r.ok ? 200 : 400).json({ ...out, sent: r.ok, status: r.status, error: r.ok ? null : r.error || (r.status === "skipped" ? "البريد غير مفعّل (RESEND_API_KEY و MAIL_FROM)" : "تعذّر الإرسال") });
+      }
+      return res.status(200).json(out);
+    }
+    if (action === "run-reminders" && req.method === "POST") {
+      if (!mailEnabled()) return res.status(400).json({ error: "البريد غير مفعّل" });
+      return res.status(200).json(await runReminders(s, site));
+    }
+    if (action === "send-results" && req.method === "POST") {
+      if (!s.hackathon.resultsPublished) return res.status(400).json({ error: "فعّل «نشر النتائج» واحفظ أولًا، كي تصل شهادات الفوز الصحيحة" });
+      return res.status(200).json(await sendResults(s, site));
+    }
+    if (action === "remind-judges" && req.method === "POST") {
+      return res.status(200).json(await remindJudges(s, site));
     }
 
     // ---------- بيانات التقرير الختامي والكتيّب ----------
@@ -204,11 +237,28 @@ export default async function handler(req, res) {
 
     // ---------- رموز الدعوة ----------
     if (action === "invites" && req.method === "POST") {
-      const n = Math.min(100, Math.max(1, Math.round(Number(b.count) || 1)));
       const label = clip(b.label, 60);
-      const codes = [];
-      for (let i = 0; i < n; i++) codes.push((await createTicket({ kind: "invite", label })).code);
-      return res.status(200).json({ codes });
+      // قائمة مدعوين (سطر لكل مدعو: «الاسم، البريد» أو البريد وحده) ← رمز لكل مدعو يُرسل بالبريد
+      const people = String(b.people || "").split(/\n/).map((l) => l.trim()).filter(Boolean).slice(0, 200).map((l) => {
+        const email = (l.match(/[^\s,،<>]+@[^\s,،<>]+\.[^\s,،<>]+/) || [""])[0].toLowerCase();
+        const name = clip(l.replace(email, "").replace(/[<>,،\-–:]+/g, " "), 60);
+        return { name, email };
+      });
+      const bad = people.filter((p) => !p.email);
+      if (bad.length) return res.status(400).json({ error: `لا يوجد بريد صحيح في: ${bad.slice(0, 3).map((p) => p.name || "سطر فارغ").join("، ")}` });
+      const codes = [], sent = { sent: 0, skipped: 0, failed: 0, off: 0 };
+      if (people.length) {
+        for (const p of people) {
+          const code = (await createTicket({ kind: "invite", label, name: p.name || "", email: p.email })).code;
+          codes.push(code);
+          const r = await notify(s, "invite", p.email, { name: p.name || "بك", code, link: `${site}/hackathon?ticket=${code}` });
+          sent[r.status] = (sent[r.status] || 0) + 1;
+        }
+      } else {
+        const n = Math.min(100, Math.max(1, Math.round(Number(b.count) || 1)));
+        for (let i = 0; i < n; i++) codes.push((await createTicket({ kind: "invite", label })).code);
+      }
+      return res.status(200).json({ codes, mail: people.length ? sent : null });
     }
 
     // ---------- حذف البيانات ----------
@@ -217,7 +267,7 @@ export default async function handler(req, res) {
       if (b.confirm !== "حذف") return res.status(400).json({ error: "اكتب كلمة «حذف» للتأكيد" });
       if (scope === "investor" || scope === "all") { await removeAll("deals"); await removeAll(TICKETS); await removeAll("otp"); }
       if (scope === "hackathon" || scope === "all") { await removeAll(T.scores); await removeAll(T.subs); await removeAll(T.teams); }
-      if (scope === "all") { await removeAll("announcements"); await removeAll(USAGE); }
+      if (scope === "all") { await removeAll("announcements"); await removeAll(USAGE); await removeAll(LOG); }
       return res.status(200).json({ ok: true });
     }
 

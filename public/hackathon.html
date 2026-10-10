@@ -29,6 +29,9 @@ header{text-align:center;padding:14px 0 18px}
 .rub div span{display:flex;justify-content:space-between}
 .rub small{color:var(--muted);font-size:12.5px}
 .members input{margin-bottom:8px}
+.mrow{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mrow.one{grid-template-columns:1fr}
+@media (max-width:520px){.mrow{grid-template-columns:1fr;gap:0;margin-bottom:6px}}
 .code{font-size:44px;font-weight:700;letter-spacing:6px;color:var(--accent);text-align:center;direction:ltr;margin:8px 0;font-family:ui-monospace,Menlo,monospace}
 .teamhead{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
 .total{font-size:52px;font-weight:700;color:var(--accent);line-height:1.1;text-align:center}
@@ -269,7 +272,8 @@ function renderHome(){
   $("attemptsTxt").textContent = H.maxAttempts > 1 ? `حتى ${H.maxAttempts} محاولات` : "محاولة واحدة";
   $("finalNote").textContent = `أفضل ${H.finalists} مشاريع حسب تقييم الذكاء الاصطناعي تتأهل للتحكيم النهائي من لجنة متخصصة. الدرجة النهائية: ${H.weights.ai}% تقييم الذكاء الاصطناعي + ${H.weights.judges}% تقييم اللجنة.`;
   $("rubric").innerHTML = H.rubric.map(r=>`<div><span><span>${esc(r.label)}</span><b class="gold">${r.max}</b></span>${r.guide?`<small>${esc(r.guide)}</small>`:""}</div>`).join("");
-  $("members").innerHTML = Array.from({length:H.maxMembers},(_,i)=>`<input class="mem" maxlength="50" placeholder="${i===0?(H.maxMembers>1?"اسم العضو الأول (قائد الفريق)":"اسمك"):"اسم العضو "+(i+1)+" (اختياري)"}">`).join("");
+  // العضو الأول (القائد) بريده هو بريد التواصل؛ لبقية الأعضاء بريد اختياري ليصلهم كل جديد
+  $("members").innerHTML = Array.from({length:H.maxMembers},(_,i)=>`<div class="mrow ${i===0?"one":""}"><input class="mem" maxlength="50" placeholder="${i===0?(H.maxMembers>1?"اسم العضو الأول (قائد الفريق)":"اسمك"):"اسم العضو "+(i+1)+" (اختياري)"}">${i===0?"":`<input class="memMail" type="email" dir="ltr" maxlength="80" placeholder="بريده (اختياري)">`}</div>`).join("");
   if (IMPORT?.name) document.querySelector(".mem").value = IMPORT.name;
   if (IMPORT?.email) $("tEmail").value = IMPORT.email;
   // بوابة التأهل
@@ -336,7 +340,8 @@ $("regBtn").onclick = async () => {
   try {
     const d = await api("register", {
       name:$("tName").value, email:$("tEmail").value, phone:$("tPhone").value, track:chosen.track, challenge:chosen.challenge,
-      members:[...document.querySelectorAll(".mem")].map(i=>i.value.trim()).filter(Boolean), ticket: $("tTicket").value.trim().toUpperCase(), consent: $("regConsent").checked
+      members:[...document.querySelectorAll(".mem")].map(i=>i.value.trim()),
+      memberEmails:[...document.querySelectorAll(".mrow")].map(r=>r.querySelector(".memMail")?.value.trim()||""), ticket: $("tTicket").value.trim().toUpperCase(), consent: $("regConsent").checked
     });
     LS.set("hack_code", d.code); $("newCode").textContent = d.code; $("codeMailed").textContent = d.emailed ? "✉️ أرسلنا الرمز أيضًا إلى البريد المسجّل" : ""; show("v-code"); scrollTo(0,0);
   } catch(e){ $("regErr").textContent = e.message; }

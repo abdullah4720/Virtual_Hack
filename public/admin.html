@@ -69,6 +69,15 @@ input[type=range]{accent-color:var(--accent);padding:0}
 .tbl{width:100%;border-collapse:collapse;font-size:14px}
 .tbl th{color:var(--muted);font-weight:500;text-align:right;padding:8px;border-bottom:1px solid var(--line);white-space:nowrap}
 .tbl td{padding:8px;border-bottom:1px solid var(--line);white-space:nowrap}
+.ntpl .head{flex-wrap:wrap}
+.ntpl .meta{font-size:12.5px;color:var(--muted);margin-top:2px}
+.ntpl.off{opacity:.6}
+.vars{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}
+.vars code{direction:ltr;background:var(--card);border:1px solid var(--line);border-radius:6px;padding:1px 7px;font-size:12.5px;color:var(--blue);cursor:pointer}
+.pv{margin-top:10px}
+.pv .subj{font-size:13.5px;margin-bottom:6px}
+.pv iframe{width:100%;height:460px;border:1px solid var(--line);border-radius:12px;background:#f4f5f9}
+.pill.warn{background:rgba(245,184,61,.16);color:var(--accent)}
 </style>
 </head>
 <body data-noannounce>
@@ -94,6 +103,7 @@ input[type=range]{accent-color:var(--accent);padding:0}
     <button data-p="participants">المشاركون</button>
     <button data-p="judges">المحكّمون</button>
     <button data-p="announce">الإعلانات</button>
+    <button data-p="notify">الإشعارات والبريد</button>
     <button data-p="screens">الشاشات</button>
     <button data-p="welcome">صفحة الترحيب</button>
     <button data-p="privacy">الخصوصية والحماية</button>
@@ -167,7 +177,7 @@ const NEW = {
   "program.partners": () => ({name:"", logoUrl:""}),
 };
 function genKey(n=10){ const a="ABCDEFGHJKMNPQRSTUVWXYZ23456789"; return Array.from(crypto.getRandomValues(new Uint8Array(n)),x=>a[x%a.length]).join(""); }
-let TEAMS = null, CERTS = null;
+let TEAMS = null, CERTS = null, LOGS = null; const OPEN = new Set();
 const when = d => new Date(d).toLocaleString("ar-SA-u-nu-latn",{day:"numeric",month:"short",hour:"numeric",minute:"2-digit"});
 
 // ---------- الأقسام ----------
@@ -267,7 +277,8 @@ const P = {
     return `<h1>التأهيل والدعوات</h1><p class="lead">رموز التأهل التي حصل عليها المتأهلون من ${esc(S.investor.title)}، ورموز الدعوة التي تمنحها للفرق مباشرة.</p>
       <div class="stats"><div class="stat"><b>${fmt(D.stats.qualified)}</b><span>متأهل من المستثمر الذكي</span></div><div class="stat"><b>${fmt(T.filter(t=>t.kind==="invite").length)}</b><span>رمز دعوة</span></div><div class="stat"><b>${fmt(D.stats.ticketsUsed)}</b><span>رمز استُخدم للتسجيل</span></div></div>
       ${card("توليد رموز دعوة", `<p class="muted small">للفرق المرشّحة مسبقًا أو الشركاء: كل رمز يسجّل فريقًا واحدًا دون المرور بالمستثمر الذكي.</p>
-        <div class="grid2" style="margin-top:8px">${f("العدد","_count",{type:"num",min:1,max:100})}${f("وصف (اختياري)","_label",{ph:"مثال: فرق كلية الحاسب"})}</div>
+        ${f("المدعوون بالبريد (اختياري)","_people",{type:"textarea",rows:4,max:20000,ph:"سطر لكل مدعو، مثل:\nفريق كلية الحاسب، cs@qu.edu.sa\nnora@example.com",help:D.system.mail?"يُولَّد رمز لكل مدعو ويُرسل إليه بالبريد مع رابط التسجيل. اتركه فارغًا لتوليد رموز تنسخها بنفسك.":"البريد غير مفعّل: تُولَّد الرموز وتُربط بالمدعوين، لكن لن تُرسل."})}
+        <div class="grid2" style="margin-top:8px">${tmp._people.trim()?`<div class="help" style="align-self:end">عدد الرموز = عدد المدعوين</div>`:f("العدد","_count",{type:"num",min:1,max:100})}${f("وصف (اختياري)","_label",{ph:"مثال: فرق كلية الحاسب"})}</div>
         <button class="btn" data-act="invites" style="margin-top:10px">توليد الرموز</button><div id="newCodes"></div>`)}
       ${card(`الرموز (${T.length})`, T.length ? `<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>الرمز</th><th>النوع</th><th>الاسم</th><th>البريد</th><th>الدرجة</th><th>الحالة</th></tr></thead><tbody>
         ${T.map(t=>`<tr><td dir="ltr" style="font-family:ui-monospace,monospace;font-weight:700">${esc(t.code)}</td><td>${t.kind==="invite"?"دعوة"+(t.label?` · ${esc(t.label)}`:""):"تأهل"}</td><td>${esc(t.name||"—")}</td><td dir="ltr">${esc(t.email||"—")}</td><td>${t.score??"—"}</td><td>${t.used?`<span class="pill ok">سجّل: ${esc(t.team)}</span>`:`<span class="pill">لم يُستخدم</span>`}</td></tr>`).join("")}
@@ -280,7 +291,7 @@ const P = {
         <div class="grid3">${f("الاسم","hackathon.judges."+i+".name",{max:60})}${f("البريد","hackathon.judges."+i+".email",{ltr:true,max:100})}${f("المفتاح الشخصي","hackathon.judges."+i+".key",{ltr:true,max:40})}</div>
         <label>المسارات المسندة (بدون اختيار = كل المسارات)</label><div style="display:flex;flex-wrap:wrap;gap:10px">${TR.map(t=>`<label style="display:flex;gap:6px;align-items:center;margin:0;color:var(--text)"><input type="checkbox" data-jt="${i}" value="${attr(t.id)}" ${j.tracks.includes(t.id)?"checked":""} style="width:18px;height:18px;accent-color:var(--accent)"> ${esc(t.icon)} ${esc(t.title)}</label>`).join("")}</div>
         <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button class="ib" data-copy="${attr(`أهلًا ${j.name}، رابط لوحة التحكيم: ${abs("judges.html")}\nمفتاحك الشخصي: ${j.key}`)}">📋 نسخ الدعوة</button>${D.system.mail&&j.email?`<button class="ib" data-act="jinvite" data-id="${attr(j.id)}">✉️ إرسال الدعوة بالبريد</button>`:""}</div></div>`).join("") + addBtn("hackathon.judges","إضافة محكّم"))}
-      ${D.system.mail && J.length ? `<button class="btn ghost" data-act="jinvite" style="margin-bottom:14px">✉️ إرسال الدعوات لكل المحكّمين (بعد الحفظ)</button>` : ""}
+      ${D.system.mail && J.length ? `<div class="grid2" style="margin-bottom:14px"><button class="btn ghost" data-act="jinvite">✉️ إرسال الدعوات لكل المحكّمين (بعد الحفظ)</button><button class="btn ghost" data-act="remindjudges">⚖️ تذكير من لم يكمل التقييم</button></div>` : ""}
       ${card("مفتاح مشترك (اختياري)", `<div class="grid2">${f("المفتاح المشترك","hackathon.judgeKey",{ltr:true,max:80,help:"بديل سريع: من يدخل به يكتب اسمه، ويرى كل المسارات. الحسابات الشخصية أدق."})}
         <div><label>&nbsp;</label><button class="btn ghost" data-act="genkey">🎲 توليد مفتاح</button></div></div>
         <div class="links" style="margin-top:12px"><div><span>رابط لوحة اللجنة</span><code>${esc(abs("judges.html"))}</code><a class="ib" href="judges.html" target="_blank">فتح</a><button class="ib" data-copy="${attr(abs("judges.html"))}">نسخ</button></div></div>`)}`;
@@ -311,6 +322,39 @@ const P = {
       ${card(`الإعلانات (${A.length})`, A.length ? A.map(a=>`<div class="item" style="${a.active?"":"opacity:.5"}"><div class="head"><b>${esc(a.title)}</b><div class="tools"><button class="ib" data-act="atoggle" data-id="${a.id}" data-on="${a.active?0:1}">${a.active?"إيقاف":"تفعيل"}</button><button class="ib del" data-act="adelete" data-id="${a.id}">حذف</button></div></div>
         ${a.body?`<div class="help" style="white-space:pre-wrap">${esc(a.body)}</div>`:""}<div class="help">${a.audience.startsWith("team:")?`✉️ رسالة خاصة لفريق «${esc(a.teamName)}»`:AUD[a.audience]} · ${when(a.created_at)}</div></div>`).join("") : `<p class="muted">لا توجد إعلانات.</p>`)}`;
   },
+  notify(){
+    const K = D.notifyKinds || {}, N = S.notify, mail = D.system.mail;
+    const ST = {sent:["ok","أُرسلت"], failed:["no","فشلت"], skipped:["","لم تُرسل: البريد غير مفعّل"], sending:["warn","قيد الإرسال"]};
+    const tot = LOGS?.totals;
+    const groups = [["الزوار والمستثمر الذكي",["otp","qualified","notQualified","invite"]],["الفرق في الهاكاثون",["registered","evaluated","reminderNoSubmit","reminderClose","finalists","winner","results","message"]],["المحكّمون",["judgeInvite","judgeReminder"]],["عامة",["announcement"]]];
+    const tpl = k => { const m = K[k], t = N.templates[k]; if (!m || !t) return "";
+      const open = OPEN.has(k), base = "notify.templates."+k+".";
+      return `<div class="item ntpl ${t.on||m.locked?"":"off"}"><div class="head"><div><b>${esc(m.label)}</b><div class="meta">📤 ${esc(m.to)} · ⏱️ ${esc(m.when)}</div></div>
+        <div class="tools" style="align-items:center;gap:8px">${m.custom?"":`<button class="ib" data-act="nopen" data-k="${k}">${open?"إغلاق":"✏️ النص"}</button>`}<button class="ib" data-act="npreview" data-k="${k}">👁️ معاينة</button>
+          <label style="display:flex;align-items:center;gap:6px;margin:0;color:var(--text);font-size:13px">${m.locked?"دائمًا":"مفعّلة"}<input type="checkbox" data-k="${base}on" data-type="bool" ${t.on||m.locked?"checked":""} ${m.locked?"disabled":""} style="width:20px;height:20px;accent-color:var(--accent)"></label></div></div>
+        ${open && !m.custom ? `${f("عنوان البريد (الموضوع)",base+"subject",{max:200})}${f("العنوان داخل الرسالة",base+"title",{max:200})}${f("النص",base+"body",{type:"textarea",rows:5,max:3000,help:"سطر فارغ يفصل الفقرات. الرموز والشهادات والزر تُضاف تلقائيًا."})}
+          <div class="grid2">${f("نص الزر (فارغ = بلا زر)",base+"cta",{max:60})}<div></div></div>
+          <div class="help">المتغيرات المتاحة (اضغط للنسخ):</div><div class="vars">${[...m.vars, ...(D.notifyCommon||[])].map(v=>`<code data-copy="{${v}}">{${v}}</code>`).join("")}</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="ib" data-act="ntest" data-k="${k}">✉️ إرسال تجريبي</button><button class="ib" data-act="nreset" data-k="${k}">↺ النص الافتراضي</button></div>` : ""}
+        <div class="pv" id="pv-${k}"></div></div>`; };
+    return `<h1>الإشعارات والبريد</h1><p class="lead">كل رسالة تُرسلها المنصة: متى، ولمن، وبأي نص. عدّل النص واحفظ، أو أوقف أي رسالة. الصفحات تبقى تعرض كل شيء للمشارك حتى لو أوقفت البريد.</p>
+      ${mail ? "" : card("⚠️ إرسال البريد غير مفعّل", `<p class="muted small">لن تصل أي رسالة حتى تضيف <code dir="ltr">RESEND_API_KEY</code> و<code dir="ltr">MAIL_FROM</code> في إعدادات الخادم (Vercel)، مع توثيق نطاق البريد في Resend. يمكنك الآن تجهيز النصوص ومعاينتها، والسجل يبيّن ما كان سيُرسل.</p>`, "danger")}
+      ${tot ? `<div class="stats"><div class="stat"><b>${fmt(tot.sent)}</b><span>رسالة أُرسلت</span></div><div class="stat"><b style="color:${tot.failed?"var(--bad)":""}">${fmt(tot.failed)}</b><span>فشلت</span></div><div class="stat"><b>${fmt(tot.skipped)}</b><span>لم تُرسل (البريد غير مفعّل)</span></div></div>` : ""}
+      ${card("الإعدادات العامة", tog("إرسال رسائل الفريق لكل الأعضاء","notify.members","القائد وكل عضو أضاف بريده عند التسجيل. عند الإيقاف: القائد فقط.")
+        + `<div class="grid2">${tog("تذكير قبل إقفال التقديم","notify.reminders.closeOn","لكل الفرق النشطة، مرة واحدة")}${f("قبل الإقفال بـ (ساعة)","notify.reminders.closeHours",{type:"num",min:1,max:168})}</div>
+        <div class="grid2">${tog("تذكير من سجّل ولم يقدّم","notify.reminders.noSubmitOn","مرة واحدة لكل فريق")}${f("بعد التسجيل بـ (ساعة)","notify.reminders.noSubmitHours",{type:"num",min:1,max:168})}</div>
+        <p class="help">التذكيرات تُرسل تلقائيًا أثناء عمل المنصة (تُفحص كل 10 دقائق عند فتح أي صفحة أو شاشة)، ومرة يوميًا من الخادم احتياطًا. لا تتكرر الرسالة نفسها للفريق نفسه.</p>`)}
+      ${card("إرسال الآن", `<div class="grid3">
+          <button class="btn ghost" data-act="nreminders" ${mail?"":"disabled"}>⏰ شغّل التذكيرات الآن</button>
+          <button class="btn ghost" data-act="sendresults">🏆 أرسل النتائج والشهادات</button>
+          <button class="btn ghost" data-act="remindjudges">⚖️ ذكّر المحكّمين بما بقي</button></div>
+        <p class="help" id="nMsg">«النتائج والشهادات» تتطلب تفعيل «نشر النتائج» في قسم التقارير: الفائزون الثلاثة يتلقون رسالة الفوز، والبقية رسالة الشكر، ومع كل منها روابط شهادات الأعضاء. كل فريق يتلقاها مرة واحدة.</p>`)}
+      ${card("نصوص الرسائل", f("بريد الرسائل التجريبية","_testTo",{ltr:true,max:100,ph:"you@example.com",help:"تصلك عليه الرسالة التجريبية ببيانات وهمية، بالنص الحالي قبل الحفظ."})
+        + groups.map(([g, ks])=>`<h3 style="margin:16px 0 8px;font-size:16px;color:var(--muted)">${g}</h3>${ks.map(tpl).join("")}`).join(""))}
+      ${card(`<span style="display:flex;justify-content:space-between;align-items:center">سجل البريد <button class="ib" data-act="nlog">↻ تحديث</button></span>`, !LOGS ? `<p class="muted">جارٍ التحميل…</p>` : LOGS.log.length ? `<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>الوقت</th><th>الرسالة</th><th>إلى</th><th>الموضوع</th><th>الحالة</th></tr></thead><tbody>
+        ${LOGS.log.map(x=>`<tr><td>${when(x.created_at)}</td><td>${esc(K[x.kind]?.label||x.kind)}</td><td dir="ltr" style="max-width:220px;overflow:hidden;text-overflow:ellipsis">${esc(x.recipients)}</td><td style="max-width:280px;overflow:hidden;text-overflow:ellipsis">${esc(x.subject)}</td><td><span class="pill ${(ST[x.status]||[""])[0]}" title="${attr(x.error||"")}">${(ST[x.status]||["",x.status])[1]}</span></td></tr>`).join("")}
+        </tbody></table></div>` : `<p class="muted">لم تُرسل رسائل بعد.</p>`)}`;
+  },
   screens(){
     const B = S.booth;
     return `<h1>الشاشات</h1><p class="lead">تحكّم في ما يظهر على شاشة الجناح (booth) لحظيًا. تتحدث الشاشة خلال 15 ثانية من الحفظ.</p>
@@ -340,7 +384,7 @@ const P = {
     return `<h1>التقارير والشهادات</h1><p class="lead">التقرير الختامي وكتيّب المشاريع جاهزان للطباعة كـ PDF، والشهادات برمز تحقق لكل مشارك.</p>
       ${card("التقرير الختامي وكتيّب المشاريع", `<p class="muted small">صفحة جاهزة للطباعة: الإحصائيات، والرسوم، والفائزون، وصفحة لكل مشروع. من المتصفح: طباعة ← حفظ كـ PDF.</p>
         <div class="grid2" style="margin-top:10px"><a class="btn" href="report.html" target="_blank">📊 التقرير الختامي</a><a class="btn ghost" href="report.html?booklet=1" target="_blank">📘 كتيّب المشاريع فقط</a></div>`)}
-      ${card("النتائج", tog("نشر النتائج","hackathon.resultsPublished","يفعّل شهادات الفوز للمراكز الثلاثة الأولى. فعّله بعد اكتمال التحكيم.") + `<button class="btn ghost" data-act="notify" style="margin-top:6px">🎉 إشعار المتأهلين للتحكيم النهائي (إعلان + بريد)</button><p class="help" id="notifyMsg"></p>`)}
+      ${card("النتائج", tog("نشر النتائج","hackathon.resultsPublished","يفعّل شهادات الفوز للمراكز الثلاثة الأولى. فعّله بعد اكتمال التحكيم.") + `<div class="grid2" style="margin-top:6px"><button class="btn ghost" data-act="notify">🎉 إشعار المتأهلين للتحكيم النهائي</button><button class="btn ghost" data-act="sendresults" ${S.hackathon.resultsPublished?"":"disabled"}>🏆 إرسال النتائج والشهادات بالبريد</button></div><p class="help" id="notifyMsg">${S.hackathon.resultsPublished?"":"فعّل «نشر النتائج» واحفظ لتتمكن من إرسال النتائج والشهادات."}</p>`)}
       ${card("الشهادات", CERTS ? (CERTS.length ? `<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>الفريق</th><th>النوع</th><th>الأعضاء</th></tr></thead><tbody>${CERTS.map(c=>`<tr><td><b>${esc(c.team)}</b></td><td>${{participant:"مشاركة",finalist:"تأهل",winner1:"🥇 المركز الأول",winner2:"🥈 المركز الثاني",winner3:"🥉 المركز الثالث"}[c.kind]}</td><td>${c.list.map(x=>`<a class="ib" href="certificate.html?c=${encodeURIComponent(x.code)}" target="_blank">${esc(x.name)}</a>`).join(" ")}</td></tr>`).join("")}</tbody></table></div>` : `<p class="muted">لا توجد فرق قدّمت مشاريع بعد.</p>`) : `<button class="btn ghost" data-act="loadcerts">عرض شهادات كل الفرق</button>`)
         + `<p class="help">تظهر الشهادات أيضًا لكل فريق في صفحته بعد إقفال التقديم. صفحة التحقق: certificate.html?c=الرمز</p>`}`;
   },
@@ -353,7 +397,7 @@ const P = {
       ${card("استعادة الإعدادات الافتراضية", `<p class="muted small">تعيد كل الإعدادات إلى القالب الأصلي (لا تحذف البيانات). تحتاج الحفظ بعدها.</p><button class="btn ghost" data-act="defaults" style="margin-top:10px">استعادة القالب</button>`)}`;
   },
 };
-let tmp = {_confirm:"", _scope:"investor", _count:5, _label:"", _q:"", _aTitle:"", _aBody:"", _aAud:"all", _aEmail:false};
+let tmp = {_people:"", _testTo:"", _confirm:"", _scope:"investor", _count:5, _label:"", _q:"", _aTitle:"", _aBody:"", _aAud:"all", _aEmail:false};
 
 function render(){
   document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("on", b.dataset.p===pane));
@@ -377,6 +421,7 @@ $("nav").onclick = async e => {
   const b = e.target.closest("button[data-p]"); if (!b) return; pane = b.dataset.p; render(); scrollTo(0,0);
   if (pane === "participants") { TEAMS = (await api("teams")).teams; render(); }
   if (pane === "reports") CERTS = null;
+  if (pane === "notify") { LOGS = await api("mail-log").catch(()=>null); render(); }
 };
 
 $("main").addEventListener("input", e => {
@@ -399,7 +444,7 @@ $("main").addEventListener("change", e => {
 
 $("main").addEventListener("click", async e => {
   const c = e.target.closest("[data-copy]");
-  if (c) { try { await navigator.clipboard.writeText(c.dataset.copy); c.textContent="✓"; setTimeout(()=>c.textContent="نسخ",1200);} catch(_){} return; }
+  if (c) { const old = c.textContent; try { await navigator.clipboard.writeText(c.dataset.copy); c.textContent="✓"; setTimeout(()=>c.textContent=old,1200);} catch(_){} return; }
   const b = e.target.closest("[data-act]"); if (!b) return;
   const act = b.dataset.act, list = b.dataset.list, i = Number(b.dataset.i);
   if (["add","del","up","down"].includes(act)) {
@@ -411,6 +456,37 @@ $("main").addEventListener("click", async e => {
     render(); dirty();
     if (act==="add") { const items = $("main").querySelectorAll(`[data-k^="${list}.${arr.length-1}."]`); items[0]?.focus(); }
     return;
+  }
+  if (act==="nopen") { const k=b.dataset.k; OPEN.has(k)?OPEN.delete(k):OPEN.add(k); render(); return; }
+  if (act==="nreset") { const k=b.dataset.k; if (!confirm("استعادة النص الافتراضي لهذه الرسالة؟")) return; S.notify.templates[k] = {...D.defaults.notify.templates[k], on: S.notify.templates[k].on}; render(); dirty(); return; }
+  if (act==="npreview" || act==="ntest") {
+    const k=b.dataset.k, box=$("pv-"+k);
+    if (act==="ntest" && !/^\S+@\S+\.\S+$/.test(tmp._testTo||"")) { alert("اكتب بريد الرسائل التجريبية أعلى القسم"); return; }
+    if (act==="npreview" && box.innerHTML) { box.innerHTML=""; return; }
+    b.disabled = true;
+    try {
+      const r = await api("notify-preview", {kind:k, template:S.notify.templates[k], to: act==="ntest" ? tmp._testTo : undefined});
+      box.innerHTML = `<div class="subj"><span class="muted">الموضوع:</span> <b>${esc(r.subject)}</b>${act==="ntest"?` · <span class="pill ok">✓ أُرسلت إلى ${esc(tmp._testTo)}</span>`:""}</div><iframe sandbox title="معاينة"></iframe>`;
+      box.querySelector("iframe").srcdoc = r.html;
+      if (act==="ntest") LOGS = await api("mail-log").catch(()=>LOGS);
+    } catch(err){ alert(err.message); }
+    b.disabled = false; return;
+  }
+  if (act==="nlog") { LOGS = await api("mail-log"); render(); return; }
+  if (act==="nreminders" || act==="sendresults" || act==="remindjudges") {
+    if (JSON.stringify(S) !== saved) return alert("احفظ التغييرات أولًا");
+    const Q = {nreminders:"تشغيل التذكيرات الآن؟ لن يتلقى أي فريق التذكير نفسه مرتين.", sendresults:"إرسال النتائج والشهادات لكل الفرق المقدِّمة؟", remindjudges:"إرسال تذكير للمحكّمين الذين لم يكملوا التقييم؟"};
+    if (!confirm(Q[act])) return;
+    b.disabled = true;
+    try {
+      const r = await api({nreminders:"run-reminders", sendresults:"send-results", remindjudges:"remind-judges"}[act], {});
+      const msg = act==="nreminders" ? (r.ran ? `✓ أُرسل ${r.close} تذكير بالإقفال و${r.noSubmit} تذكير لمن لم يقدّم` : "لا توجد تذكيرات مستحقة الآن (التقديم غير مفتوح أو لم يحن الموعد)")
+        : act==="sendresults" ? `✓ ${r.teams} فريق: أُرسل ${r.sent||0}${r.dup?`، وسبق الإرسال لـ ${r.dup}`:""}${r.skipped?`، ولم يُرسل ${r.skipped} (البريد غير مفعّل)`:""}${r.failed?`، وفشل ${r.failed}`:""}${r.off?" (الرسالة موقوفة)":""}`
+        : `✓ ${r.judges} محكّم لم يكمل: أُرسل ${r.sent||0}${r.skipped?`، ولم يُرسل ${r.skipped} (البريد غير مفعّل)`:""}`;
+      LOGS = await api("mail-log").catch(()=>LOGS);
+      if (pane==="notify") { render(); $("nMsg").textContent = msg; } else alert(msg);
+    } catch(err){ alert(err.message); }
+    b.disabled = false; return;
   }
   if (act==="genkey") { S.hackathon.judgeKey = genKey(); render(); dirty(); return; }
   if (act==="reeval") { b.disabled = true; b.textContent = "جارٍ التقييم…"; try { const r = await api("reeval", {}); D = await api("get"); render(); dirty(`اكتمل تقييم ${r.evaluated}${r.remaining?`، وبقي ${r.remaining}`:""}`, "ok"); } catch(err){ alert(err.message); } return; }
@@ -448,9 +524,9 @@ $("main").addEventListener("click", async e => {
   if (act==="clearkey") { APP.setDemoKey(null); location.reload(); return; }
   if (act==="invites") {
     try {
-      const r = await api("invites", {count: tmp._count, label: tmp._label});
-      D = await api("get"); render();
-      $("newCodes").innerHTML = `<div class="item" style="margin-top:12px"><b>رموز جديدة:</b><div dir="ltr" style="font-family:ui-monospace,monospace;font-size:18px;margin:8px 0;letter-spacing:2px">${r.codes.join("  ")}</div><button class="ib" data-copy="${attr(r.codes.join("\n"))}">نسخ الكل</button></div>`;
+      const r = await api("invites", {count: tmp._count, label: tmp._label, people: tmp._people});
+      tmp._people = ""; D = await api("get"); render();
+      $("newCodes").innerHTML = `<div class="item" style="margin-top:12px"><b>رموز جديدة${r.mail?` · أُرسل ${r.mail.sent||0} بالبريد${r.mail.skipped?`، ولم يُرسل ${r.mail.skipped} (البريد غير مفعّل)`:""}${r.mail.failed?`، وفشل ${r.mail.failed}`:""}`:""}:</b><div dir="ltr" style="font-family:ui-monospace,monospace;font-size:18px;margin:8px 0;letter-spacing:2px">${r.codes.join("  ")}</div><button class="ib" data-copy="${attr(r.codes.join("\n"))}">نسخ الكل</button></div>`;
     } catch(e){ alert(e.message); }
     return;
   }

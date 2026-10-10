@@ -2,5 +2,6 @@
   "buildCommand": "",
   "outputDirectory": "public",
   "cleanUrls": true,
-  "functions": { "api/*.js": { "maxDuration": 300 } }
+  "functions": { "api/*.js": { "maxDuration": 300 } },
+  "crons": [{ "path": "/api/cron", "schedule": "0 6 * * *" }]
 }
