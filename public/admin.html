@@ -320,7 +320,7 @@ const P = {
           <td>${esc(t.label)}</td><td>${esc(t.title||"—")}</td><td>${t.attempts}${t.pending?` <span class="pill"><i data-icon="hourglass"></i>${t.pending}</span>`:""}</td>
           <td><b class="gold">${t.best??"—"}</b>${t.final!=null?`<div class="help">نهائية ${t.final}</div>`:""}</td><td>${SRC[t.source]||"—"}</td>
           <td>${t.status==="disqualified"?'<span class="pill no">مستبعد</span>':'<span class="pill ok">نشط</span>'}</td>
-          <td style="white-space:nowrap"><a class="ib" href="hackathon.html?code=${esc(t.code)}" target="_blank" title="فتح صفحة الفريق">صفحته</a> <button class="ib" data-act="tpass" data-id="${t.id}" data-name="${attr(t.name)}" title="تعيين كلمة المرور"><i data-icon="key-round"></i> كلمة المرور</button> <button class="ib" data-act="msg" data-id="${t.id}" data-name="${attr(t.name)}"><i data-icon="mail"></i> رسالة</button> ${t.status==="disqualified"?`<button class="ib" data-act="tstatus" data-id="${t.id}" data-s="active">استعادة</button>`:`<button class="ib del" data-act="tstatus" data-id="${t.id}" data-s="disqualified">استبعاد</button>`}</td></tr>`).join("")}
+          <td style="white-space:nowrap"><a class="ib" href="hackathon.html?code=${esc(t.code)}" target="_blank" title="فتح صفحة الفريق">صفحته</a> <button class="ib" data-act="tpass" data-id="${t.id}" data-name="${attr(t.name)}" title="إعادة تعيين كلمة المرور"><i data-icon="key-round"></i> إعادة تعيين</button> <button class="ib" data-act="msg" data-id="${t.id}" data-name="${attr(t.name)}"><i data-icon="mail"></i> رسالة</button> ${t.status==="disqualified"?`<button class="ib" data-act="tstatus" data-id="${t.id}" data-s="active">استعادة</button>`:`<button class="ib del" data-act="tstatus" data-id="${t.id}" data-s="disqualified">استبعاد</button>`}</td></tr>`).join("")}
         </tbody></table></div>` : `<p class="muted">لا توجد فرق.</p>`)}`;
   },
   announce(){
@@ -535,7 +535,7 @@ $("main").addEventListener("click", async e => {
     await api("team-status", {id: Number(b.dataset.id), status: b.dataset.s}); TEAMS = (await api("teams")).teams; render(); return;
   }
   if (act==="tpass") {
-    const v = prompt(`كلمة مرور فريق «${b.dataset.name}»:\nاكتب كلمة المرور (8 أحرف على الأقل)، أو اتركها فارغة لتوليدها تلقائيًا. ستحل محل كلمة المرور الحالية إن وُجدت.`, "");
+    const v = prompt(`كلمة مرور فريق «${b.dataset.name}»:\nإعادة تعيين كلمة المرور (عند نسيانها): اكتب كلمة جديدة (8 أحرف على الأقل) أو اتركها فارغة لتوليدها تلقائيًا. ستحل محل كلمة المرور الحالية، ويستطيع الفريق تغييرها لاحقًا من صفحته.`, "");
     if (v === null) return;
     try {
       const r = await api("team-password", {id: Number(b.dataset.id), password: v.trim()});

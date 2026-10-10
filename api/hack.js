@@ -8,7 +8,7 @@ import { findTicket, useTicket } from "../lib/tickets.js";
 import { checkLimits, recordUse } from "../lib/limits.js";
 import { notify, teamEmails, closesAtText } from "../lib/notify.js";
 import { siteUrl } from "../lib/site.js";
-import { verifyPassword } from "../lib/password.js";
+import { hashPassword, verifyPassword, passwordProblem } from "../lib/password.js";
 import { count } from "../lib/db.js";
 import { clientKey } from "../lib/limits.js";
 import { T, standings, runEvaluation, identifyJudge, judgeSees, withUrls, ensureCerts, certKind } from "../lib/hackcore.js";
@@ -122,10 +122,12 @@ export default async function handler(req, res) {
       if (!members.length) return res.status(400).json({ error: "أضف اسم عضو واحد على الأقل" });
       if (!/^\S+@\S+\.\S+$/.test(email)) return res.status(400).json({ error: "البريد الإلكتروني غير صحيح" });
       if (!opt) return res.status(400).json({ error: "الرجاء اختيار المسار والتحدي" });
+      const pwErr = passwordProblem(b.password);
+      if (pwErr) return res.status(400).json({ error: pwErr });
       const existing = await select(T.teams);
       if (existing.some((t) => t.name.toLowerCase() === name.toLowerCase())) return res.status(409).json({ error: "اسم الفريق مستخدم، اختر اسمًا آخر" });
       const team = await insert(T.teams, {
-        code: genCode(), name, members, member_emails, email, phone, status: "active",
+        code: genCode(), name, members, member_emails, email, phone, status: "active", password_hash: await hashPassword(b.password),
         track: opt.track.id, challenge: opt.challenge?.id ?? null,
         source: ticket ? ticket.kind : "direct", deal_id: ticket?.deal_id ?? null, ticket: ticket?.code ?? null,
         consent_at: new Date().toISOString(),
@@ -145,8 +147,22 @@ export default async function handler(req, res) {
         if (t.password_hash && (await verifyPassword(b.password, t.password_hash))) return res.status(200).json({ code: t.code, team: t.name });
       }
       await loginFail(req);
-      if (teams.length && !teams.some((t) => t.password_hash)) return res.status(401).json({ error: "لم تُسلَّم كلمة مرور لهذا الفريق بعد. الرجاء التواصل مع المنظمين، أو الدخول برمز الفريق.", noPassword: true });
+      if (teams.length && !teams.some((t) => t.password_hash)) return res.status(401).json({ error: "لم تُعيَّن كلمة مرور لهذا الفريق بعد. الرجاء الدخول برمز الفريق ثم تعيين كلمة المرور من صفحة الفريق.", noPassword: true });
       return res.status(401).json({ error: "البريد أو كلمة المرور غير صحيحة" });
+    }
+
+    // تعيين كلمة المرور أو تغييرها من صفحة الفريق: يلزم إدخال الكلمة الحالية إن وُجدت
+    if (action === "set-password" && req.method === "POST") {
+      const team = await teamByCode(b.code);
+      if (!team) return res.status(404).json({ error: "رمز الفريق غير صحيح" });
+      if (team.password_hash) {
+        if (await loginBlocked(req)) return res.status(429).json({ error: "محاولات كثيرة. الرجاء المحاولة بعد ساعة." });
+        if (!(await verifyPassword(b.current, team.password_hash))) { await loginFail(req); return res.status(400).json({ error: "كلمة المرور الحالية غير صحيحة" }); }
+      }
+      const pwErr = passwordProblem(b.password);
+      if (pwErr) return res.status(400).json({ error: pwErr });
+      await update(T.teams, team.id, { password_hash: await hashPassword(b.password) });
+      return res.status(200).json({ ok: true });
     }
 
     if (action === "team") {
