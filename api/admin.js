@@ -11,7 +11,7 @@ import { notify, render as renderMail, teamEmails, mailLog, KINDS, COMMON_VARS, 
 import { runReminders, sendResults, remindJudges } from "../lib/campaigns.js";
 import { siteUrl } from "../lib/site.js";
 import { keyProblem } from "../lib/supabase.js";
-import { hashPassword } from "../lib/password.js";
+import { hashPassword, passwordProblem } from "../lib/password.js";
 
 const clip = (s, n) => String(s ?? "").trim().slice(0, n);
 const csvCell = (v) => {
@@ -83,7 +83,7 @@ export default async function handler(req, res) {
             attempts: ts.length, pending: ts.filter((x) => x.status === "pending" || x.status === "failed").length,
             best: r ? r.best.ai_total : null, title: r?.best.title || ts[ts.length - 1]?.title || "", rank: r?.rank ?? null,
             finalist: Boolean(r?.finalist), flagged: Boolean(r?.flagged), judgeAvg: r?.judgeAvg ?? null, final: r?.final ?? null,
-            files: (t.files || []).length,
+            files: (t.files || []).length, hasPassword: Boolean(t.password_hash),
           };
         }).reverse(),
       });
@@ -95,14 +95,26 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true });
     }
 
-    // كلمة مرور مؤقتة لفريق (عند تعذّر الاستعادة بالبريد)
+    // كلمات مرور الفرق: تُعيّنها الإدارة وتسلّمها للفرق (لا تُرسل بالبريد)
+    const genPass = () => { const A = "abcdefghjkmnpqrstuvwxyz23456789"; return Array.from(globalThis.crypto.getRandomValues(new Uint8Array(10)), (x) => A[x % A.length]).join(""); };
     if (action === "team-password" && req.method === "POST") {
       const [team] = await select(T.teams, { id: Number(b.id) });
       if (!team) return res.status(404).json({ error: "الفريق غير موجود" });
-      const A = "abcdefghjkmnpqrstuvwxyz23456789";
-      const temp = Array.from(globalThis.crypto.getRandomValues(new Uint8Array(10)), (x) => A[x % A.length]).join("");
-      await update(T.teams, team.id, { password_hash: await hashPassword(temp) });
-      return res.status(200).json({ password: temp, email: team.email });
+      const pass = clip(b.password, 100) || genPass();
+      const err = passwordProblem(pass);
+      if (err) return res.status(400).json({ error: err });
+      await update(T.teams, team.id, { password_hash: await hashPassword(pass) });
+      return res.status(200).json({ password: pass, email: team.email, team: team.name, code: team.code });
+    }
+    // توليد كلمات مرور لكل الفرق التي ليس لها كلمة مرور (تُعرض مرة واحدة لتنزيلها)
+    if (action === "passwords-bulk" && req.method === "POST") {
+      const list = [];
+      for (const t of (await select(T.teams)).filter((t) => !t.password_hash && t.status !== "disqualified")) {
+        const pass = genPass();
+        await update(T.teams, t.id, { password_hash: await hashPassword(pass) });
+        list.push({ team: t.name, email: t.email, members: t.member_emails || [], code: t.code, password: pass });
+      }
+      return res.status(200).json({ list });
     }
 
     // رسالة لفريق محدد: إعلان شخصي + بريد

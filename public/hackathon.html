@@ -150,11 +150,6 @@
       <label>اختر المسار والتحدي</label>
       <div class="opts" id="tracks"></div>
       <label class="consent"><input type="checkbox" id="regConsent"> <span>أوافق على <a href="privacy.html" target="_blank">سياسة الخصوصية</a> وعلى عرض اسم الفريق والمشروع في لوحات الترتيب</span></label>
-      <div class="row2" style="margin-top:4px">
-        <div><label for="tPass">كلمة المرور</label><input id="tPass" type="password" dir="ltr" autocomplete="new-password" placeholder="8 أحرف على الأقل"></div>
-        <div><label for="tPass2">تأكيد كلمة المرور</label><input id="tPass2" type="password" dir="ltr" autocomplete="new-password"></div>
-      </div>
-      <p class="hint"><i data-icon="lock"></i> يدخل بها أعضاء الفريق إلى صفحة الفريق من أي جهاز، مع البريد المسجّل لهم.</p>
       <button class="btn" id="regBtn" style="margin-top:10px">سجّل الفريق</button>
       <p class="err" id="regErr"></p>
     </div>
@@ -165,7 +160,7 @@
         <label for="lgEmail">البريد الإلكتروني</label><input id="lgEmail" type="email" dir="ltr" autocomplete="username" placeholder="name@example.com">
         <label for="lgPw">كلمة المرور</label><input id="lgPw" type="password" dir="ltr" autocomplete="current-password">
         <button class="btn" id="lgBtn" style="margin-top:12px">دخول</button>
-        <div class="lglinks"><a href="#" id="toForgot">نسيت كلمة المرور؟</a><a href="#" id="toCode">الدخول برمز الفريق</a></div>
+        <div class="lglinks"><span class="muted">نسيت كلمة المرور؟ الرجاء التواصل مع المنظمين.</span><a href="#" id="toCode">الدخول برمز الفريق</a></div>
       </div>
       <div id="lgCode" class="hidden">
         <label for="loginCode">رمز الفريق</label>
@@ -174,18 +169,6 @@
           <button class="btn ghost" id="loginBtn">دخول</button>
         </div>
         <div class="lglinks"><a href="#" class="toPass">الدخول بالبريد وكلمة المرور</a></div>
-      </div>
-      <div id="lgForgot" class="hidden">
-        <p class="small muted">الرجاء كتابة البريد المسجّل في الفريق، وسيصلك رمز لتعيين كلمة مرور جديدة.</p>
-        <label for="fgEmail">البريد الإلكتروني</label><input id="fgEmail" type="email" dir="ltr">
-        <button class="btn ghost" id="fgSend" style="margin-top:10px">إرسال الرمز</button>
-        <div id="fgStep2" class="hidden">
-          <label for="fgCode">الرمز المرسل إلى بريدك</label><input id="fgCode" dir="ltr" inputmode="numeric" maxlength="6" style="letter-spacing:6px;text-align:center">
-          <label for="fgPw">كلمة المرور الجديدة</label><input id="fgPw" type="password" dir="ltr" autocomplete="new-password" placeholder="8 أحرف على الأقل">
-          <button class="btn" id="fgReset" style="margin-top:10px">تعيين كلمة المرور والدخول</button>
-        </div>
-        <p class="small" id="fgMsg" style="margin-top:8px"></p>
-        <div class="lglinks"><a href="#" class="toPass">رجوع إلى الدخول</a></div>
       </div>
       <p class="err" id="loginErr"></p>
     </div>
@@ -196,7 +179,7 @@
     <div class="card" style="text-align:center">
       <span class="pill ok"><i data-icon="circle-check"></i> تم تسجيل الفريق</span>
       <p class="small" id="codeMailed" style="margin-top:8px;color:var(--good)"></p>
-      <p style="margin-top:12px">يمكنكم الدخول لاحقًا من أي جهاز <b>بالبريد المسجّل وكلمة المرور</b>. وهذا رمز الفريق للدخول البديل، <b>الرجاء الاحتفاظ به</b>:</p>
+      <p style="margin-top:12px">هذا رمز الفريق، <b>الرجاء الاحتفاظ به</b> للدخول إلى صفحة الفريق. وسيزوّدكم المنظمون بكلمة مرور للدخول بالبريد من أي جهاز:</p>
       <div class="code" id="newCode"></div>
       <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
         <button class="btn sm ghost" id="copyBtn"><i data-icon="copy"></i> نسخ الرمز</button>
@@ -372,16 +355,13 @@ $("regBtn").onclick = async () => {
   const t = CFG.hackathon.tracks.find(x=>x.id===chosen.track);
   if (!t) return $("regErr").textContent = "الرجاء اختيار المسار";
   if (t.challenges.length && !chosen.challenge) return $("regErr").textContent = "الرجاء اختيار التحدي داخل المسار";
-  if ($("tPass").value.length < 8) return $("regErr").textContent = "الرجاء اختيار كلمة مرور من 8 أحرف على الأقل";
-  if ($("tPass").value !== $("tPass2").value) return $("regErr").textContent = "كلمتا المرور غير متطابقتين";
   $("regBtn").disabled=true;
   try {
     const d = await api("register", {
       name:$("tName").value, email:$("tEmail").value, phone:$("tPhone").value, track:chosen.track, challenge:chosen.challenge,
       members:[...document.querySelectorAll(".mem")].map(i=>i.value.trim()),
-      memberEmails:[...document.querySelectorAll(".mrow")].map(r=>r.querySelector(".memMail")?.value.trim()||""), ticket: $("tTicket").value.trim().toUpperCase(), consent: $("regConsent").checked, password: $("tPass").value
+      memberEmails:[...document.querySelectorAll(".mrow")].map(r=>r.querySelector(".memMail")?.value.trim()||""), ticket: $("tTicket").value.trim().toUpperCase(), consent: $("regConsent").checked
     });
-    $("tPass").value = $("tPass2").value = "";
     LS.set("hack_code", d.code); $("newCode").textContent = d.code; $("codeMailed").textContent = d.emailed ? "أرسلنا الرمز أيضًا إلى البريد المسجّل" : ""; show("v-code"); scrollTo(0,0);
   } catch(e){ $("regErr").textContent = e.message; }
   $("regBtn").disabled=false;
@@ -390,9 +370,8 @@ $("copyBtn").onclick = async () => { try{ await navigator.clipboard.writeText($(
 $("goTeam").onclick = () => loadTeam(LS.get("hack_code"));
 $("loginBtn").onclick = async () => { $("loginErr").textContent=""; try { await loadTeam($("loginCode").value.trim().toUpperCase(), true); } catch(e){ $("loginErr").textContent=e.message; } };
 // ---------- الدخول بالبريد وكلمة المرور ----------
-const lgShow = id => { ["lgPass","lgCode","lgForgot"].forEach(x => $(x).classList.toggle("hidden", x !== id)); $("loginErr").textContent = ""; };
+const lgShow = id => { ["lgPass","lgCode"].forEach(x => $(x).classList.toggle("hidden", x !== id)); $("loginErr").textContent = ""; };
 $("toCode").onclick = e => { e.preventDefault(); lgShow("lgCode"); };
-$("toForgot").onclick = e => { e.preventDefault(); $("fgEmail").value = $("lgEmail").value; lgShow("lgForgot"); };
 document.querySelectorAll(".toPass").forEach(a => a.onclick = e => { e.preventDefault(); lgShow("lgPass"); });
 $("lgPw").onkeydown = e => { if (e.key === "Enter") $("lgBtn").click(); };
 $("lgBtn").onclick = async () => {
@@ -401,22 +380,6 @@ $("lgBtn").onclick = async () => {
   catch(e){ $("loginErr").textContent = e.message; }
   $("lgBtn").disabled = false;
 };
-$("fgSend").onclick = async () => {
-  $("fgMsg").textContent = ""; $("fgSend").disabled = true;
-  try {
-    const d = await api("forgot", {email: $("fgEmail").value.trim()});
-    $("fgStep2").classList.remove("hidden");
-    $("fgMsg").style.color = d.mail === false ? "var(--bad)" : "var(--muted)";
-    $("fgMsg").textContent = d.mail === false ? "تعذّر إرسال البريد حاليًا. الرجاء التواصل مع المنظمين لتعيين كلمة مرور مؤقتة، أو الدخول برمز الفريق." : "إن كان البريد مسجّلًا في فريق، فسيصله رمز خلال دقيقة. الرجاء مراجعة صندوق الوارد والرسائل غير المرغوبة.";
-  } catch(e){ $("fgMsg").style.color = "var(--bad)"; $("fgMsg").textContent = e.message; }
-  $("fgSend").disabled = false;
-};
-$("fgReset").onclick = async () => {
-  $("fgMsg").textContent = "";
-  try { const d = await api("reset", {email: $("fgEmail").value.trim(), code: $("fgCode").value.trim(), password: $("fgPw").value}); $("fgPw").value = ""; await loadTeam(d.code, true); }
-  catch(e){ $("fgMsg").style.color = "var(--bad)"; $("fgMsg").textContent = e.message; }
-};
-
 $("logoutBtn").onclick = () => { LS.set("hack_code", null); team=null; show("v-home"); };
 
 // ---------- الفكرة القادمة من المستثمر الذكي ----------
@@ -458,18 +421,8 @@ async function checkPending(){
   evalPoll = setTimeout(async () => { await loadTeam(team.code); }, 15000);
 }
 function renderPassword(){
-  const has = team.team.hasPassword;
-  const form = `<div class="row2" style="margin-top:8px"><input id="npw" type="password" dir="ltr" autocomplete="new-password" placeholder="كلمة المرور الجديدة (8 أحرف على الأقل)"><input id="npw2" type="password" dir="ltr" autocomplete="new-password" placeholder="تأكيدها"></div><button class="btn sm" id="npwBtn" style="margin-top:8px">حفظ كلمة المرور</button><p class="small" id="npwMsg" style="margin-top:6px"></p>`;
-  $("pwBox").innerHTML = has
-    ? `<details class="card"><summary style="cursor:pointer;font-weight:700;display:flex;align-items:center;gap:8px"><i data-icon="key-round" style="color:var(--accent)"></i> تغيير كلمة المرور</summary><p class="small muted" style="margin-top:6px">الدخول بالبريد <b dir="ltr">${esc(team.team.email||"")}</b> أو بريد أي عضو مسجّل، مع كلمة المرور.</p>${form}</details>`
-    : `<div class="card note warn"><b><i data-icon="key-round"></i> الرجاء تعيين كلمة مرور للفريق</b><p class="small" style="margin-top:4px">ليتمكن الأعضاء من الدخول من أي جهاز بالبريد المسجّل وكلمة المرور.</p>${form}</div>`;
-  $("npwBtn").onclick = async () => {
-    const m = $("npwMsg");
-    if ($("npw").value.length < 8) { m.style.color="var(--bad)"; m.textContent = "كلمة المرور يجب ألا تقل عن 8 أحرف"; return; }
-    if ($("npw").value !== $("npw2").value) { m.style.color="var(--bad)"; m.textContent = "كلمتا المرور غير متطابقتين"; return; }
-    try { await api("set-password", {code: team.code, password: $("npw").value}); team.team.hasPassword = true; renderPassword(); }
-    catch(e){ m.style.color="var(--bad)"; m.textContent = e.message; }
-  };
+  $("pwBox").innerHTML = team.team.hasPassword ? ""
+    : `<div class="card note"><b><i data-icon="key-round"></i> كلمة مرور الفريق</b><p class="small" style="margin-top:4px">سيزوّدكم المنظمون بكلمة المرور للدخول بالبريد من أي جهاز. ويمكنكم الدخول حاليًا برمز الفريق: <b dir="ltr">${esc(team.code)}</b></p></div>`;
 }
 function renderTeam(){
   const t = team, H = CFG.hackathon, all = t.submissions, subs = all.filter(x => x.status === "done"), last = subs[subs.length-1];

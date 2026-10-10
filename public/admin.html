@@ -184,7 +184,7 @@ const NEW = {
   "program.partners": () => ({name:"", logoUrl:""}),
 };
 function genKey(n=10){ const a="ABCDEFGHJKMNPQRSTUVWXYZ23456789"; return Array.from(crypto.getRandomValues(new Uint8Array(n)),x=>a[x%a.length]).join(""); }
-let TEAMS = null, CERTS = null, LOGS = null; const OPEN = new Set();
+let TEAMS = null, CERTS = null, LOGS = null, PASSLIST = null; const OPEN = new Set();
 const when = d => new Date(d).toLocaleString("ar-SA-u-nu-latn",{day:"numeric",month:"short",hour:"numeric",minute:"2-digit"});
 
 // ---------- الأقسام ----------
@@ -312,14 +312,15 @@ const P = {
     const list = TEAMS.filter(t => !q || [t.name, t.email, t.code, t.title, ...(t.members||[])].join(" ").toLowerCase().includes(q));
     const SRC = {investor:"المستثمر الذكي", invite:"دعوة", direct:"مباشر"};
     return `<h1>المشاركون</h1><p class="lead">${TEAMS.length} فريق · ${TEAMS.filter(t=>t.status==="disqualified").length} مستبعد. ابحث بالاسم أو البريد أو رمز الفريق.</p>
-      <div class="card">${f("","_q",{ph:"بحث بالاسم أو البريد أو الرمز…"})}</div>
+      ${PASSLIST && PASSLIST.length ? card(`<span style="display:flex;align-items:center;gap:8px"><i data-icon="key-round"></i> كلمات المرور (تظهر مرة واحدة)</span>`, `<p class="small" style="color:var(--bad);margin-bottom:8px">كلمات المرور محفوظة مشفّرة ولا يمكن عرضها لاحقًا. الرجاء تنزيلها أو نسخها الآن وتسليمها للفرق.</p><div style="overflow-x:auto"><table class="tbl"><thead><tr><th>الفريق</th><th>البريد للدخول</th><th>كلمة المرور</th><th>رمز الفريق</th></tr></thead><tbody>${PASSLIST.map(x=>`<tr><td><b>${esc(x.team)}</b></td><td dir="ltr">${esc(x.email)}${(x.members||[]).length?`<div class="help">${esc(x.members.join("، "))}</div>`:""}</td><td dir="ltr" style="font-family:ui-monospace,monospace;font-weight:700">${esc(x.password)} <button class="ib" data-copy="${attr(`الدخول: ${abs("hackathon.html")}\nالبريد: ${x.email}\nكلمة المرور: ${x.password}`)}">نسخ</button></td><td dir="ltr">${esc(x.code||"")}</td></tr>`).join("")}</tbody></table></div><div style="display:flex;gap:8px;margin-top:10px"><button class="btn sm" data-act="pdl"><i data-icon="download"></i> تنزيل القائمة</button><button class="btn sm ghost" data-act="pclose">تم الحفظ، إخفاء</button></div>`) : ""}
+      <div class="card" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><div style="flex:1;min-width:220px">${f("","_q",{ph:"بحث بالاسم أو البريد أو الرمز…"})}</div><button class="btn ghost sm" data-act="pbulk"><i data-icon="key-round"></i> توليد كلمات مرور للفرق الجديدة</button></div>
       ${card(`الفرق (${list.length})`, list.length ? `<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>#</th><th>الفريق</th><th>المسار</th><th>المشروع</th><th>المحاولات</th><th>الدرجة</th><th>المصدر</th><th>الحالة</th><th></th></tr></thead><tbody>
         ${list.map(t=>`<tr style="${t.status==="disqualified"?"opacity:.55":""}"><td>${t.rank??"—"}</td>
-          <td><b>${esc(t.name)}</b>${t.finalist?' <span class="pill">متأهل</span>':""}${t.flagged?' <span class="pill no"><i data-icon="triangle-alert"></i></span>':""}<div class="help">${esc((t.members||[]).join("، "))}<br><span dir="ltr">${esc(t.email)}</span> · <span dir="ltr" style="font-family:monospace">${esc(t.code)}</span></div></td>
+          <td><b>${esc(t.name)}</b>${t.finalist?' <span class="pill">متأهل</span>':""}${t.flagged?' <span class="pill no"><i data-icon="triangle-alert"></i></span>':""}${t.hasPassword?'':' <span class="pill warn" title="لم تُعيَّن كلمة مرور"><i data-icon="key-round"></i> بلا كلمة مرور</span>'}<div class="help">${esc((t.members||[]).join("، "))}<br><span dir="ltr">${esc(t.email)}</span> · <span dir="ltr" style="font-family:monospace">${esc(t.code)}</span></div></td>
           <td>${esc(t.label)}</td><td>${esc(t.title||"—")}</td><td>${t.attempts}${t.pending?` <span class="pill"><i data-icon="hourglass"></i>${t.pending}</span>`:""}</td>
           <td><b class="gold">${t.best??"—"}</b>${t.final!=null?`<div class="help">نهائية ${t.final}</div>`:""}</td><td>${SRC[t.source]||"—"}</td>
           <td>${t.status==="disqualified"?'<span class="pill no">مستبعد</span>':'<span class="pill ok">نشط</span>'}</td>
-          <td style="white-space:nowrap"><a class="ib" href="hackathon.html?code=${esc(t.code)}" target="_blank" title="فتح صفحة الفريق">صفحته</a> <button class="ib" data-act="tpass" data-id="${t.id}" data-name="${attr(t.name)}" title="كلمة مرور مؤقتة"><i data-icon="key-round"></i></button> <button class="ib" data-act="msg" data-id="${t.id}" data-name="${attr(t.name)}"><i data-icon="mail"></i> رسالة</button> ${t.status==="disqualified"?`<button class="ib" data-act="tstatus" data-id="${t.id}" data-s="active">استعادة</button>`:`<button class="ib del" data-act="tstatus" data-id="${t.id}" data-s="disqualified">استبعاد</button>`}</td></tr>`).join("")}
+          <td style="white-space:nowrap"><a class="ib" href="hackathon.html?code=${esc(t.code)}" target="_blank" title="فتح صفحة الفريق">صفحته</a> <button class="ib" data-act="tpass" data-id="${t.id}" data-name="${attr(t.name)}" title="تعيين كلمة المرور"><i data-icon="key-round"></i> كلمة المرور</button> <button class="ib" data-act="msg" data-id="${t.id}" data-name="${attr(t.name)}"><i data-icon="mail"></i> رسالة</button> ${t.status==="disqualified"?`<button class="ib" data-act="tstatus" data-id="${t.id}" data-s="active">استعادة</button>`:`<button class="ib del" data-act="tstatus" data-id="${t.id}" data-s="disqualified">استبعاد</button>`}</td></tr>`).join("")}
         </tbody></table></div>` : `<p class="muted">لا توجد فرق.</p>`)}`;
   },
   announce(){
@@ -534,10 +535,25 @@ $("main").addEventListener("click", async e => {
     await api("team-status", {id: Number(b.dataset.id), status: b.dataset.s}); TEAMS = (await api("teams")).teams; render(); return;
   }
   if (act==="tpass") {
-    if (!confirm(`إنشاء كلمة مرور مؤقتة لفريق «${b.dataset.name}»؟ ستتوقف كلمة المرور الحالية.`)) return;
-    try { const r = await api("team-password", {id: Number(b.dataset.id)}); prompt(`كلمة المرور المؤقتة (الدخول بالبريد ${r.email}). الرجاء نسخها وإرسالها للفريق، ويُستحسن تغييرها بعد الدخول:`, r.password); } catch(err){ alert(err.message); }
+    const v = prompt(`كلمة مرور فريق «${b.dataset.name}»:\nاكتب كلمة المرور (8 أحرف على الأقل)، أو اتركها فارغة لتوليدها تلقائيًا. ستحل محل كلمة المرور الحالية إن وُجدت.`, "");
+    if (v === null) return;
+    try {
+      const r = await api("team-password", {id: Number(b.dataset.id), password: v.trim()});
+      PASSLIST = [r]; TEAMS = (await api("teams")).teams; render();
+    } catch(err){ alert(err.message); }
     return;
   }
+  if (act==="pbulk") {
+    if (!confirm("توليد كلمات مرور لكل الفرق التي ليس لها كلمة مرور؟ ستظهر القائمة مرة واحدة فقط، فالرجاء تنزيلها وحفظها.")) return;
+    try { const r = await api("passwords-bulk", {}); PASSLIST = r.list; TEAMS = (await api("teams")).teams; render(); if (!r.list.length) alert("كل الفرق لديها كلمات مرور."); } catch(err){ alert(err.message); }
+    return;
+  }
+  if (act==="pdl") {
+    const rows = [["الفريق","البريد","بريد الأعضاء","رمز الفريق","كلمة المرور"], ...PASSLIST.map(x=>[x.team, x.email, (x.members||[]).join(" | "), x.code, x.password])];
+    const csv = "\ufeff" + rows.map(r=>r.map(c=>/[",\n]/.test(String(c??""))?`"${String(c).replace(/"/g,'""')}"`:String(c??"")).join(",")).join("\n");
+    const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv],{type:"text/csv"})); a.download = "team-passwords.csv"; a.click(); return;
+  }
+  if (act==="pclose") { PASSLIST = null; render(); return; }
   if (act==="msg") {
     const title = prompt(`عنوان الرسالة لفريق «${b.dataset.name}»:`); if (!title) return;
     const body = prompt("نص الرسالة (اختياري):") || "";
