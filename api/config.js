@@ -3,12 +3,16 @@ import { mailEnabled } from "../lib/mailer.js";
 import { select } from "../lib/db.js";
 import { maybeReminders } from "../lib/campaigns.js";
 import { siteUrl } from "../lib/site.js";
+import { resolveLogos, serveLogo } from "../lib/logos.js";
 
 export default async function handler(req, res) {
   try {
+    const logo = new URL(req.url, "http://x").searchParams.get("logo");
+    if (logo) return serveLogo(logo, res);
     res.setHeader("Cache-Control", "no-store");
     const s = await getSettings();
     const p = publicSettings(s);
+    p.brand.logos = await resolveLogos(s);
     p.features = { mail: mailEnabled(), verifyEmail: Boolean(s.investor.verifyEmail && mailEnabled()) };
     // الإعلانات العامة (للصفحات والشاشات)
     const ann = (await select("announcements")).filter((a) => a.active && (a.audience === "all" || a.audience === "screens"));

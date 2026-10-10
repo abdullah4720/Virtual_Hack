@@ -68,7 +68,10 @@ input[type=range]{accent-color:var(--accent);padding:0}
 .savebar .btn{width:auto;padding:11px 28px}
 .danger{border-color:color-mix(in srgb,var(--bad) 40%,transparent)}
 .btn.red{background:var(--bad);color:#fff}
-.logo-prev{max-height:56px;max-width:200px;background:var(--navy);border-radius:8px;padding:6px;margin-top:8px}
+.lprev{display:inline-grid;place-items:center;min-width:120px;height:64px;padding:8px 14px;border-radius:10px;border:1px solid var(--line);background:#fff}
+.lprev.navy{background:var(--navy)}
+.lprev img{max-height:46px;max-width:170px}
+.lprev img.mono{filter:brightness(0) invert(1)}
 .login{max-width:420px;margin:14vh auto}
 .help{font-size:12.5px;color:var(--muted);margin-top:4px}
 .tbl{width:100%;border-collapse:collapse;font-size:14px}
@@ -166,6 +169,8 @@ function f(label, k, o={}){
   return `<div>${label?`<label>${label}</label>`:""}${inp}${o.help?`<div class="help">${o.help}</div>`:""}</div>`;
 }
 // منتقي أيقونة Lucide (للمسارات والمستشارين)
+// معاينة الشعار: رابط مباشر، أو صورة مرفوعة
+const lp = src => /^https?:\/\/\S+\.\S+/.test(src||"") ? src : (D.logoPreview||{})[src] || "";
 const iconField = (label, k) => { const v = getP(S,k) || ""; const names = Object.keys(window.ICONS||{}); return `<div>${label?`<label>${label}</label>`:""}<div style="display:flex;gap:8px;align-items:center"><span style="display:grid;place-items:center;width:44px;height:44px;border-radius:11px;background:var(--soft);color:var(--accent);flex:none;font-size:20px" data-prev="${k}">${glyph(v)}</span><select data-k="${k}" data-icon-field>${names.includes(v)?"":`<option value="${attr(v)}" selected>${esc(v)||"—"}</option>`}${names.map(n=>`<option value="${n}" ${n===v?"selected":""}>${n}</option>`).join("")}</select></div></div>`; };
 const tog = (label, k, help="") => `<label class="toggle"><span><b>${label}</b>${help?`<div class="help">${help}</div>`:""}</span><input type="checkbox" data-k="${k}" data-type="bool" ${getP(S,k)?"checked":""}></label>`;
 const tools = (list, i, n) => `<div class="tools"><button class="ib" data-act="up" data-list="${list}" data-i="${i}" ${i===0?"disabled":""} title="أعلى">↑</button><button class="ib" data-act="down" data-list="${list}" data-i="${i}" ${i===n-1?"disabled":""} title="أسفل">↓</button><button class="ib del" data-act="del" data-list="${list}" data-i="${i}">حذف</button></div>`;
@@ -182,6 +187,7 @@ const NEW = {
   "program.prizes": () => ({place:"", title:"", desc:""}),
   "program.faq": () => ({q:"", a:""}),
   "program.partners": () => ({name:"", logoUrl:""}),
+  "brand.logos": () => ({name:"", src:"https://", mono:true}),
 };
 function genKey(n=10){ const a="ABCDEFGHJKMNPQRSTUVWXYZ23456789"; return Array.from(crypto.getRandomValues(new Uint8Array(n)),x=>a[x%a.length]).join(""); }
 let TEAMS = null, CERTS = null, LOGS = null, PASSLIST = null; const OPEN = new Set();
@@ -231,8 +237,18 @@ const P = {
     return `<h1>الهوية والعامة</h1><p class="lead">تظهر هذه البيانات في كل صفحات المنصة والشاشات.</p>
       ${card("بيانات الجهة", `<div class="grid2">${f("اسم الجهة","brand.orgName",{ph:"مثال: جامعة القصيم"})}${f("اسم الفعالية","brand.eventName",{ph:"مثال: ملتقى ريادة الأعمال"})}</div>
         <div class="grid2">${f("اسم الجناح أو الموقع","brand.boothName",{ph:"مثال: جناح جامعة القصيم"})}${f("المنطقة الزمنية","brand.tzOffset",{type:"select",opts:[["+03:00","السعودية (UTC+3)"],["+04:00","الإمارات وعُمان (UTC+4)"],["+02:00","مصر (UTC+2)"],["+01:00","UTC+1"],["+00:00","UTC"]]})}</div>
-        ${f("رابط الشعار (اختياري)","brand.logoUrl",{ltr:true,max:500,ph:"https://…/logo.png",help:"رابط صورة PNG أو SVG بخلفية شفافة. يظهر أعلى الصفحات والشاشات."})}
-        ${S.brand.logoUrl?`<img class="logo-prev" src="${attr(S.brand.logoUrl)}" alt="">`:""}`)}
+`)}
+      ${card(`<span style="display:flex;align-items:center;gap:8px"><i data-icon="image"></i> الشعارات (${(S.brand.logos||[]).length})</span>`, `<p class="muted small" style="margin-bottom:10px">تظهر بالترتيب في أعلى كل الصفحات والشاشات، وفي الشهادات والتقرير الختامي ورسائل البريد. يُفضَّل PNG بخلفية شفافة أو SVG.</p>
+        ${(S.brand.logos||[]).map((l,i)=>`<div class="item"><div class="head"><b>${esc(l.name)||"شعار"}</b>${tools("brand.logos",i,S.brand.logos.length)}</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:8px">
+            <span class="lprev navy">${lp(l.src)?`<img src="${attr(lp(l.src))}" alt="" class="${l.mono?"mono":""}">`:""}</span>
+            <span class="lprev">${lp(l.src)?`<img src="${attr(lp(l.src))}" alt="">`:""}</span>
+            <span class="help">على الشريط الكحلي · على الخلفية البيضاء (الشهادات والتقرير)</span>
+          </div>
+          <div class="grid2">${f("اسم الجهة","brand.logos."+i+".name",{max:60,ph:"مثال: جامعة القصيم"})}${/^https?:/.test(l.src)?f("رابط الصورة","brand.logos."+i+".src",{ltr:true,max:500}):`<div><label>المصدر</label><div class="help" style="padding-top:10px">صورة مرفوعة</div></div>`}</div>
+          ${tog("أبيض على الشريط الكحلي والشاشات","brand.logos."+i+".mono","يُستحسن للشعارات الملوّنة كي تظهر بوضوح على الخلفية الداكنة. أوقفه لعرض الألوان الأصلية.")}</div>`).join("")}
+        <div class="grid2"><label class="add" style="display:flex;align-items:center;justify-content:center;gap:8px;margin:0;cursor:pointer"><i data-icon="upload"></i> رفع شعار من جهازك<input type="file" accept="image/png,image/svg+xml,image/jpeg,image/webp" data-logo-upload hidden></label><button class="add" data-act="add" data-list="brand.logos">+ إضافة شعار برابط</button></div>
+        <p class="help" id="logoMsg"></p>`)}
       ${card("الألوان", `<div class="grid2">${f("لون الأزرار والعناصر التفاعلية","brand.accent",{type:"color"})}${f("اللون الأساسي (الشريط العلوي والشاشات)","brand.bg",{type:"color"})}</div><p class="help">يُفضَّل لون أساسي داكن (كحلي مثلًا)، ولون تفاعلي متوسط الدرجة يظهر بوضوح على الأبيض.</p>`)}`;
   },
   investor(){
@@ -450,8 +466,24 @@ $("main").addEventListener("input", e => {
   if (k.startsWith("_")) { tmp[k]=v; if (k==="_q") { const pos = el.selectionStart; render(); const n=$("main").querySelector('[data-k="_q"]'); n.focus(); n.setSelectionRange(pos,pos); } return; }
   setP(S,k,v); computed(); dirty();
 });
-$("main").addEventListener("change", e => {
-  if (e.target.dataset.k === "brand.logoUrl") render();
+$("main").addEventListener("change", async e => {
+  if (e.target.dataset.k === "brand.logoUrl" || /^brand\.logos\.\d+\.(src|mono)$/.test(e.target.dataset.k||"")) render();
+  if (e.target.hasAttribute("data-logo-upload") && e.target.files[0]) {
+    const file = e.target.files[0], msg = $("logoMsg");
+    msg.textContent = "جارٍ رفع الشعار…";
+    try {
+      // تحويل الصورة (ومنها SVG) إلى PNG بحجم مناسب قبل الرفع
+      const url = URL.createObjectURL(file);
+      const img = await new Promise((ok, no) => { const im = new Image(); im.onload = () => ok(im); im.onerror = () => no(new Error("تعذّرت قراءة الصورة")); im.src = url; });
+      const k = Math.min(1, 800 / (img.naturalWidth || 800), 400 / (img.naturalHeight || 400));
+      const w = Math.max(1, Math.round((img.naturalWidth || 800) * k)), h = Math.max(1, Math.round((img.naturalHeight || 400) * k));
+      const c = document.createElement("canvas"); c.width = w; c.height = h; c.getContext("2d").drawImage(img, 0, 0, w, h);
+      const r = await api("logo-upload", {data: c.toDataURL("image/png")});
+      (S.brand.logos ||= []).push({name: file.name.replace(/\.[^.]+$/, ""), src: r.src, mono: true});
+      (D.logoPreview ||= {})[r.src] = r.preview;
+      render(); dirty("أُضيف الشعار. الرجاء حفظ التغييرات.", "ok");
+    } catch(err){ msg.textContent = err.message; }
+  }
   if (e.target.hasAttribute("data-icon-field")) { const pv = $("main").querySelector(`[data-prev="${e.target.dataset.k}"]`); if (pv) pv.innerHTML = glyph(e.target.value); }
   if (e.target.dataset.jt != null) {
     const j = S.hackathon.judges[Number(e.target.dataset.jt)], id = e.target.value;

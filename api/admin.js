@@ -12,6 +12,7 @@ import { runReminders, sendResults, remindJudges } from "../lib/campaigns.js";
 import { siteUrl } from "../lib/site.js";
 import { keyProblem } from "../lib/supabase.js";
 import { hashPassword, passwordProblem } from "../lib/password.js";
+import { resolveLogos, storeLogo } from "../lib/logos.js";
 
 const clip = (s, n) => String(s ?? "").trim().slice(0, n);
 const csvCell = (v) => {
@@ -40,6 +41,7 @@ export default async function handler(req, res) {
       const invested = deals.filter((d) => d.decision === "invest");
       return res.status(200).json({
         settings: s,
+        logoPreview: Object.fromEntries((await resolveLogos(s)).map((l, i) => [s.brand.logos[i]?.src, l.url])),
         defaults: DEFAULTS,
         notifyKinds: KINDS, notifyCommon: COMMON_VARS,
         tickets: tickets.slice(-300).reverse().map((t) => ({
@@ -201,6 +203,12 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: out.every((x) => x.ok), results: out });
     }
 
+    // ---------- رفع شعار ----------
+    if (action === "logo-upload" && req.method === "POST") {
+      try { const src = await storeLogo(String(b.data || "")); return res.status(200).json({ src, preview: hasDb ? `api/config?logo=${src.slice(5)}` : b.data }); }
+      catch (e) { return res.status(400).json({ error: e.message }); }
+    }
+
     // ---------- الإشعارات ----------
     if (action === "mail-log") {
       const rows = await mailLog(200);
@@ -244,7 +252,7 @@ export default async function handler(req, res) {
       const subsByTeam = new Map();
       for (const x of subs) subsByTeam.set(x.team_id, [...(subsByTeam.get(x.team_id) || []), x]);
       return res.status(200).json({
-        settings: s,
+        settings: { ...s, brand: { ...s.brand, logos: await resolveLogos(s) } },
         stats: {
           pitches: deals.length, qualified: deals.filter((d) => d.qualified).length,
           avgPitch: deals.length ? Math.round(deals.reduce((a, d) => a + (d.score || 0), 0) / deals.length) : 0,

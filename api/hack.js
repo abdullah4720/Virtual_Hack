@@ -8,6 +8,7 @@ import { findTicket, useTicket } from "../lib/tickets.js";
 import { checkLimits, recordUse } from "../lib/limits.js";
 import { notify, teamEmails, closesAtText } from "../lib/notify.js";
 import { siteUrl } from "../lib/site.js";
+import { resolveLogos } from "../lib/logos.js";
 import { hashPassword, verifyPassword, passwordProblem } from "../lib/password.js";
 import { count } from "../lib/db.js";
 import { clientKey } from "../lib/limits.js";
@@ -83,7 +84,7 @@ export default async function handler(req, res) {
         const row = rows.find((r) => r.team.id === t.id);
         return res.status(200).json({
           valid: true, code, name: t.members[i], team: t.name, project: row?.best.title || "", label: optionLabel(s, t.track, t.challenge),
-          kind: certKind(s, row), brand: s.brand, hackathon: H.name, date: row?.best.created_at || t.created_at,
+          kind: certKind(s, row), brand: { ...s.brand, logos: await resolveLogos(s) }, hackathon: H.name, date: row?.best.created_at || t.created_at,
         });
       }
       return res.status(404).json({ valid: false, error: "الشهادة غير موجودة" });

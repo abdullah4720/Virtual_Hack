@@ -88,7 +88,7 @@ async function load(){
   document.documentElement.style.setProperty("--accent", B.accent); if (B.bg) document.documentElement.style.setProperty("--navy", B.bg);
   const today = new Date().toLocaleDateString("ar-SA-u-nu-latn", {year:"numeric", month:"long", day:"numeric"});
   const foot = (p) => `<div class="foot"><span>${esc(B.orgName)} · ${esc(B.eventName)}</span><span>${p}</span></div>`;
-  const cover = `<section class="page cover">${B.logoUrl?`<img src="${esc(B.logoUrl)}" alt="">`:""}
+  const cover = `<section class="page cover">${(B.logos||[]).length?`<div style="display:flex;gap:28px;align-items:center;justify-content:center">${B.logos.map(l=>`<img src="${esc(l.url)}" alt="" style="max-height:70px;max-width:220px">`).join("")}</div>`:""}
     <div class="k">${esc(B.orgName)}</div><h1>${booklet ? "كتيّب المشاريع" : "التقرير الختامي"}<br>${esc(S.hackathon.name)}</h1>
     <div class="k">${esc(B.boothName)} · ${esc(B.eventName)}</div><div class="k">${today}</div></section>`;
   let html = cover;

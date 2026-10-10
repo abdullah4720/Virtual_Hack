@@ -58,7 +58,13 @@ i[data-icon] .lu{vertical-align:0}
 .topbar .in{max-width:720px;margin:0 auto;padding:22px 16px 26px;text-align:center}
 .topbar.wide .in{max-width:1180px}
 .topbar .org{display:flex;align-items:center;justify-content:center;gap:10px;font-size:13px;color:rgba(255,255,255,.72)}
-.topbar [data-logo] img{max-height:46px;max-width:180px;filter:brightness(0) invert(1)}
+.logos{display:inline-flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:center}
+.logos img{max-height:44px;max-width:170px;object-fit:contain}
+.logos .sep{width:1px;height:30px;background:currentColor;opacity:.3}
+.topbar .logos{margin-bottom:4px}
+.topbar .logos img{max-height:50px}
+.topbar img.mono,.dark img.mono{filter:brightness(0) invert(1)}
+.topbar .org:has(.logos){flex-direction:column;gap:6px}
 .topbar h1{color:#fff;font-size:26px;line-height:1.4;margin-top:8px}
 .topbar h1 .gold{color:inherit}
 .topbar .sub{color:rgba(255,255,255,.78);font-size:15px;margin:6px auto 0;max-width:560px;line-height:1.75}

@@ -56,7 +56,7 @@ function full(html){ const d = document.createElement("div"); d.className = "ful
 
 function countdown(c){
   const H = c.hackathon, target = H.phase === "soon" ? H.opensAtMs : H.phase === "open" ? H.closesAtMs : null;
-  const d = full(`${c.brand.logoUrl?`<img src="${esc(c.brand.logoUrl)}" style="max-height:6vw">`:""}<div class="k">${esc(c.hackathon.name)}</div>
+  const d = full(`<div style="display:flex;gap:3vw;align-items:center">${(c.brand.logos||[]).map(l=>`<img src="${esc(l.url)}" alt="" class="${l.mono?"mono":""}" style="max-height:6vw;max-width:22vw">`).join("")}</div><div class="k">${esc(c.hackathon.name)}</div>
     <div class="t">${H.phase==="soon"?"يبدأ التقديم بعد":H.phase==="open"?"يُقفل التقديم بعد":"انتهى التقديم"}</div>
     <div class="units" id="u"></div><div class="qr" id="qr"></div><div class="k">امسح الرمز وابدأ</div>`);
   try { new QRCode(d.querySelector("#qr"), {text: new URL("welcome.html", location.href).href, width: 400, height: 400}); } catch(e){}

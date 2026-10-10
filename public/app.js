@@ -123,7 +123,8 @@ window.APP = (() => {
     if (c.brand.accent) { r.setProperty("--brand-accent", c.brand.accent); r.setProperty("--accent-ink", ink(c.brand.accent)); }
     if (c.brand.bg) r.setProperty("--brand-navy", c.brand.bg);
     document.querySelectorAll("[data-logo]").forEach((el) => {
-      if (c.brand.logoUrl) { el.innerHTML = `<img src="${esc(c.brand.logoUrl)}" alt="${esc(c.brand.orgName)}">`; el.hidden = false; }
+      const L = c.brand.logos || [];
+      if (L.length) { el.innerHTML = `<span class="logos">${L.map((l, i) => `${i ? '<span class="sep"></span>' : ""}<img src="${esc(l.url)}" alt="${esc(l.name || c.brand.orgName)}" class="${l.mono ? "mono" : ""}">`).join("")}</span>`; el.hidden = false; }
     });
     document.querySelectorAll("[data-text]").forEach((el) => {
       const v = el.dataset.text.split(".").reduce((a, k) => a?.[k], c);

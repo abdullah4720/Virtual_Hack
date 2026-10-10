@@ -73,7 +73,7 @@ function render(){
   const s = $("stage"), n = Math.min(3, F.length);
   if (!F.length) { s.innerHTML = `<div class="title">لا توجد مشاريع متأهلة بعد</div>`; return; }
   if (step === 0) {
-    s.innerHTML = `${C.brand.logoUrl?`<img src="${esc(C.brand.logoUrl)}" alt="" style="max-height:7vw;max-width:24vw">`:""}
+    s.innerHTML = `<div style="display:flex;gap:3vw;align-items:center;justify-content:center">${(C.brand.logos||[]).map(l=>`<img src="${esc(l.url)}" alt="" class="${l.mono?"mono":""}" style="max-height:7vw;max-width:24vw">`).join("")}</div>
       <div class="kicker">${esc([C.brand.boothName, C.brand.eventName].filter(Boolean).join(" · "))}</div>
       <div class="title"><i data-icon="zap"></i> ${APP.title(C.hackathon.name)}</div>
       <div class="place">إعلان الفائزين</div>`;
