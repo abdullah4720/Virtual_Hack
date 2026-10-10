@@ -121,7 +121,7 @@ export default async function handler(req, res) {
         let verdict = null;
         const quickBad = /^(لا\s*(أعرف|اعرف|أدري|ادري|يوجد|شيء|شي)|ما\s*(أدري|ادري|أعرف|اعرف|عندي|فكرت)|مدري|أي\s*شي|اي\s*شي|كذا|ما\s*أعرف)[\s.!؟?]*$/.test(answers[idx]) || answers[idx].split(/\s+/).length < 2;
         if (quickBad) verdict = { ok: false, message: `شكرًا لك. لم تتضمن إجابتك معلومة تجيب عن السؤال. أرجو أن تجيب بمعلومة محددة ولو تقديرية: ${(questions[idx].match(/[^.!؟?]*[؟?][^.!؟?]*$/) || [questions[idx]])[0].trim()}` };
-        else if (AI) {
+        else if (AI && I.strictness !== "lenient") {
           try { verdict = await checkAnswer(s, inv, { idea, question: questions[idx], answer: answers[idx] }); await recordUse(req, "ai"); }
           catch (e) { console.error("answer check failed", e.message); }
         }
