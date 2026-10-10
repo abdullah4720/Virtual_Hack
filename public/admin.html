@@ -1,0 +1,478 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>لوحة التحكم</title>
+<meta name="robots" content="noindex">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="hack.css">
+<script src="app.js"></script>
+<style>
+body{padding-bottom:90px}
+.shell{display:grid;grid-template-columns:230px 1fr;gap:20px;max-width:1180px;margin:0 auto;padding:20px 16px}
+@media (max-width:860px){.shell{grid-template-columns:1fr}}
+nav{position:sticky;top:20px;align-self:start;display:flex;flex-direction:column;gap:4px}
+@media (max-width:860px){nav{position:static;flex-direction:row;overflow-x:auto;padding-bottom:6px}}
+nav .brand{font-weight:700;font-size:18px;margin-bottom:10px;padding:0 10px}
+@media (max-width:860px){nav .brand{display:none}}
+nav button{font:inherit;text-align:right;border:0;background:transparent;color:var(--muted);padding:9px 12px;border-radius:10px;cursor:pointer;white-space:nowrap}
+nav button:hover{color:var(--text);background:var(--card)}
+nav button.on{background:var(--card);color:var(--accent);font-weight:700;box-shadow:inset -3px 0 0 var(--accent)}
+section.pane{display:none}
+section.pane.on{display:block}
+.pane>h1{font-size:24px;margin-bottom:4px}
+.pane>p.lead{color:var(--muted);margin-bottom:16px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media (max-width:640px){.grid2,.grid3{grid-template-columns:1fr}}
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:14px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+.stat b{display:block;font-size:26px;color:var(--accent);font-variant-numeric:tabular-nums}
+.stat span{color:var(--muted);font-size:13px}
+.status{display:grid;gap:8px}
+.status div{display:flex;justify-content:space-between;align-items:center;background:var(--card2);border-radius:10px;padding:9px 12px;font-size:14.5px}
+.links{display:grid;gap:8px}
+.links div{display:grid;grid-template-columns:150px 1fr auto auto;gap:8px;align-items:center;background:var(--card2);border-radius:10px;padding:8px 12px;font-size:14px}
+.links code{direction:ltr;text-align:left;color:var(--blue);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media (max-width:640px){.links div{grid-template-columns:1fr auto auto}.links code{display:none}}
+.item{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px}
+.item .head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}
+.item .head b{font-size:15.5px}
+.tools{display:flex;gap:4px}
+.ib{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:8px;padding:4px 9px;cursor:pointer}
+.ib.del{color:var(--bad)}
+.ib:disabled{opacity:.35;cursor:default}
+.add{font:inherit;width:100%;border:1.5px dashed var(--line);background:transparent;color:var(--accent);border-radius:12px;padding:10px;cursor:pointer;font-weight:700}
+.sub{margin:10px 18px 0 0;padding-right:12px;border-right:2px solid var(--line)}
+.sub .item{background:var(--card)}
+.toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--card2);border-radius:12px;padding:12px 14px;margin-bottom:8px}
+.toggle input{width:22px;height:22px;accent-color:var(--accent)}
+.sum{font-weight:700;padding:4px 12px;border-radius:999px}
+.sum.ok{background:rgba(52,211,153,.14);color:var(--good)}
+.sum.no{background:rgba(248,113,113,.14);color:var(--bad)}
+.row-inline{display:grid;grid-template-columns:70px 1fr;gap:10px}
+.rub{display:grid;grid-template-columns:1.2fr 90px 2fr auto;gap:8px;align-items:end}
+@media (max-width:640px){.rub{grid-template-columns:1fr 80px}.rub .g{grid-column:1/-1}}
+input[type=color]{height:44px;padding:4px}
+input[type=range]{accent-color:var(--accent);padding:0}
+.savebar{position:fixed;bottom:0;left:0;right:0;background:rgba(11,16,32,.92);backdrop-filter:blur(8px);border-top:1px solid var(--line);padding:12px 16px;display:flex;gap:12px;align-items:center;justify-content:center;z-index:5}
+.savebar .msg{font-size:14px;color:var(--muted);flex:1;max-width:700px}
+.savebar .msg.err{color:var(--bad)}
+.savebar .msg.ok{color:var(--good)}
+.savebar .btn{width:auto;padding:11px 28px}
+.danger{border-color:rgba(248,113,113,.4)}
+.btn.red{background:var(--bad);color:#fff}
+.logo-prev{max-height:56px;max-width:200px;background:#fff1;border-radius:8px;padding:6px;margin-top:8px}
+.login{max-width:420px;margin:14vh auto}
+.help{font-size:12.5px;color:var(--muted);margin-top:4px}
+.tbl{width:100%;border-collapse:collapse;font-size:14px}
+.tbl th{color:var(--muted);font-weight:500;text-align:right;padding:8px;border-bottom:1px solid var(--line);white-space:nowrap}
+.tbl td{padding:8px;border-bottom:1px solid var(--line);white-space:nowrap}
+</style>
+</head>
+<body data-noannounce>
+<div id="loginView" class="wrap hidden"><div class="card login">
+  <h1 style="font-size:24px">لوحة التحكم</h1>
+  <p class="muted">إدارة إعدادات البرنامج وأنشطته</p>
+  <label for="ak">مفتاح الإدارة</label>
+  <input id="ak" type="password" dir="ltr" autocomplete="current-password">
+  <button class="btn" id="loginBtn" style="margin-top:14px">دخول</button>
+  <p class="err" id="loginErr"></p>
+</div></div>
+
+<div id="app" class="shell hidden">
+  <nav id="nav">
+    <div class="brand">⚙️ لوحة التحكم</div>
+    <button data-p="overview" class="on">نظرة عامة</button>
+    <button data-p="brand">الهوية والعامة</button>
+    <button data-p="investor">المستثمر الذكي</button>
+    <button data-p="hack">الهاكاثون: الإعدادات</button>
+    <button data-p="tracks">المسارات والتحديات</button>
+    <button data-p="rubric">معايير التقييم</button>
+    <button data-p="tickets">التأهيل والدعوات</button>
+    <button data-p="participants">المشاركون</button>
+    <button data-p="judges">المحكّمون</button>
+    <button data-p="announce">الإعلانات</button>
+    <button data-p="screens">الشاشات</button>
+    <button data-p="welcome">صفحة الترحيب</button>
+    <button data-p="privacy">الخصوصية والحماية</button>
+    <button data-p="reports">التقارير والشهادات</button>
+    <button data-p="data">البيانات</button>
+  </nav>
+  <main id="main"></main>
+</div>
+
+<div class="savebar hidden" id="savebar">
+  <span class="msg" id="saveMsg">لا توجد تغييرات</span>
+  <button class="btn ghost" id="discardBtn" style="width:auto;padding:11px 18px">تراجع</button>
+  <button class="btn" id="saveBtn">حفظ التغييرات</button>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => { const d=document.createElement("div"); d.textContent = s ?? ""; return d.innerHTML; };
+// رابط كامل لصفحة؛ بدون .html عند النشر على Vercel
+const abs = p => { const u = new URL(p, location.href); if (location.protocol.startsWith("http") && !APP.demo) u.pathname = u.pathname.replace(/index\.html$/,"").replace(/\.html$/,""); return u.href; };
+const attr = s => esc(s).replace(/"/g,"&quot;");
+let KEY; try { KEY = sessionStorage.getItem("ak"); } catch(e){}
+let D = null, S = null, saved = "", pane = "overview";
+
+async function api(action, body, extra=""){
+  const r = await fetch(`api/admin?action=${action}${extra}`, {method: body?"POST":"GET", headers:{"Content-Type":"application/json","x-admin-key":KEY}, body: body?JSON.stringify(body):undefined});
+  const d = await r.json().catch(()=>({error:"تعذر الاتصال"}));
+  if (!r.ok) { const e = new Error(d.error || (d.errors||[]).join("، ") || "خطأ"); e.data = d; throw e; }
+  return d;
+}
+async function load(){
+  D = await api("get");
+  S = JSON.parse(JSON.stringify(D.settings)); saved = JSON.stringify(S);
+  $("loginView").classList.add("hidden"); $("app").classList.remove("hidden"); $("savebar").classList.remove("hidden");
+  render(); dirty();
+}
+$("loginBtn").onclick = async () => { KEY = $("ak").value.trim(); try { await load(); try{sessionStorage.setItem("ak",KEY)}catch(e){} } catch(e){ $("loginErr").textContent = e.message; } };
+$("ak").onkeydown = e => { if (e.key==="Enter") $("loginBtn").click(); };
+
+// ---------- مسارات القيم ----------
+const getP = (o,p) => p.split(".").reduce((a,k)=>a?.[k], o);
+function setP(o,p,v){ const ks=p.split("."); const last=ks.pop(); const t=ks.reduce((a,k)=>a[k], o); t[last]=v; }
+const uid = p => p + Date.now().toString(36).slice(-4) + Math.random().toString(36).slice(2,4);
+
+// ---------- عناصر النموذج ----------
+function f(label, k, o={}){
+  const v = getP(S,k);
+  const t = o.type || "text";
+  let inp;
+  if (t==="textarea") inp = `<textarea data-k="${k}" rows="${o.rows||3}" maxlength="${o.max||2000}" placeholder="${attr(o.ph||"")}">${esc(v)}</textarea>`;
+  else if (t==="lines") inp = `<textarea data-k="${k}" data-type="lines" rows="${o.rows||6}" placeholder="${attr(o.ph||"")}">${esc((v||[]).join("\n"))}</textarea>`;
+  else if (t==="num") inp = `<input data-k="${k}" data-type="num" type="number" dir="ltr" value="${v??""}" min="${o.min??""}" max="${o.max??""}" step="${o.step||1}">`;
+  else if (t==="select") inp = `<select data-k="${k}">${o.opts.map(([val,l])=>`<option value="${val}" ${val===v?"selected":""}>${l}</option>`).join("")}</select>`;
+  else inp = `<input data-k="${k}" type="${t}" value="${attr(v)}" ${o.ltr?'dir="ltr"':""} maxlength="${o.max||200}" placeholder="${attr(o.ph||"")}">`;
+  return `<div>${label?`<label>${label}</label>`:""}${inp}${o.help?`<div class="help">${o.help}</div>`:""}</div>`;
+}
+const tog = (label, k, help="") => `<label class="toggle"><span><b>${label}</b>${help?`<div class="help">${help}</div>`:""}</span><input type="checkbox" data-k="${k}" data-type="bool" ${getP(S,k)?"checked":""}></label>`;
+const tools = (list, i, n) => `<div class="tools"><button class="ib" data-act="up" data-list="${list}" data-i="${i}" ${i===0?"disabled":""} title="أعلى">↑</button><button class="ib" data-act="down" data-list="${list}" data-i="${i}" ${i===n-1?"disabled":""} title="أسفل">↓</button><button class="ib del" data-act="del" data-list="${list}" data-i="${i}">حذف</button></div>`;
+const addBtn = (list, label) => `<button class="add" data-act="add" data-list="${list}">+ ${label}</button>`;
+const card = (title, body, cls="") => `<div class="card ${cls}">${title?`<h2>${title}</h2>`:""}${body}</div>`;
+
+const NEW = {
+  "investor.investors": () => ({id:uid("inv"), name:"", title:"", emoji:"💼", desc:"", persona:"", style:""}),
+  "hackathon.tracks": () => ({id:uid("t"), icon:"💡", title:"", desc:"", challenges:[]}),
+  "challenges": () => ({id:uid("c"), title:"", desc:""}),
+  "hackathon.rubric": () => ({key:uid("k"), label:"", max:10, guide:""}),
+  "hackathon.judges": () => ({id:uid("j"), name:"", email:"", key:genKey(), tracks:[]}),
+  "program.schedule": () => ({day:"", title:"", desc:""}),
+  "program.prizes": () => ({place:"", title:"", desc:""}),
+  "program.faq": () => ({q:"", a:""}),
+  "program.partners": () => ({name:"", logoUrl:""}),
+};
+function genKey(n=10){ const a="ABCDEFGHJKMNPQRSTUVWXYZ23456789"; return Array.from(crypto.getRandomValues(new Uint8Array(n)),x=>a[x%a.length]).join(""); }
+let TEAMS = null, CERTS = null;
+const when = d => new Date(d).toLocaleString("ar-SA-u-nu-latn",{day:"numeric",month:"short",hour:"numeric",minute:"2-digit"});
+
+// ---------- الأقسام ----------
+const fmt = n => Number(n||0).toLocaleString("ar-SA-u-nu-latn");
+const P = {
+  overview(){
+    const st = D.stats, sy = D.system, base = "";
+    const ok = (b, y, n) => `<span class="pill ${b?"ok":"no"}">${b?y:n}</span>`;
+    const ph = {open:"🟢 مفتوح", soon:"⏳ لم يبدأ", closed:"🔴 مُقفل"}[sy.phase];
+    const links = [
+      ["⭐ صفحة الترحيب (رمز QR الموحد)","welcome.html"],["المستثمر الذكي (الزوار)","index.html"],["الهاكاثون (الفرق)","hackathon.html"],["شاشة الجناح (المتحكَّم بها)","booth.html"],
+      ["لوحة البيانات","dashboard.html"],["لوحة اللجنة","judges.html"],["إعلان الفائزين","winners.html"],["التقرير الختامي","report.html"],["سياسة الخصوصية","privacy.html"]];
+    return `<h1>نظرة عامة</h1><p class="lead">${esc(S.brand.orgName)} · ${esc(S.brand.eventName)}</p>
+      <div class="stats">
+        <div class="stat"><b>${fmt(st.pitches)}</b><span>عرض على المستثمر الذكي</span></div>
+        <div class="stat"><b>${fmt(st.qualified)}</b><span>متأهل للهاكاثون</span></div>
+        <div class="stat"><b>${fmt(st.ticketsUsed)}</b><span>رمز تأهل استُخدم للتسجيل</span></div>
+        <div class="stat"><b>${fmt(st.teams)}</b><span>فريق في الهاكاثون</span></div>
+        <div class="stat"><b>${fmt(st.submissions)}</b><span>تقديم مُقيَّم</span></div>
+        <div class="stat"><b>${fmt(st.fromInvestor)}</b><span>فريق جاء من المستثمر الذكي</span></div>
+        <div class="stat"><b>${st.judged}/${st.finalists}</b><span>متأهل قيّمته اللجنة</span></div>
+      </div>
+      <div class="grid2">
+        ${card("حالة النظام", `<div class="status">
+          <div><span>قاعدة البيانات</span>${ok(sy.database,"متصلة (Supabase)","ذاكرة مؤقتة: للتجربة فقط")}</div>
+          <div><span>الذكاء الاصطناعي</span>${ok(sy.ai, {server:"مفعّل على الخادم", "claude-account":"مفعّل عبر حسابك في Claude", "browser-key":"مفعّل بمفتاح على هذا الجهاز"}[sy.aiMode] || "مفعّل", "غير مفعّل: التقييمات وهمية")}</div>
+          <div><span>مفتاح اللجنة</span>${ok(sy.judgeKeySet,"مضبوط","غير مضبوط")}</div>
+          <div><span>التقديم في الهاكاثون</span><span class="pill">${ph}</span></div>
+          <div><span>إرسال البريد</span>${ok(sy.mail,"مفعّل","غير مفعّل (RESEND_API_KEY)")}</div>
+          <div><span>استهلاك الذكاء الاصطناعي اليوم</span><span class="pill ${sy.usageToday > sy.dailyAiCalls*0.8 ? "no" : ""}">${fmt(sy.usageToday)} / ${fmt(sy.dailyAiCalls)}</span></div>
+          ${st.pendingEvals ? `<div><span>تقييمات معلّقة</span><button class="ib" data-act="reeval">⏳ ${st.pendingEvals} · أكمل التقييم الآن</button></div>` : ""}</div>`)}
+        ${APP.demo ? card("🧠 تفعيل الذكاء الاصطناعي في النسخة التجريبية", sy.aiMode === "claude-account"
+          ? `<p class="muted">الذكاء الاصطناعي يعمل الآن عبر حسابك في Claude. التقييمات حقيقية.</p>`
+          : `<p class="muted small">بدون ذكاء اصطناعي تكون الأسئلة ثابتة والدرجات <b style="color:var(--bad)">عشوائية وهمية</b>. للتقييم الحقيقي على هذا الجهاز أدخل مفتاح Claude API (من console.anthropic.com). يُحفظ في هذا المتصفح فقط، ولا يُرسل إلا إلى Anthropic.</p>
+            <div class="grid2" style="margin-top:10px"><input id="demoKey" type="password" dir="ltr" placeholder="sk-ant-..." value=""><div style="display:flex;gap:8px"><button class="btn" data-act="savekey" style="width:auto;padding:10px 18px">تفعيل</button>${sy.aiMode==="browser-key"?`<button class="btn ghost" data-act="clearkey" style="width:auto;padding:10px 18px">إزالة المفتاح</button>`:""}</div></div>
+            <p class="help">عند النشر الفعلي يوضع المفتاح في إعدادات الخادم (ANTHROPIC_API_KEY)، ولا حاجة لهذا الحقل.</p>`, sy.ai ? "" : "danger") : ""}
+        ${card("الأنشطة", tog("المستثمر الذكي","modules.investor","لعبة سريعة لزوار المعرض") + tog("الهاكاثون الافتراضي","modules.hackathon","منافسة أونلاين خلال أيام الفعالية"))}
+      </div>
+      ${card("روابط المنصة", `<div class="links">${links.map(([l,p])=>`<div><span>${l}</span><code>${esc(abs(p))}</code><a class="ib" href="${p}" target="_blank">فتح</a><button class="ib" data-copy="${attr(abs(p))}">نسخ</button></div>`).join("")}</div>`)}`;
+  },
+  brand(){
+    return `<h1>الهوية والعامة</h1><p class="lead">تظهر هذه البيانات في كل صفحات المنصة والشاشات.</p>
+      ${card("بيانات الجهة", `<div class="grid2">${f("اسم الجهة","brand.orgName",{ph:"مثال: جامعة القصيم"})}${f("اسم الفعالية","brand.eventName",{ph:"مثال: ملتقى ريادة الأعمال"})}</div>
+        <div class="grid2">${f("اسم الجناح أو الموقع","brand.boothName",{ph:"مثال: جناح جامعة القصيم"})}${f("المنطقة الزمنية","brand.tzOffset",{type:"select",opts:[["+03:00","السعودية (UTC+3)"],["+04:00","الإمارات وعُمان (UTC+4)"],["+02:00","مصر (UTC+2)"],["+01:00","UTC+1"],["+00:00","UTC"]]})}</div>
+        ${f("رابط الشعار (اختياري)","brand.logoUrl",{ltr:true,max:500,ph:"https://…/logo.png",help:"رابط صورة PNG أو SVG بخلفية شفافة. يظهر أعلى الصفحات والشاشات."})}
+        ${S.brand.logoUrl?`<img class="logo-prev" src="${attr(S.brand.logoUrl)}" alt="">`:""}`)}
+      ${card("الألوان", `<div class="grid2">${f("اللون الرئيسي","brand.accent",{type:"color"})}${f("لون الخلفية","brand.bg",{type:"color"})}</div><p class="help">يُفضَّل لون خلفية داكن ولون رئيسي واضح عليه.</p>`)}`;
+  },
+  investor(){
+    const L = S.investor.investors;
+    return `<h1>المستثمر الذكي</h1><p class="lead">الزائر يعرض فكرته على مستثمر افتراضي، يُسأل سؤالين، ثم يحصل على قرار الاستثمار وتقييم.</p>
+      ${card("العامة", `${f("اسم النشاط","investor.title")}${f("الوصف المختصر","investor.tagline",{type:"textarea",rows:2,max:300})}
+        <div class="grid2">${f("أقل مبلغ استثمار (ريال)","investor.minAmount",{type:"num",min:1000,step:1000})}${f("أعلى مبلغ استثمار (ريال)","investor.maxAmount",{type:"num",min:1000,step:1000})}</div>`)}
+      ${card("الفرز والتأهل للهاكاثون", `<div class="grid2">${f("درجة التأهل (من 100)","investor.qualifyScore",{type:"num",min:0,max:100,help:"من يحصل عليها أو أكثر يُمنح رمز تأهل للهاكاثون"})}${f("عدد المحاولات لكل بريد","investor.maxAttempts",{type:"num",min:1,max:20})}</div>
+        <p class="help">التقييم بأربعة معايير موحّدة (25 لكل منها): المشكلة والحل، العميل والسوق، نموذج الربح، جودة الإجابات. كل معيار بمستويات 0–5 مثبّتة بأوصاف، مع سقوف إلزامية (مثلًا: بلا شريحة عملاء محددة لا يتجاوز «العميل» 10 من 25، وبلا سعر لا يتجاوز «الربح» 15). يُسند المستثمر عشوائيًا، وشخصيته تغيّر الأسلوب فقط.</p>`)}
+      ${card("شخصيات المستثمرين", L.map((x,i)=>`<div class="item"><div class="head"><b>${esc(x.emoji)} ${esc(x.name)||"مستثمر جديد"}</b>${tools("investor.investors",i,L.length)}</div>
+        <div class="row-inline">${f("رمز","investor.investors."+i+".emoji",{max:8})}${f("الاسم","investor.investors."+i+".name",{max:40})}</div>
+        <div class="grid2">${f("اللقب","investor.investors."+i+".title",{max:60,ph:"مثال: المستثمر المتشكك"})}${f("وصف قصير للزائر","investor.investors."+i+".desc",{max:120})}</div>
+        ${f("الشخصية (تعليمات للذكاء الاصطناعي)","investor.investors."+i+".persona",{type:"textarea",rows:3,max:1500,help:"صِف أسلوبه وطريقة كلامه وما يهتم به."})}
+        ${f("أسلوب القرار","investor.investors."+i+".style",{type:"textarea",rows:2,max:600,help:"متى يستثمر ومتى يرفض."})}</div>`).join("") + addBtn("investor.investors","إضافة مستثمر"))}
+      ${card("بنك المشاكل العشوائية", f("","investor.problems",{type:"lines",rows:8,help:"مشكلة في كل سطر. تظهر لمن يضغط «ما عندي فكرة؟»."}))}`;
+  },
+  hack(){
+    const w = S.hackathon.weights;
+    return `<h1>الهاكاثون: الإعدادات</h1><p class="lead">المواعيد، حجم الفرق، المحاولات، والتأهل.</p>
+      ${card("العامة", `${f("اسم الهاكاثون","hackathon.name")}${f("الوصف المختصر","hackathon.tagline",{type:"textarea",rows:2,max:300})}
+        ${f("من يستطيع تسجيل فريق؟","hackathon.registration",{type:"select",opts:[["ticket","المتأهلون فقط (رمز تأهل من المستثمر الذكي أو رمز دعوة)"],["open","مفتوح للجميع"]]})}`)}
+      ${card("المواعيد", `<div class="grid2">${f("فتح التسجيل والتقديم","hackathon.opensAt",{type:"datetime-local",ltr:true})}${f("إقفال التقديم","hackathon.closesAt",{type:"datetime-local",ltr:true})}</div>
+        <p class="help">بالمنطقة الزمنية المحددة في «الهوية والعامة». اتركهما فارغين ليبقى التقديم مفتوحًا.</p>`)}
+      ${card("الملفات والعرض الاستثماري", tog("العرض الاستثماري إلزامي","hackathon.uploads.deckRequired","لا يستطيع الفريق التقديم قبل رفع العرض بصيغة PDF") + tog("الذكاء الاصطناعي يقرأ العرض","hackathon.uploads.aiReadsDeck","يقرأ ملف PDF كاملًا ويستخدمه في التقييم. أدق، لكنه أعلى تكلفة قليلًا") + `<div class="grid3">${f("أقصى حجم للعرض (ميجابايت)","hackathon.uploads.deckMaxMB",{type:"num",min:1,max:30})}${f("عدد الملفات الإضافية","hackathon.uploads.extraFiles",{type:"num",min:0,max:10,help:"صفر لإخفاء الملفات الإضافية"})}${f("أقصى حجم للملف الإضافي (م.ب)","hackathon.uploads.extraMaxMB",{type:"num",min:1,max:50})}</div>`)}
+      ${card("القواعد", `<div class="grid3">${f("أقصى عدد لأعضاء الفريق","hackathon.maxMembers",{type:"num",min:1,max:10})}${f("عدد محاولات التقديم","hackathon.maxAttempts",{type:"num",min:1,max:10,help:"تُحتسب أعلى درجة"})}${f("عدد المتأهلين للجنة","hackathon.finalists",{type:"num",min:1,max:50})}</div>`)}
+      ${card("حساب الدرجة النهائية للمتأهلين", `<label>وزن تقييم الذكاء الاصطناعي: <b class="gold" id="wAi">${w.ai}%</b> · وزن اللجنة: <b class="gold" id="wJ">${100-w.ai}%</b></label>
+        <input type="range" min="0" max="100" step="5" data-k="hackathon.weights.ai" data-type="num" value="${w.ai}">`)}`;
+  },
+  tracks(){
+    const T = S.hackathon.tracks;
+    return `<h1>المسارات والتحديات</h1><p class="lead">يختار الفريق مسارًا، ثم تحديًا داخله. إذا لم تضف تحديات لمسار، يختار الفريق المسار نفسه.</p>
+      ${T.map((t,i)=>`<div class="card"><div class="head" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><h2 style="margin:0">${esc(t.icon)} ${esc(t.title)||"مسار جديد"}</h2>${tools("hackathon.tracks",i,T.length)}</div>
+        <div class="row-inline">${f("رمز","hackathon.tracks."+i+".icon",{max:8})}${f("اسم المسار","hackathon.tracks."+i+".title",{max:80})}</div>
+        ${f("وصف المسار","hackathon.tracks."+i+".desc",{type:"textarea",rows:2,max:400})}
+        <div class="sub"><label>التحديات (${t.challenges.length})</label>
+          ${t.challenges.map((c,j)=>`<div class="item"><div class="head"><b>${esc(c.title)||"تحدٍّ جديد"}</b>${tools("hackathon.tracks."+i+".challenges",j,t.challenges.length)}</div>
+            ${f("عنوان التحدي","hackathon.tracks."+i+".challenges."+j+".title",{max:80})}${f("وصف التحدي","hackathon.tracks."+i+".challenges."+j+".desc",{type:"textarea",rows:2,max:400})}</div>`).join("")}
+          ${addBtn("hackathon.tracks."+i+".challenges","إضافة تحدٍّ")}</div></div>`).join("")}
+      ${addBtn("hackathon.tracks","إضافة مسار")}`;
+  },
+  rubric(){
+    const R = S.hackathon.rubric;
+    return `<h1>معايير التقييم</h1><p class="lead">يقيّم الذكاء الاصطناعي كل مشروع وفق هذه المعايير. الإرشاد يوضّح للمحكّم ما الذي يبحث عنه.</p>
+      ${card(`<span style="display:flex;justify-content:space-between;align-items:center">المعايير <span class="sum" id="rubSum"></span></span>`,
+        R.map((r,i)=>`<div class="item"><div class="rub">${f("المعيار","hackathon.rubric."+i+".label",{max:60})}${f("الدرجة","hackathon.rubric."+i+".max",{type:"num",min:1,max:100})}<div class="g">${f("إرشاد للمحكّم","hackathon.rubric."+i+".guide",{max:300})}</div>${tools("hackathon.rubric",i,R.length)}</div></div>`).join("") + addBtn("hackathon.rubric","إضافة معيار"))}
+      ${card("صرامة التقييم", `<p class="muted small" style="margin-bottom:10px">كل معيار يُقيَّم بمستوى من 0 إلى 5 بسلّم موحد (من «ادعاء عام» إلى «تحقق فعلي من السوق»)، ويجب أن يدعمه اقتباس من المشروع. ثم تطبّق المنصة سقوفًا إلزامية: مثلًا لا درجة كاملة بلا تحقق من السوق، ولا درجة للعرض الاستثماري إن لم يُرفق.</p>` + tog("مراجعة ثانية مستقلة","hackathon.evaluation.reviewPass","محكّم ذكي ثانٍ يراجع التقييم ويخفض أي درجة متساهلة (لا يرفع أبدًا). أدق، وضعف التكلفة تقريبًا"))}
+      <p class="help">تنبيه: تعديل المعايير أثناء الهاكاثون لا يعيد تقييم المشاريع المقدَّمة سابقًا.</p>`;
+  },
+  tickets(){
+    const T = D.tickets || [];
+    return `<h1>التأهيل والدعوات</h1><p class="lead">رموز التأهل التي حصل عليها المتأهلون من ${esc(S.investor.title)}، ورموز الدعوة التي تمنحها للفرق مباشرة.</p>
+      <div class="stats"><div class="stat"><b>${fmt(D.stats.qualified)}</b><span>متأهل من المستثمر الذكي</span></div><div class="stat"><b>${fmt(T.filter(t=>t.kind==="invite").length)}</b><span>رمز دعوة</span></div><div class="stat"><b>${fmt(D.stats.ticketsUsed)}</b><span>رمز استُخدم للتسجيل</span></div></div>
+      ${card("توليد رموز دعوة", `<p class="muted small">للفرق المرشّحة مسبقًا أو الشركاء: كل رمز يسجّل فريقًا واحدًا دون المرور بالمستثمر الذكي.</p>
+        <div class="grid2" style="margin-top:8px">${f("العدد","_count",{type:"num",min:1,max:100})}${f("وصف (اختياري)","_label",{ph:"مثال: فرق كلية الحاسب"})}</div>
+        <button class="btn" data-act="invites" style="margin-top:10px">توليد الرموز</button><div id="newCodes"></div>`)}
+      ${card(`الرموز (${T.length})`, T.length ? `<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>الرمز</th><th>النوع</th><th>الاسم</th><th>البريد</th><th>الدرجة</th><th>الحالة</th></tr></thead><tbody>
+        ${T.map(t=>`<tr><td dir="ltr" style="font-family:ui-monospace,monospace;font-weight:700">${esc(t.code)}</td><td>${t.kind==="invite"?"دعوة"+(t.label?` · ${esc(t.label)}`:""):"تأهل"}</td><td>${esc(t.name||"—")}</td><td dir="ltr">${esc(t.email||"—")}</td><td>${t.score??"—"}</td><td>${t.used?`<span class="pill ok">سجّل: ${esc(t.team)}</span>`:`<span class="pill">لم يُستخدم</span>`}</td></tr>`).join("")}
+        </tbody></table></div>` : `<p class="muted">لا توجد رموز بعد.</p>`)}`;
+  },
+  judges(){
+    const J = S.hackathon.judges, TR = S.hackathon.tracks;
+    return `<h1>المحكّمون</h1><p class="lead">لكل محكّم مفتاح شخصي ومسارات مسندة. يرى المتأهلين في مساراته فقط، ويقيّم كل معيار، ويستطيع الإقرار بتعارض المصالح.</p>
+      ${card(`أعضاء اللجنة (${J.length})`, J.map((j,i)=>`<div class="item"><div class="head"><b>${esc(j.name)||"محكّم جديد"}</b>${tools("hackathon.judges",i,J.length)}</div>
+        <div class="grid3">${f("الاسم","hackathon.judges."+i+".name",{max:60})}${f("البريد","hackathon.judges."+i+".email",{ltr:true,max:100})}${f("المفتاح الشخصي","hackathon.judges."+i+".key",{ltr:true,max:40})}</div>
+        <label>المسارات المسندة (بدون اختيار = كل المسارات)</label><div style="display:flex;flex-wrap:wrap;gap:10px">${TR.map(t=>`<label style="display:flex;gap:6px;align-items:center;margin:0;color:var(--text)"><input type="checkbox" data-jt="${i}" value="${attr(t.id)}" ${j.tracks.includes(t.id)?"checked":""} style="width:18px;height:18px;accent-color:var(--accent)"> ${esc(t.icon)} ${esc(t.title)}</label>`).join("")}</div>
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button class="ib" data-copy="${attr(`أهلًا ${j.name}، رابط لوحة التحكيم: ${abs("judges.html")}\nمفتاحك الشخصي: ${j.key}`)}">📋 نسخ الدعوة</button>${D.system.mail&&j.email?`<button class="ib" data-act="jinvite" data-id="${attr(j.id)}">✉️ إرسال الدعوة بالبريد</button>`:""}</div></div>`).join("") + addBtn("hackathon.judges","إضافة محكّم"))}
+      ${D.system.mail && J.length ? `<button class="btn ghost" data-act="jinvite" style="margin-bottom:14px">✉️ إرسال الدعوات لكل المحكّمين (بعد الحفظ)</button>` : ""}
+      ${card("مفتاح مشترك (اختياري)", `<div class="grid2">${f("المفتاح المشترك","hackathon.judgeKey",{ltr:true,max:80,help:"بديل سريع: من يدخل به يكتب اسمه، ويرى كل المسارات. الحسابات الشخصية أدق."})}
+        <div><label>&nbsp;</label><button class="btn ghost" data-act="genkey">🎲 توليد مفتاح</button></div></div>
+        <div class="links" style="margin-top:12px"><div><span>رابط لوحة اللجنة</span><code>${esc(abs("judges.html"))}</code><a class="ib" href="judges.html" target="_blank">فتح</a><button class="ib" data-copy="${attr(abs("judges.html"))}">نسخ</button></div></div>`)}`;
+  },
+  participants(){
+    if (!TEAMS) return `<h1>المشاركون</h1><p class="muted">جارٍ التحميل…</p>`;
+    const q = (tmp._q||"").trim().toLowerCase();
+    const list = TEAMS.filter(t => !q || [t.name, t.email, t.code, t.title, ...(t.members||[])].join(" ").toLowerCase().includes(q));
+    const SRC = {investor:"المستثمر الذكي", invite:"دعوة", direct:"مباشر"};
+    return `<h1>المشاركون</h1><p class="lead">${TEAMS.length} فريق · ${TEAMS.filter(t=>t.status==="disqualified").length} مستبعد. ابحث بالاسم أو البريد أو رمز الفريق.</p>
+      <div class="card">${f("","_q",{ph:"🔍 بحث…"})}</div>
+      ${card(`الفرق (${list.length})`, list.length ? `<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>#</th><th>الفريق</th><th>المسار</th><th>المشروع</th><th>المحاولات</th><th>الدرجة</th><th>المصدر</th><th>الحالة</th><th></th></tr></thead><tbody>
+        ${list.map(t=>`<tr style="${t.status==="disqualified"?"opacity:.55":""}"><td>${t.rank??"—"}</td>
+          <td><b>${esc(t.name)}</b>${t.finalist?' <span class="pill">متأهل</span>':""}${t.flagged?' <span class="pill no">⚠️</span>':""}<div class="help">${esc((t.members||[]).join("، "))}<br><span dir="ltr">${esc(t.email)}</span> · <span dir="ltr" style="font-family:monospace">${esc(t.code)}</span></div></td>
+          <td>${esc(t.label)}</td><td>${esc(t.title||"—")}</td><td>${t.attempts}${t.pending?` <span class="pill">⏳${t.pending}</span>`:""}</td>
+          <td><b class="gold">${t.best??"—"}</b>${t.final!=null?`<div class="help">نهائية ${t.final}</div>`:""}</td><td>${SRC[t.source]||"—"}</td>
+          <td>${t.status==="disqualified"?'<span class="pill no">مستبعد</span>':'<span class="pill ok">نشط</span>'}</td>
+          <td style="white-space:nowrap"><a class="ib" href="hackathon.html?code=${esc(t.code)}" target="_blank" title="فتح صفحة الفريق">صفحته</a> <button class="ib" data-act="msg" data-id="${t.id}" data-name="${attr(t.name)}">✉️ رسالة</button> ${t.status==="disqualified"?`<button class="ib" data-act="tstatus" data-id="${t.id}" data-s="active">استعادة</button>`:`<button class="ib del" data-act="tstatus" data-id="${t.id}" data-s="disqualified">استبعاد</button>`}</td></tr>`).join("")}
+        </tbody></table></div>` : `<p class="muted">لا توجد فرق.</p>`)}`;
+  },
+  announce(){
+    const A = D.announcements || [];
+    const AUD = {all:"الجميع (الصفحات والشاشات)", participants:"الفرق المشاركة", judges:"المحكّمون", screens:"الشاشات فقط"};
+    return `<h1>الإعلانات والإشعارات</h1><p class="lead">تظهر في أعلى الصفحات، وفي صفحات الفرق، وكشريط متحرك على الشاشات. ويمكن إرسالها بالبريد.</p>
+      ${card("إعلان جديد", `${f("العنوان","_aTitle",{max:120,ph:"مثال: تم تمديد التقديم حتى الساعة 10 مساءً"})}${f("التفاصيل (اختياري)","_aBody",{type:"textarea",rows:3,max:2000})}
+        <div class="grid2">${f("الجمهور","_aAud",{type:"select",opts:Object.entries(AUD)})}<label class="toggle" style="margin-top:28px"><span><b>إرسال بالبريد أيضًا</b><div class="help">${D.system.mail?"للفرق أو المحكّمين حسب الجمهور":"الإرسال غير مفعّل"}</div></span><input type="checkbox" data-k="_aEmail" data-type="bool" ${tmp._aEmail?"checked":""} ${D.system.mail?"":"disabled"}></label></div>
+        <button class="btn" data-act="announce" style="margin-top:10px">📣 نشر الإعلان</button>`)}
+      ${card(`الإعلانات (${A.length})`, A.length ? A.map(a=>`<div class="item" style="${a.active?"":"opacity:.5"}"><div class="head"><b>${esc(a.title)}</b><div class="tools"><button class="ib" data-act="atoggle" data-id="${a.id}" data-on="${a.active?0:1}">${a.active?"إيقاف":"تفعيل"}</button><button class="ib del" data-act="adelete" data-id="${a.id}">حذف</button></div></div>
+        ${a.body?`<div class="help" style="white-space:pre-wrap">${esc(a.body)}</div>`:""}<div class="help">${a.audience.startsWith("team:")?`✉️ رسالة خاصة لفريق «${esc(a.teamName)}»`:AUD[a.audience]} · ${when(a.created_at)}</div></div>`).join("") : `<p class="muted">لا توجد إعلانات.</p>`)}`;
+  },
+  screens(){
+    const B = S.booth;
+    return `<h1>الشاشات</h1><p class="lead">تحكّم في ما يظهر على شاشة الجناح (booth) لحظيًا. تتحدث الشاشة خلال 15 ثانية من الحفظ.</p>
+      ${card("ماذا تعرض شاشة الجناح الآن؟", f("الوضع","booth.mode",{type:"select",opts:[["rotate","تناوب تلقائي بين الشاشات المختارة"],["investor","المستثمر الذكي فقط"],["hackathon","ترتيب الهاكاثون فقط"],["dashboard","لوحة البيانات فقط"],["countdown","عدّ تنازلي (فتح/إقفال التقديم)"],["announcement","آخر إعلان بملء الشاشة"]]}))}
+      ${card("شاشات التناوب", tog("شاشة المستثمر الذكي","booth.screens.investor") + tog("شاشة ترتيب الهاكاثون","booth.screens.hackathon") + tog("لوحة البيانات","booth.screens.dashboard") + f("مدة كل شاشة (ثانية)","booth.rotateSeconds",{type:"num",min:8,max:300}))}
+      ${card("روابط الشاشات", `<div class="links">${[["شاشة الجناح (المتحكَّم بها)","booth.html"],["لوحة البيانات","dashboard.html"],["شاشة المستثمر","screen.html"],["شاشة الهاكاثون","hack-screen.html"],["إعلان الفائزين","winners.html"]].map(([l,p])=>`<div><span>${l}</span><code>${esc(abs(p))}</code><a class="ib" href="${p}" target="_blank">فتح</a><button class="ib" data-copy="${attr(abs(p))}">نسخ</button></div>`).join("")}</div>`)}`;
+  },
+  welcome(){
+    const P = S.program;
+    const rep = (list, title, fields, addLabel) => card(title, getP(S,list).map((x,i)=>`<div class="item"><div class="head"><b>${esc(x[fields[0][0]]||x[fields[1][0]]||"عنصر جديد")}</b>${tools(list,i,getP(S,list).length)}</div>
+      <div class="grid${fields.length>2?3:2}">${fields.map(([k,l,o])=>f(l,list+"."+i+"."+k,o||{})).join("")}</div></div>`).join("") + addBtn(list, addLabel));
+    return `<h1>صفحة الترحيب</h1><p class="lead">المدخل الموحد للمنصة: رمز QR واحد يقود الزائر إلى البوابتين. <a class="ib" href="welcome.html" target="_blank">معاينة</a></p>
+      ${card("نبذة", f("","program.about",{type:"textarea",rows:3,max:1000}))}
+      ${rep("program.schedule","الجدول الزمني",[["day","اليوم"],["title","العنوان"],["desc","الوصف"]],"إضافة يوم")}
+      ${rep("program.prizes","الجوائز",[["place","المركز"],["title","الجائزة"],["desc","التفاصيل"]],"إضافة جائزة")}
+      ${rep("program.faq","الأسئلة الشائعة",[["q","السؤال"],["a","الإجابة",{type:"textarea",rows:2,max:800}]],"إضافة سؤال")}
+      ${rep("program.partners","الشركاء والرعاة",[["name","الاسم"],["logoUrl","رابط الشعار",{ltr:true,max:500}]],"إضافة شريك")}`;
+  },
+  privacy(){
+    return `<h1>الخصوصية والحماية</h1><p class="lead">نص سياسة الخصوصية الذي يوافق عليه المشاركون، وحدود الاستخدام التي تحمي رصيد الذكاء الاصطناعي.</p>
+      ${card("سياسة الخصوصية", f("النص","privacy.text",{type:"textarea",rows:8,max:5000,help:"كل سطر فقرة. تظهر في صفحة privacy.html ويوافق عليها المشارك قبل البدء."}) + f("جهة التواصل لطلبات البيانات","privacy.contact",{max:200,ph:"مثال: icip@qu.edu.sa"}))}
+      ${card("التحقق من البريد", tog("التحقق برمز قبل عرض الفكرة","investor.verifyEmail", D.system.mail ? "يُرسل رمز من 6 أرقام إلى بريد الزائر. يمنع التحايل على حد المحاولات ببريد وهمي." : "⚠️ يتطلب تفعيل الإرسال (RESEND_API_KEY و MAIL_FROM) وإلا يبقى معطّلًا"))}
+      ${card("حدود الاستخدام", `<div class="grid3">${f("عروض المستثمر لكل جهاز في الساعة","limits.pitchesPerHour",{type:"num",min:1,max:1000})}${f("تقديمات الهاكاثون لكل جهاز في الساعة","limits.submitsPerHour",{type:"num",min:1,max:1000})}${f("سقف استدعاءات الذكاء الاصطناعي يوميًا","limits.dailyAiCalls",{type:"num",min:10,max:1000000})}</div>
+        <p class="help">عند بلوغ السقف اليومي تتوقف التقييمات الجديدة برسالة واضحة حتى اليوم التالي. استهلاك اليوم: ${fmt(D.system.usageToday)}. ملاحظة: أجهزة شبكة الجناح قد تشترك في عنوان واحد، فارفع الحد لكل جهاز إن استخدم الزوار شبكة المعرض.</p>`)}`;
+  },
+  reports(){
+    return `<h1>التقارير والشهادات</h1><p class="lead">التقرير الختامي وكتيّب المشاريع جاهزان للطباعة كـ PDF، والشهادات برمز تحقق لكل مشارك.</p>
+      ${card("التقرير الختامي وكتيّب المشاريع", `<p class="muted small">صفحة جاهزة للطباعة: الإحصائيات، والرسوم، والفائزون، وصفحة لكل مشروع. من المتصفح: طباعة ← حفظ كـ PDF.</p>
+        <div class="grid2" style="margin-top:10px"><a class="btn" href="report.html" target="_blank">📊 التقرير الختامي</a><a class="btn ghost" href="report.html?booklet=1" target="_blank">📘 كتيّب المشاريع فقط</a></div>`)}
+      ${card("النتائج", tog("نشر النتائج","hackathon.resultsPublished","يفعّل شهادات الفوز للمراكز الثلاثة الأولى. فعّله بعد اكتمال التحكيم.") + `<button class="btn ghost" data-act="notify" style="margin-top:6px">🎉 إشعار المتأهلين للتحكيم النهائي (إعلان + بريد)</button><p class="help" id="notifyMsg"></p>`)}
+      ${card("الشهادات", CERTS ? (CERTS.length ? `<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>الفريق</th><th>النوع</th><th>الأعضاء</th></tr></thead><tbody>${CERTS.map(c=>`<tr><td><b>${esc(c.team)}</b></td><td>${{participant:"مشاركة",finalist:"تأهل",winner1:"🥇 المركز الأول",winner2:"🥈 المركز الثاني",winner3:"🥉 المركز الثالث"}[c.kind]}</td><td>${c.list.map(x=>`<a class="ib" href="certificate.html?c=${encodeURIComponent(x.code)}" target="_blank">${esc(x.name)}</a>`).join(" ")}</td></tr>`).join("")}</tbody></table></div>` : `<p class="muted">لا توجد فرق قدّمت مشاريع بعد.</p>`) : `<button class="btn ghost" data-act="loadcerts">عرض شهادات كل الفرق</button>`)
+        + `<p class="help">تظهر الشهادات أيضًا لكل فريق في صفحته بعد إقفال التقديم. صفحة التحقق: certificate.html?c=الرمز</p>`}`;
+  },
+  data(){
+    return `<h1>البيانات</h1><p class="lead">تصدير النتائج لإعداد التقارير، أو تهيئة المنصة لفعالية جديدة.</p>
+      ${card("تصدير (CSV يفتح في Excel)", `<div class="grid2"><button class="btn ghost" data-act="export" data-what="teams">⬇️ فرق الهاكاثون ونتائجها</button><button class="btn ghost" data-act="export" data-what="deals">⬇️ عروض المستثمر الذكي</button></div>`)}
+      ${card("حذف البيانات", `<p class="muted small">يحذف المشاركات نهائيًا ولا يمكن التراجع. الإعدادات لا تتأثر. صدّر البيانات أولًا.</p>
+        <div class="grid2" style="margin-top:10px">${f("اكتب «حذف» للتأكيد","_confirm",{ph:"حذف"})}${f("ما الذي يُحذف؟","_scope",{type:"select",opts:[["investor","عروض المستثمر الذكي"],["hackathon","فرق الهاكاثون وتقديماتها ودرجات اللجنة"],["all","كل البيانات"]]})}</div>
+        <button class="btn red" data-act="reset" style="margin-top:12px">حذف البيانات</button><p class="err" id="resetMsg"></p>`, "danger")}
+      ${card("استعادة الإعدادات الافتراضية", `<p class="muted small">تعيد كل الإعدادات إلى القالب الأصلي (لا تحذف البيانات). تحتاج الحفظ بعدها.</p><button class="btn ghost" data-act="defaults" style="margin-top:10px">استعادة القالب</button>`)}`;
+  },
+};
+let tmp = {_confirm:"", _scope:"investor", _count:5, _label:"", _q:"", _aTitle:"", _aBody:"", _aAud:"all", _aEmail:false};
+
+function render(){
+  document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("on", b.dataset.p===pane));
+  const proxy = new Proxy(S, {get:(t,k)=> k in tmp ? tmp[k] : t[k]});
+  const real = S; S = proxy; $("main").innerHTML = `<section class="pane on">${P[pane]()}</section>`; S = real;
+  computed();
+}
+function computed(){
+  const sum = S.hackathon.rubric.reduce((a,r)=>a+(Number(r.max)||0),0), el = $("rubSum");
+  if (el) { el.textContent = `المجموع ${sum} / 100`; el.className = "sum " + (sum===100?"ok":"no"); }
+  if ($("wAi")) { $("wAi").textContent = S.hackathon.weights.ai+"%"; $("wJ").textContent = (100-S.hackathon.weights.ai)+"%"; }
+}
+function dirty(msg, cls=""){
+  const d = JSON.stringify(S) !== saved;
+  $("saveBtn").disabled = !d; $("discardBtn").disabled = !d;
+  $("saveMsg").className = "msg " + cls;
+  $("saveMsg").textContent = msg || (d ? "لديك تغييرات غير محفوظة" : "كل التغييرات محفوظة");
+}
+
+$("nav").onclick = async e => {
+  const b = e.target.closest("button[data-p]"); if (!b) return; pane = b.dataset.p; render(); scrollTo(0,0);
+  if (pane === "participants") { TEAMS = (await api("teams")).teams; render(); }
+  if (pane === "reports") CERTS = null;
+};
+
+$("main").addEventListener("input", e => {
+  const el = e.target, k = el.dataset.k; if (!k) return;
+  let v = el.value;
+  if (el.dataset.type==="num") v = v===""? "" : Number(v);
+  if (el.dataset.type==="bool") v = el.checked;
+  if (el.dataset.type==="lines") v = v.split("\n").map(x=>x.trim()).filter(Boolean);
+  if (k.startsWith("_")) { tmp[k]=v; if (k==="_q") { const pos = el.selectionStart; render(); const n=$("main").querySelector('[data-k="_q"]'); n.focus(); n.setSelectionRange(pos,pos); } return; }
+  setP(S,k,v); computed(); dirty();
+});
+$("main").addEventListener("change", e => {
+  if (e.target.dataset.k === "brand.logoUrl") render();
+  if (e.target.dataset.jt != null) {
+    const j = S.hackathon.judges[Number(e.target.dataset.jt)], id = e.target.value;
+    j.tracks = e.target.checked ? [...new Set([...j.tracks, id])] : j.tracks.filter(x => x !== id);
+    dirty();
+  }
+});
+
+$("main").addEventListener("click", async e => {
+  const c = e.target.closest("[data-copy]");
+  if (c) { try { await navigator.clipboard.writeText(c.dataset.copy); c.textContent="✓"; setTimeout(()=>c.textContent="نسخ",1200);} catch(_){} return; }
+  const b = e.target.closest("[data-act]"); if (!b) return;
+  const act = b.dataset.act, list = b.dataset.list, i = Number(b.dataset.i);
+  if (["add","del","up","down"].includes(act)) {
+    const arr = getP(S, list);
+    if (act==="add") arr.push((NEW[list] || NEW[list.split(".").pop()])());
+    if (act==="del") { if (!confirm("حذف هذا العنصر؟")) return; arr.splice(i,1); }
+    if (act==="up" && i>0) [arr[i-1],arr[i]] = [arr[i],arr[i-1]];
+    if (act==="down" && i<arr.length-1) [arr[i+1],arr[i]] = [arr[i],arr[i+1]];
+    render(); dirty();
+    if (act==="add") { const items = $("main").querySelectorAll(`[data-k^="${list}.${arr.length-1}."]`); items[0]?.focus(); }
+    return;
+  }
+  if (act==="genkey") { S.hackathon.judgeKey = genKey(); render(); dirty(); return; }
+  if (act==="reeval") { b.disabled = true; b.textContent = "جارٍ التقييم…"; try { const r = await api("reeval", {}); D = await api("get"); render(); dirty(`اكتمل تقييم ${r.evaluated}${r.remaining?`، وبقي ${r.remaining}`:""}`, "ok"); } catch(err){ alert(err.message); } return; }
+  if (act==="tstatus") {
+    const dq = b.dataset.s === "disqualified";
+    if (dq && !confirm("استبعاد هذا الفريق؟ سيختفي من الترتيب ولن يستطيع التقديم.")) return;
+    await api("team-status", {id: Number(b.dataset.id), status: b.dataset.s}); TEAMS = (await api("teams")).teams; render(); return;
+  }
+  if (act==="msg") {
+    const title = prompt(`عنوان الرسالة لفريق «${b.dataset.name}»:`); if (!title) return;
+    const body = prompt("نص الرسالة (اختياري):") || "";
+    try { const r = await api("message", {team_id: Number(b.dataset.id), title, body}); alert(r.emailed ? "✓ أُرسلت الرسالة وظهرت في صفحة الفريق" : "✓ ظهرت الرسالة في صفحة الفريق (البريد غير مفعّل)"); D = await api("get"); } catch(err){ alert(err.message); }
+    return;
+  }
+  if (act==="announce") {
+    if (!tmp._aTitle) return alert("اكتب عنوان الإعلان");
+    try { const r = await api("announce", {title: tmp._aTitle, body: tmp._aBody, audience: tmp._aAud, email: tmp._aEmail}); tmp._aTitle = ""; tmp._aBody = ""; D = await api("get"); render(); dirty(`✓ نُشر الإعلان${r.emailed?` وأُرسل إلى ${r.emailed} بريد`:""}`, "ok"); } catch(err){ alert(err.message); }
+    return;
+  }
+  if (act==="atoggle") { await api("announce-toggle", {id: Number(b.dataset.id), active: b.dataset.on === "1"}); D = await api("get"); render(); return; }
+  if (act==="adelete") { if (!confirm("حذف الإعلان؟")) return; await api("announce-delete", {id: Number(b.dataset.id)}); D = await api("get"); render(); return; }
+  if (act==="jinvite") {
+    if (JSON.stringify(S) !== saved) return alert("احفظ التغييرات أولًا");
+    const r = await api("judge-invite", b.dataset.id ? {id: b.dataset.id} : {}); alert(`أُرسلت ${r.sent} من ${r.total} دعوة`); return;
+  }
+  if (act==="notify") { if (!confirm("إرسال إشعار التأهل لكل الفرق المتأهلة؟")) return; const r = await api("notify-finalists", {}); $("notifyMsg").textContent = `✓ أُشعرت الفرق المتأهلة${r.emailed?`، وأُرسل ${r.emailed} بريد`:""}`; return; }
+  if (act==="loadcerts") { CERTS = (await api("certs")).certs; render(); return; }
+  if (act==="defaults") { if (!confirm("استعادة كل الإعدادات الافتراضية؟")) return; S = JSON.parse(JSON.stringify(D.defaults)); S.hackathon.judgeKey = D.settings.hackathon.judgeKey; render(); dirty("تمت الاستعادة. اضغط «حفظ التغييرات» لاعتمادها."); return; }
+  if (act==="export") {
+    const r = await fetch(`api/admin?action=export&what=${b.dataset.what}`, {headers:{"x-admin-key":KEY}});
+    const blob = await r.blob(); const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = b.dataset.what==="deals" ? "investor-pitches.csv" : "hackathon-teams.csv"; a.click(); return;
+  }
+  if (act==="savekey") { const k = $("demoKey").value.trim(); if (!/^sk-ant-/.test(k)) return alert("المفتاح يبدأ بـ sk-ant-"); APP.setDemoKey(k); location.reload(); return; }
+  if (act==="clearkey") { APP.setDemoKey(null); location.reload(); return; }
+  if (act==="invites") {
+    try {
+      const r = await api("invites", {count: tmp._count, label: tmp._label});
+      D = await api("get"); render();
+      $("newCodes").innerHTML = `<div class="item" style="margin-top:12px"><b>رموز جديدة:</b><div dir="ltr" style="font-family:ui-monospace,monospace;font-size:18px;margin:8px 0;letter-spacing:2px">${r.codes.join("  ")}</div><button class="ib" data-copy="${attr(r.codes.join("\n"))}">نسخ الكل</button></div>`;
+    } catch(e){ alert(e.message); }
+    return;
+  }
+  if (act==="reset") {
+    $("resetMsg").textContent="";
+    try { await api("reset", {scope: tmp._scope, confirm: tmp._confirm}); tmp._confirm=""; await load(); pane="data"; render(); dirty("تم حذف البيانات", "ok"); }
+    catch(err){ $("resetMsg").textContent = err.message; }
+  }
+});
+
+$("saveBtn").onclick = async () => {
+  $("saveBtn").disabled = true;
+  try {
+    const r = await api("save", {settings: S});
+    S = JSON.parse(JSON.stringify(r.settings)); saved = JSON.stringify(S);
+    D.settings = JSON.parse(saved); D = await api("get"); render(); dirty("✓ تم الحفظ، والتغييرات ظاهرة الآن في كل الصفحات", "ok");
+  } catch(e){ dirty("لم يتم الحفظ: " + ((e.data?.errors||[]).join("، ") || e.message), "err"); $("saveBtn").disabled=false; }
+};
+$("discardBtn").onclick = () => { if (!confirm("التراجع عن كل التغييرات غير المحفوظة؟")) return; S = JSON.parse(saved); render(); dirty(); };
+addEventListener("beforeunload", e => { if (S && JSON.stringify(S)!==saved) { e.preventDefault(); e.returnValue=""; } });
+
+if (KEY) load().catch(()=>$("loginView").classList.remove("hidden")); else $("loginView").classList.remove("hidden");
+</script>
+</body>
+</html>

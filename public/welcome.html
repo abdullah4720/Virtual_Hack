@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>مرحبًا</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="hack.css">
+<script src="app.js"></script>
+<style>
+.wrap{max-width:860px}
+.hero{text-align:center;padding:26px 0 10px}
+[data-logo] img{max-height:60px;max-width:220px}
+.hero h1{font-size:30px;margin-top:8px}
+.hero .ev{color:var(--muted);margin-top:4px}
+.hero p.about{max-width:620px;margin:14px auto 0;line-height:1.9}
+.portals{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:22px 0}
+@media (max-width:640px){.portals{grid-template-columns:1fr}}
+.portal{display:block;text-decoration:none;color:var(--text);background:var(--card);border:1.5px solid var(--line);border-radius:22px;padding:22px;position:relative;overflow:hidden;transition:transform .15s,border-color .15s}
+.portal:hover{transform:translateY(-2px);border-color:var(--accent)}
+.portal .ic{font-size:44px;line-height:1}
+.portal h2{font-size:22px;margin:10px 0 4px}
+.portal p{color:var(--muted);font-size:14.5px;line-height:1.8;min-height:52px}
+.portal .go{display:inline-block;margin-top:12px;background:var(--accent);color:var(--accent-ink);font-weight:700;border-radius:12px;padding:9px 18px}
+.portal .meta{margin-top:10px;font-size:13px;color:var(--muted)}
+.portal.off{opacity:.5;pointer-events:none}
+.steps{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;margin-top:4px}
+.steps span{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:13.5px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+@media (max-width:640px){.kpis{grid-template-columns:repeat(2,1fr)}}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;text-align:center}
+.kpi b{display:block;font-size:26px;color:var(--accent);font-variant-numeric:tabular-nums}
+.kpi span{font-size:13px;color:var(--muted)}
+.tl{position:relative;padding-right:22px}
+.tl:before{content:"";position:absolute;right:7px;top:6px;bottom:6px;width:2px;background:var(--line)}
+.tl .it{position:relative;margin-bottom:14px}
+.tl .it:before{content:"";position:absolute;right:-20px;top:7px;width:12px;height:12px;border-radius:50%;background:var(--accent)}
+.tl .it small{color:var(--accent);font-weight:700}
+.prizes{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+.prize{background:var(--card2);border-radius:14px;padding:14px;text-align:center}
+.prize .pl{font-size:20px;font-weight:700}
+details.faq{background:var(--card2);border-radius:12px;padding:12px 14px;margin-bottom:8px}
+details.faq summary{cursor:pointer;font-weight:700}
+details.faq p{margin-top:8px;color:var(--muted);line-height:1.8}
+.partners{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;align-items:center}
+.partners img{max-height:48px;max-width:150px;filter:grayscale(.2)}
+.partners span{background:var(--card2);border-radius:10px;padding:8px 14px}
+footer{text-align:center;color:var(--muted);font-size:13px;margin-top:20px}
+footer a{color:var(--muted)}
+.team-login{text-align:center;margin-top:-4px;margin-bottom:14px;font-size:14px;color:var(--muted)}
+.team-login a{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero">
+    <div data-logo hidden></div>
+    <h1 id="title"></h1>
+    <div class="ev"><span data-text="brand.boothName"></span> · <span data-text="brand.eventName"></span></div>
+    <p class="about" data-text="program.about"></p>
+  </div>
+
+  <div class="portals">
+    <a class="portal" id="pInv" href="index.html">
+      <div class="ic">💼</div>
+      <h2 data-text="investor.title"></h2>
+      <p id="pInvText"></p>
+      <span class="go">ابدأ في 3 دقائق ←</span>
+      <div class="meta" id="pInvMeta"></div>
+    </a>
+    <a class="portal" id="pHack" href="hackathon.html">
+      <div class="ic">⚡</div>
+      <h2 data-text="hackathon.name"></h2>
+      <p id="pHackText"></p>
+      <span class="go" id="pHackGo">نافس بفريقك ←</span>
+      <div class="meta" id="pHackMeta"></div>
+    </a>
+  </div>
+  <p class="team-login" id="teamLogin"></p>
+  <div class="steps" id="journey" style="margin-bottom:18px"></div>
+
+  <div class="kpis" id="kpis"></div>
+
+  <div class="card hidden" id="schedCard"><h2>📅 الجدول</h2><div class="tl" id="sched"></div></div>
+  <div class="card hidden" id="prizeCard"><h2>🏆 الجوائز</h2><div class="prizes" id="prizes"></div></div>
+  <div class="card hidden" id="faqCard"><h2>❓ الأسئلة الشائعة</h2><div id="faq"></div></div>
+  <div class="card hidden" id="partCard"><h2 style="text-align:center">الشركاء</h2><div class="partners" id="partners"></div></div>
+
+  <footer><span data-text="brand.orgName"></span> · <a href="privacy.html">سياسة الخصوصية</a></footer>
+</div>
+<script>
+const $ = id => document.getElementById(id), esc = APP.esc, fmt = APP.fmt;
+APP.ready.then(async c => {
+  document.title = c.brand.eventName || "مرحبًا";
+  $("title").innerHTML = APP.title(c.brand.eventName || c.brand.orgName);
+  const H = c.hackathon, I = c.investor;
+  const gate = c.modules.investor && c.modules.hackathon && H.registration === "ticket";
+  $("pInvText").textContent = I.tagline;
+  $("pHackText").textContent = gate ? `للمتأهلين من ${I.title}: سجّل فريقك وقدّم مشروعك وعرضك الاستثماري، واحصل على تقييم فوري، ونافس على الجوائز.` : H.tagline;
+  if (!c.modules.investor) $("pInv").classList.add("off");
+  if (!c.modules.hackathon) $("pHack").classList.add("off");
+  if (gate) $("pHackGo").textContent = "لديّ رمز تأهل ←";
+  $("journey").innerHTML = gate ? `<span>① اعرض فكرتك على ${esc(I.title)}</span><span>② احصل على ${I.qualifyScore}+ لتتأهل 🎟️</span><span>③ سجّل فريقك وقدّم مشروعك</span><span>④ لجنة التحكيم والجوائز 🏆</span>` : "";
+  try { if (localStorage.getItem("hack_code")) $("teamLogin").innerHTML = `مسجّل في الهاكاثون؟ <a href="hackathon.html">ادخل صفحة فريقك</a>`; } catch(e){}
+  // الجدول والجوائز والأسئلة والشركاء
+  const P = c.program;
+  if (P.schedule.length) { $("schedCard").classList.remove("hidden"); $("sched").innerHTML = P.schedule.map(x=>`<div class="it"><small>${esc(x.day)}</small><div><b>${esc(x.title)}</b></div>${x.desc?`<div class="muted small">${esc(x.desc)}</div>`:""}</div>`).join(""); }
+  if (P.prizes.length) { $("prizeCard").classList.remove("hidden"); $("prizes").innerHTML = P.prizes.map(x=>`<div class="prize"><div class="pl">${esc(x.place)}</div><b>${esc(x.title)}</b>${x.desc?`<div class="muted small">${esc(x.desc)}</div>`:""}</div>`).join(""); }
+  if (P.faq.length) { $("faqCard").classList.remove("hidden"); $("faq").innerHTML = P.faq.map(x=>`<details class="faq"><summary>${esc(x.q)}</summary><p>${esc(x.a)}</p></details>`).join(""); }
+  if (P.partners.length) { $("partCard").classList.remove("hidden"); $("partners").innerHTML = P.partners.map(x=>x.logoUrl?`<img src="${esc(x.logoUrl)}" alt="${esc(x.name)}" title="${esc(x.name)}">`:`<span>${esc(x.name)}</span>`).join(""); }
+  // عدّاد ومرحلة الهاكاثون
+  const tick = () => {
+    const t = H.phase==="soon" ? H.opensAtMs : H.phase==="open" ? H.closesAtMs : null;
+    let txt = {open:"🟢 التقديم مفتوح", soon:"⏳ يبدأ قريبًا", closed:"🔴 انتهى التقديم"}[H.phase];
+    if (t) { const ms = Math.max(0, t-Date.now()), d=Math.floor(ms/864e5), h=Math.floor(ms/36e5)%24, m=Math.floor(ms/6e4)%60; txt += ` · ${H.phase==="soon"?"يبدأ":"يُقفل"} بعد ${d?d+" يوم ":""}${h} س ${m} د`; }
+    $("pHackMeta").textContent = txt;
+  };
+  tick(); setInterval(tick, 30000);
+  // أرقام حية
+  const load = async () => {
+    try {
+      const d = await (await fetch("api/feed?scope=dashboard",{cache:"no-store"})).json();
+      const k = d.kpi;
+      $("pInvMeta").textContent = `${fmt(k.pitches)} فكرة عُرضت · ${fmt(k.qualified)} تأهلت`;
+      $("kpis").innerHTML = [[k.pitches,"فكرة عُرضت"],[k.qualified,"متأهل 🎟️"],[k.teams,"فريق منافس"],[k.submissions,"مشروع مقدَّم"]].map(([v,l])=>`<div class="kpi"><b>${fmt(v)}</b><span>${l}</span></div>`).join("");
+    } catch(e){}
+  };
+  load(); setInterval(load, 30000);
+});
+</script>
+</body>
+</html>

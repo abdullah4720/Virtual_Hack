@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>المستثمر الذكي · الشاشة</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="qrcode.min.js"></script>
+<script src="app.js"></script>
+<style>
+:root{--bg:#0b1020;--card:#141b31;--line:#25304f;--text:#eef2ff;--muted:#9aa6c7;--accent:#f5b83d;--good:#34d399;--bad:#f87171}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%}
+body{font-family:"IBM Plex Sans Arabic",system-ui,sans-serif;background:radial-gradient(1400px 700px at 85% -10%,#1d2a55 0,transparent 60%),var(--bg);color:var(--text);overflow:hidden}
+.grid{display:grid;grid-template-columns:1.1fr 1.3fr 1fr;grid-template-rows:auto 1fr;gap:1.4vw;height:100vh;padding:1.6vw}
+header{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:2vw}
+h1{font-size:3.2vw;font-weight:700}
+h1 span{color:var(--accent)}
+.stats{display:flex;gap:1.2vw}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:1vw;padding:.8vw 1.4vw;text-align:center;min-width:10vw}
+.stat b{display:block;font-size:2.2vw;color:var(--accent)}
+.stat small{color:var(--muted);font-size:1vw}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:1.2vw;padding:1.4vw;overflow:hidden;display:flex;flex-direction:column;min-height:0}
+.panel h2{font-size:1.5vw;margin-bottom:1vw;color:var(--muted);font-weight:500}
+.rows{display:flex;flex-direction:column;gap:.7vw;overflow:hidden}
+.row{display:flex;align-items:center;gap:1vw;background:#0e1427;border-radius:.8vw;padding:.8vw 1vw;animation:pop .5s ease}
+.rank{font-size:1.6vw;font-weight:700;width:2.4vw;text-align:center;color:var(--muted)}
+.row:nth-child(1) .rank{color:#ffd166}.row:nth-child(2) .rank{color:#d7dce8}.row:nth-child(3) .rank{color:#e3a36f}
+.who{flex:1;min-width:0}
+.who b{display:block;font-size:1.25vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.who small{color:var(--muted);font-size:.95vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.money{font-size:1.25vw;font-weight:700;color:var(--accent);white-space:nowrap}
+.out{color:var(--bad);font-size:1.1vw;font-weight:700}
+.spot{flex:1;display:flex;flex-direction:column;justify-content:center;text-align:center;gap:1vw}
+.spot .tag{align-self:center;font-size:1.1vw;padding:.4vw 1.2vw;border-radius:99px;font-weight:700}
+.tag.ok{background:rgba(52,211,153,.15);color:var(--good)}.tag.no{background:rgba(248,113,113,.15);color:var(--bad)}
+.spot .name{font-size:2.6vw;font-weight:700}
+.spot .idea{font-size:1.5vw;color:var(--muted)}
+.spot .amt{font-size:3.6vw;font-weight:700;color:var(--accent);line-height:1.2}
+.spot .quote{font-size:1.7vw;line-height:1.7;padding:0 1vw}
+.spot .by{color:var(--muted);font-size:1.1vw}
+.qr{align-items:center;text-align:center;justify-content:center;gap:1.2vw}
+.qr .box{background:#fff;padding:1vw;border-radius:1vw}
+.qr .box img,.qr .box canvas{width:17vw!important;height:17vw!important;display:block}
+.qr h3{font-size:2vw;line-height:1.5}
+.qr p{color:var(--muted);font-size:1.2vw;line-height:1.7}
+.steps{text-align:right;font-size:1.15vw;line-height:2;color:var(--text)}
+.empty{color:var(--muted);font-size:1.2vw;text-align:center;margin-top:2vw}
+.flash{animation:flash 1.6s ease}
+@keyframes pop{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes flash{0%{box-shadow:0 0 0 0 rgba(245,184,61,.7)}100%{box-shadow:0 0 0 2vw rgba(245,184,61,0)}}
+[data-logo] img{max-height:3.6vw;max-width:14vw;display:block}
+.brandrow{display:flex;align-items:center;gap:1.4vw}
+.sub2{color:var(--muted);font-size:1.15vw}
+.gold{color:var(--accent)}
+h1 span[data-title]{color:var(--text)}
+h1 span[data-title] .gold{color:var(--accent)}
+[data-ticker]{position:fixed;bottom:0;left:0;right:0;background:color-mix(in srgb,var(--accent) 20%,#0b1020);border-top:2px solid var(--accent);color:var(--text);overflow:hidden;white-space:nowrap;z-index:5;font-size:1.4vw;padding:.6vw 0}
+[data-ticker] .tk-in{display:inline-flex;width:max-content;animation:tk 30s linear infinite}
+[data-ticker] .tk-c{display:inline-flex;flex:none}
+[data-ticker] .tk-c span{margin-left:4vw}
+@keyframes tk{from{transform:translateX(0)}to{transform:translateX(50%)}}
+</style>
+</head>
+<body data-screen>
+<div class="grid">
+  <header>
+    <div class="brandrow"><div data-logo hidden></div><div><h1>💼 <span data-title="investor.title">المستثمر الذكي</span></h1><div class="sub2"><span data-text="brand.boothName"></span> · <span data-text="brand.eventName"></span></div></div></div>
+    <div class="stats">
+      <div class="stat"><b id="sPitches">0</b><small>عرض</small></div>
+      <div class="stat"><b id="sDeals">0</b><small>تأهّل للهاكاثون 🎟️</small></div>
+      <div class="stat"><b id="sTotal">0</b><small>ريال استثمارات</small></div>
+    </div>
+  </header>
+
+  <section class="panel">
+    <h2>🏆 أعلى تقييمات الشركات</h2>
+    <div class="rows" id="top"></div>
+  </section>
+
+  <section class="panel" id="spotPanel">
+    <h2>⚡ آخر صفقة</h2>
+    <div class="spot" id="spot"><p class="empty">بانتظار أول عرض… كن أنت الأول! 🚀</p></div>
+    <h2 style="margin-top:1vw">آخر العروض</h2>
+    <div class="rows" id="recent"></div>
+  </section>
+
+  <section class="panel qr">
+    <h3>عندك فكرة؟<br>اعرضها على <span data-text="investor.title">المستثمر الذكي</span></h3>
+    <div class="box" id="qr"></div>
+    <div class="steps">
+      ١. امسح الرمز بجوالك<br>
+      ٢. اختر المستثمر واكتب فكرتك<br>
+      ٣. جاوب على سؤالين<br>
+      ٤. يستثمر… ولا يطلع؟ 👀
+    </div>
+  </section>
+</div>
+
+<script>
+let INV = {};
+APP.ready.then(c => { INV = Object.fromEntries(c.investor.investors.map(i => [i.id, `${i.emoji} ${i.name}`])); document.title = c.investor.title; });
+const $ = id => document.getElementById(id);
+const fmt = n => Number(n||0).toLocaleString("ar-SA-u-nu-latn");
+const esc = s => { const d=document.createElement("div"); d.textContent=s||""; return d.innerHTML; };
+const short = n => n>=1e6 ? (n/1e6).toLocaleString("ar-SA-u-nu-latn",{maximumFractionDigits:1})+" مليون" : fmt(n);
+
+// رابط صفحة الزائر (يمكن تغييره بإضافة ?url=...)
+const visitorUrl = new URLSearchParams(location.search).get("url") || new URL("index.html", location.href).href;
+try { new QRCode($("qr"), {text: visitorUrl, width: 400, height: 400, correctLevel: QRCode.CorrectLevel.M}); }
+catch(e){ $("qr").textContent = visitorUrl; }
+
+let lastId = null;
+async function refresh(){
+  try {
+    const d = await fetch("api/feed", {cache:"no-store"}).then(r=>r.json());
+    $("sPitches").textContent = fmt(d.stats.pitches);
+    $("sDeals").textContent = fmt(d.stats.qualified ?? d.stats.deals);
+    $("sTotal").textContent = short(d.stats.total);
+
+    $("top").innerHTML = d.top.length ? d.top.map((x,i)=>`
+      <div class="row"><span class="rank">${i+1}</span>
+        <div class="who"><b>${esc(x.name)}</b><small>${esc(x.title)}</small></div>
+        <span class="money">${short(x.valuation)}</span></div>`).join("")
+      : `<p class="empty">ما فيه صفقات بعد</p>`;
+
+    $("recent").innerHTML = d.recent.slice(1,5).map(x=>`
+      <div class="row"><div class="who"><b>${esc(x.name)} · ${esc(x.title)}</b><small>${INV[x.investor]||""}</small></div>
+      ${x.decision==="invest" ? `<span class="money">${short(x.amount)}</span>` : `<span class="out">طلع 🚪</span>`}</div>`).join("");
+
+    const latest = d.recent[0];
+    if (latest) {
+      const key = latest.id ?? latest.created_at;
+      if (key !== lastId) {
+        const ok = latest.decision === "invest";
+        $("spot").innerHTML = `
+          <span class="tag ${ok?"ok":"no"}">${latest.qualified?"🎟️ تأهّل للهاكاثون":ok?"🎉 صفقة جديدة":"🚪 المستثمر طلع"}</span>
+          <div class="name">${esc(latest.name)}</div>
+          <div class="idea">«${esc(latest.title)}»</div>
+          ${ok ? `<div class="amt">${fmt(latest.amount)} ريال <small style="font-size:1.4vw;color:var(--muted)">مقابل ${fmt(latest.equity)}%</small></div>` : ""}
+          <div class="quote">“${esc(latest.verdict)}”</div>
+          <div class="by">— ${INV[latest.investor]||""}</div>`;
+        if (lastId !== null) { $("spotPanel").classList.remove("flash"); void $("spotPanel").offsetWidth; $("spotPanel").classList.add("flash"); }
+        lastId = key;
+      }
+    }
+  } catch(e) { console.warn(e); }
+}
+refresh();
+setInterval(refresh, 4000);
+</script>
+<div data-ticker hidden></div>
+<script>setInterval(()=>APP.refreshConfig(), 30000);</script>
+</body>
+</html>

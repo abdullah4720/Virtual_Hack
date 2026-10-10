@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>شاشة الجناح</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="qrcode.min.js"></script>
+<script src="app.js"></script>
+<style>
+html,body{margin:0;height:100%;background:var(--bg,#0b1020);overflow:hidden;font-family:"IBM Plex Sans Arabic",system-ui,sans-serif;color:#eef2ff}
+iframe{position:fixed;inset:0;width:100%;height:100%;border:0;transition:opacity .8s ease}
+.off{opacity:0;pointer-events:none}
+.dots{position:fixed;bottom:1vw;left:50%;transform:translateX(-50%);display:flex;gap:.6vw;z-index:2}
+.dots i{width:.7vw;height:.7vw;border-radius:50%;background:#25304f}
+.dots i.on{background:var(--accent,#f5b83d)}
+.full{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:2vw;padding:4vw;background:radial-gradient(1400px 700px at 85% -10%,#1d2a55 0,transparent 60%),var(--bg,#0b1020)}
+.full .k{font-size:2vw;color:#9aa6c7}
+.full .big{font-size:9vw;font-weight:700;color:var(--accent,#f5b83d);font-variant-numeric:tabular-nums;line-height:1.1}
+.full .t{font-size:4.2vw;font-weight:700;line-height:1.35}
+.full .b{font-size:2.2vw;color:#c9d1ea;max-width:70vw;line-height:1.7;white-space:pre-wrap}
+.full .qr{background:#fff;padding:1vw;border-radius:1vw}
+.full .qr img,.full .qr canvas{width:13vw!important;height:13vw!important;display:block}
+.units{display:flex;gap:3vw;justify-content:center}
+.units div{text-align:center}
+.units b{display:block;font-size:8vw;color:var(--accent,#f5b83d);line-height:1.1;font-variant-numeric:tabular-nums}
+.units span{font-size:1.6vw;color:#9aa6c7}
+</style>
+</head>
+<body data-screen>
+<div class="dots" id="dots"></div>
+<script>
+// شاشة الجناح: يتحكم المنظّم في وضعها من لوحة التحكم ← الشاشات (تتحدث خلال 15 ثانية)
+const esc = APP.esc;
+const SRC = {investor: "screen.html", hackathon: "hack-screen.html", dashboard: "dashboard.html"};
+let key = "", timer = null, tick = null, frames = [];
+const forced = new URLSearchParams(location.search).get("mode");
+
+function clear(){ clearInterval(timer); clearInterval(tick); document.querySelectorAll("iframe,.full").forEach(e=>e.remove()); document.getElementById("dots").innerHTML = ""; frames = []; }
+
+function rotate(list, every){
+  if (!list.length) return full(`<div class="t">لا توجد شاشات مفعّلة</div>`);
+  frames = list.map((src, i) => { const f = document.createElement("iframe"); f.src = src; if (i) f.className = "off"; document.body.appendChild(f); return f; });
+  if (list.length < 2) return;
+  const dots = list.map((_, i) => { const d = document.createElement("i"); if (!i) d.className = "on"; document.getElementById("dots").appendChild(d); return d; });
+  let cur = 0;
+  timer = setInterval(() => {
+    cur = (cur + 1) % frames.length;
+    frames.forEach((f, i) => f.classList.toggle("off", i !== cur));
+    dots.forEach((d, i) => d.classList.toggle("on", i === cur));
+  }, every);
+}
+function full(html){ const d = document.createElement("div"); d.className = "full"; d.innerHTML = html; document.body.appendChild(d); return d; }
+
+function countdown(c){
+  const H = c.hackathon, target = H.phase === "soon" ? H.opensAtMs : H.phase === "open" ? H.closesAtMs : null;
+  const d = full(`${c.brand.logoUrl?`<img src="${esc(c.brand.logoUrl)}" style="max-height:6vw">`:""}<div class="k">${esc(c.hackathon.name)}</div>
+    <div class="t">${H.phase==="soon"?"يبدأ التقديم بعد":H.phase==="open"?"يُقفل التقديم بعد":"انتهى التقديم"}</div>
+    <div class="units" id="u"></div><div class="qr" id="qr"></div><div class="k">امسح الرمز وابدأ</div>`);
+  try { new QRCode(d.querySelector("#qr"), {text: new URL("welcome.html", location.href).href, width: 400, height: 400}); } catch(e){}
+  const u = d.querySelector("#u");
+  const f = () => {
+    if (!target) { u.innerHTML = `<div><b>🏆</b><span>ترقّبوا إعلان الفائزين</span></div>`; return; }
+    const ms = Math.max(0, target - Date.now()), D = Math.floor(ms/864e5), h = Math.floor(ms/36e5)%24, m = Math.floor(ms/6e4)%60, s = Math.floor(ms/1e3)%60;
+    u.innerHTML = [[D,"يوم"],[h,"ساعة"],[m,"دقيقة"],[s,"ثانية"]].filter((x,i)=>i||x[0]).map(([v,l])=>`<div><b>${String(v).padStart(2,"0")}</b><span>${l}</span></div>`).join("");
+  };
+  f(); tick = setInterval(f, 1000);
+}
+
+function announcement(c){
+  const a = (c.announcements || [])[0];
+  full(a ? `<div class="k">📣 إعلان</div><div class="t">${esc(a.title)}</div>${a.body?`<div class="b">${esc(a.body)}</div>`:""}` : `<div class="t">لا توجد إعلانات حاليًا</div>`);
+}
+
+async function apply(c){
+  const B = c.booth, mode = forced || B.mode;
+  const screens = Object.entries(SRC).filter(([k]) => B.screens[k] && (k === "dashboard" || c.modules[k])).map(([, v]) => v);
+  const every = (Number(new URLSearchParams(location.search).get("every")) || B.rotateSeconds || 25) * 1000;
+  const sig = JSON.stringify([mode, screens, every, mode === "announcement" ? c.announcements?.[0]?.id : 0, mode === "countdown" ? c.hackathon.phase : 0]);
+  if (sig === key) return;
+  key = sig; clear();
+  if (mode === "rotate") rotate(screens, every);
+  else if (SRC[mode]) rotate([SRC[mode]], every);
+  else if (mode === "countdown") countdown(c);
+  else if (mode === "announcement") announcement(c);
+}
+APP.ready.then(apply);
+setInterval(async () => { const c = await APP.refreshConfig(); if (c) apply(c); }, 15000);
+setTimeout(() => location.reload(), 3 * 3600e3);
+</script>
+</body>
+</html>

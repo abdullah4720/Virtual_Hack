@@ -1,0 +1,40 @@
+:root{
+  --bg:#0b1020;--card:#141b31;--card2:#0e1427;--line:#25304f;--text:#eef2ff;--muted:#9aa6c7;
+  --accent:#f5b83d;--accent-ink:#1a1204;--good:#34d399;--bad:#f87171;--blue:#7aa2ff;
+}
+*{box-sizing:border-box;margin:0}
+body{font-family:"IBM Plex Sans Arabic",system-ui,sans-serif;background:radial-gradient(1200px 600px at 80% -10%,#1d2a55 0,transparent 60%),var(--bg);color:var(--text);min-height:100dvh;line-height:1.7}
+.wrap{max-width:720px;margin:0 auto;padding:20px 16px 48px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:14px}
+h1{font-size:28px;line-height:1.4}
+h1 span,.gold{color:var(--accent)}
+h1 span[data-title]{color:var(--text)}
+h1 span[data-title] .gold{color:var(--accent)}
+h2{font-size:19px;margin-bottom:10px}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+label{display:block;font-size:14px;color:var(--muted);margin:12px 0 6px}
+label:first-child{margin-top:0}
+input,textarea,select{width:100%;font:inherit;font-size:16px;color:var(--text);background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:11px 13px;outline:none}
+input:focus,textarea:focus{border-color:var(--accent)}
+textarea{min-height:96px;resize:vertical}
+.btn{display:inline-block;width:100%;font:inherit;font-size:17px;font-weight:700;border:0;border-radius:14px;padding:13px;background:var(--accent);color:var(--accent-ink);cursor:pointer;text-align:center;text-decoration:none}
+.btn:disabled{opacity:.5;cursor:wait}
+.btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+.btn.sm{width:auto;font-size:14px;padding:8px 14px;border-radius:10px}
+.err{color:var(--bad);font-size:14px;margin-top:8px}
+.hidden{display:none!important}
+.pill{display:inline-block;font-size:12.5px;font-weight:700;padding:3px 10px;border-radius:999px;background:#1f2440;color:var(--accent)}
+.pill.ok{background:rgba(52,211,153,.14);color:var(--good)}
+.pill.no{background:rgba(248,113,113,.14);color:var(--bad)}
+.bar{height:9px;background:var(--card2);border-radius:999px;overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),color-mix(in srgb,var(--accent) 55%,#fff));border-radius:999px;transition:width .9s ease}
+ul.clean{padding-inline-start:20px}
+ul.clean li{margin-bottom:4px}
+
+/* شريط الإعلانات على الشاشات */
+[data-ticker]{position:fixed;bottom:0;left:0;right:0;background:color-mix(in srgb,var(--accent) 20%,#0b1020);border-top:2px solid var(--accent);color:var(--text);overflow:hidden;white-space:nowrap;z-index:5;font-size:1.4vw;padding:.6vw 0}
+[data-ticker] .tk-in{display:inline-flex;width:max-content;animation:tk 30s linear infinite}
+[data-ticker] .tk-c{display:inline-flex;flex:none}
+[data-ticker] .tk-c span{margin-left:4vw}
+@keyframes tk{from{transform:translateX(0)}to{transform:translateX(50%)}}

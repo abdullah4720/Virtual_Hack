@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>التقرير الختامي</title>
+<meta name="robots" content="noindex">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="app.js"></script>
+<style>
+:root{--accent:#f5b83d;--ink:#1a1f36;--muted:#5b6478;--line:#e3e6ee;--soft:#f5f6fa}
+*{box-sizing:border-box;margin:0}
+body{font-family:"IBM Plex Sans Arabic",system-ui,sans-serif;background:#e9ebf1;color:var(--ink);line-height:1.8}
+.bar{position:sticky;top:0;background:#1a1f36;color:#fff;padding:10px 16px;display:flex;gap:10px;justify-content:center;align-items:center;z-index:5}
+.bar button,.bar a{font:inherit;background:var(--accent);color:#14110a;border:0;border-radius:10px;padding:7px 16px;font-weight:700;cursor:pointer;text-decoration:none}
+.bar a{background:#2b3355;color:#fff}
+.page{width:210mm;min-height:297mm;margin:16px auto;background:#fff;padding:18mm 16mm;box-shadow:0 2px 14px rgba(0,0,0,.08);position:relative}
+.cover{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:14px;border-top:10px solid var(--accent)}
+.cover img{max-height:90px;max-width:260px}
+.cover h1{font-size:34px;line-height:1.4}
+.cover .k{color:var(--muted);font-size:17px}
+h2{font-size:20px;margin:0 0 12px;padding-bottom:6px;border-bottom:3px solid var(--accent);display:inline-block}
+h3{font-size:16px;margin:16px 0 8px}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:10px 0 20px}
+.kpi{background:var(--soft);border-radius:12px;padding:12px;text-align:center}
+.kpi b{display:block;font-size:26px;font-variant-numeric:tabular-nums}
+.kpi span{font-size:12.5px;color:var(--muted)}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:6px}
+th{background:var(--soft);text-align:right;padding:8px;font-weight:700}
+td{padding:8px;border-bottom:1px solid var(--line);vertical-align:top}
+.medal{font-size:18px}
+.funnel{display:flex;gap:6px;align-items:stretch;margin:8px 0 18px}
+.funnel div{flex:1;background:var(--soft);border-radius:10px;padding:10px;text-align:center;position:relative}
+.funnel b{display:block;font-size:22px}
+.funnel span{font-size:12px;color:var(--muted)}
+.proj{border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:12px;break-inside:avoid}
+.proj .hd{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.proj .sc{background:var(--accent);color:#14110a;font-weight:700;border-radius:10px;padding:2px 10px;white-space:nowrap}
+.proj .lab{color:var(--muted);font-size:12.5px}
+.proj p{font-size:13.5px;margin-top:6px}
+.proj p b{color:var(--muted);font-weight:700}
+.foot{position:absolute;bottom:10mm;left:16mm;right:16mm;display:flex;justify-content:space-between;color:var(--muted);font-size:11px;border-top:1px solid var(--line);padding-top:6px}
+.login{max-width:380px;margin:18vh auto;background:#fff;border-radius:16px;padding:22px}
+.login input{width:100%;font:inherit;padding:10px;border:1px solid var(--line);border-radius:10px;margin:8px 0}
+.login button{width:100%;font:inherit;padding:10px;border:0;border-radius:10px;background:var(--accent);font-weight:700;cursor:pointer}
+.err{color:#c0392b;font-size:14px}
+svg text{font-family:"IBM Plex Sans Arabic",system-ui,sans-serif}
+@media print{
+  body{background:#fff}
+  .bar,.login{display:none!important}
+  .page{margin:0;box-shadow:none;width:auto;min-height:auto;page-break-after:always}
+  .page:last-child{page-break-after:auto}
+  @page{size:A4;margin:0}
+}
+</style>
+</head>
+<body data-noannounce>
+<div class="login" id="login" style="display:none">
+  <h2 style="border:0">التقرير الختامي</h2>
+  <input id="k" type="password" dir="ltr" placeholder="مفتاح الإدارة">
+  <button id="go">عرض التقرير</button><p class="err" id="err"></p>
+</div>
+<div class="bar" id="bar" style="display:none"><button onclick="print()">🖨️ طباعة / حفظ PDF</button><a id="toggle" href="#"></a></div>
+<div id="out"></div>
+<script>
+const $ = id => document.getElementById(id), esc = APP.esc, fmt = APP.fmt;
+const booklet = new URLSearchParams(location.search).has("booklet");
+let KEY; try { KEY = sessionStorage.getItem("ak"); } catch(e){}
+$("go").onclick = async () => { KEY = $("k").value.trim(); try { await load(); try{ sessionStorage.setItem("ak", KEY); }catch(e){} } catch(e){ $("err").textContent = e.message; } };
+
+function bars(items, w=640, h=170){
+  const max = Math.max(1, ...items.map(i=>i.v)), n = Math.max(1, items.length), bw = Math.min(60, w/n - 6), base = h - 26;
+  return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}"><line x1="0" x2="${w}" y1="${base}" y2="${base}" stroke="#d5d9e4"/>
+    ${items.map((it,i)=>{ const bh = it.v/max*(base-20), x = w - (i+1)*(w/n) + (w/n-bw)/2; const r = Math.min(4, bw/2, bh);
+      return `${it.v?`<path d="M${x},${base} V${base-bh+r} Q${x},${base-bh} ${x+r},${base-bh} H${x+bw-r} Q${x+bw},${base-bh} ${x+bw},${base-bh+r} V${base} Z" fill="var(--accent)"/><text x="${x+bw/2}" y="${base-bh-5}" text-anchor="middle" font-size="12" fill="#1a1f36">${fmt(it.v)}</text>`:""}
+      <text x="${x+bw/2}" y="${h-8}" text-anchor="middle" font-size="11" fill="#5b6478">${esc(it.label)}</text>`; }).join("")}</svg>`;
+}
+
+async function load(){
+  const r = await fetch("api/admin?action=report", {headers: {"x-admin-key": KEY}});
+  const d = await r.json(); if (!r.ok) throw new Error(d.error || "خطأ");
+  $("login").style.display = "none"; $("bar").style.display = "flex";
+  $("toggle").textContent = booklet ? "📊 التقرير الكامل" : "📘 الكتيّب فقط"; $("toggle").href = booklet ? "report.html" : "report.html?booklet=1";
+  const S = d.settings, st = d.stats, B = S.brand;
+  document.documentElement.style.setProperty("--accent", B.accent);
+  const today = new Date().toLocaleDateString("ar-SA-u-nu-latn", {year:"numeric", month:"long", day:"numeric"});
+  const foot = (p) => `<div class="foot"><span>${esc(B.orgName)} · ${esc(B.eventName)}</span><span>${p}</span></div>`;
+  const cover = `<section class="page cover">${B.logoUrl?`<img src="${esc(B.logoUrl)}" alt="">`:""}
+    <div class="k">${esc(B.orgName)}</div><h1>${booklet ? "كتيّب المشاريع" : "التقرير الختامي"}<br>${esc(S.hackathon.name)}</h1>
+    <div class="k">${esc(B.boothName)} · ${esc(B.eventName)}</div><div class="k">${today}</div></section>`;
+  let html = cover;
+  if (!booklet) {
+    html += `<section class="page"><h2>ملخص البرنامج</h2>
+      <p>أُتيح للزوار عرض أفكارهم على «${esc(S.investor.title)}» كمرحلة فرز، وتأهل من بلغ ${S.investor.qualifyScore} من 100 للمنافسة في «${esc(S.hackathon.name)}»، حيث قدّمت الفرق مشاريعها وعروضها الاستثمارية وقُيّمت آليًا، ثم حكّمت اللجنة أفضل ${S.hackathon.finalists} مشاريع.</p>
+      <h3>مسار المشاركين</h3>
+      <div class="funnel"><div><b>${fmt(st.pitches)}</b><span>فكرة عُرضت</span></div><div><b>${fmt(st.qualified)}</b><span>متأهل</span></div><div><b>${fmt(st.teams)}</b><span>فريق</span></div><div><b>${fmt(st.evaluated)}</b><span>مشروع مُقيَّم</span></div><div><b>${fmt(Math.min(S.hackathon.finalists, st.evaluated))}</b><span>متأهل نهائي</span></div></div>
+      <div class="kpis">
+        <div class="kpi"><b>${fmt(st.members)}</b><span>مشارك في الفرق</span></div>
+        <div class="kpi"><b>${st.pitches ? Math.round(st.qualified/st.pitches*100) : 0}%</b><span>نسبة التأهل من المستثمر الذكي</span></div>
+        <div class="kpi"><b>${fmt(st.avgPitch)}</b><span>متوسط درجات الأفكار</span></div>
+        <div class="kpi"><b>${fmt(st.submissions)}</b><span>تقديم (مع إعادة التقديم)</span></div>
+        <div class="kpi"><b>${fmt(st.avgScore)}</b><span>متوسط درجات المشاريع</span></div>
+        <div class="kpi"><b>${fmt(st.improved)}</b><span>فريق حسّن درجته بعد الملاحظات</span></div>
+      </div>
+      <h3>النشاط اليومي</h3>${bars(Object.entries(d.byDay).sort().map(([k,v])=>({label: new Date(k).toLocaleDateString("ar-SA-u-nu-latn",{day:"numeric",month:"short"}), v})))}
+      <h3>الفرق حسب المسار</h3>${bars(d.tracks.map(t=>({label:t.title, v:t.teams})))}
+      ${foot("1")}</section>
+      <section class="page"><h2>🏆 الفائزون والمتأهلون</h2>
+      <table><thead><tr><th>المركز</th><th>الفريق</th><th>المشروع</th><th>المسار</th><th>الذكاء الاصطناعي</th><th>اللجنة</th><th>النهائية</th></tr></thead><tbody>
+      ${d.winners.map(w=>`<tr><td class="medal">${["🥇","🥈","🥉"][w.place-1]||w.place}</td><td><b>${esc(w.team)}</b><br><span style="color:#5b6478;font-size:12px">${esc((w.members||[]).join("، "))}</span></td><td>${esc(w.title)}</td><td>${esc(w.label)}</td><td>${w.ai}</td><td>${w.judges??"—"}</td><td><b>${w.final??"—"}</b></td></tr>`).join("") || `<tr><td colspan="7">لا يوجد متأهلون بعد</td></tr>`}
+      </tbody></table>
+      <p style="color:#5b6478;font-size:12.5px;margin-top:10px">الدرجة النهائية = ${S.hackathon.weights.ai}% تقييم الذكاء الاصطناعي + ${S.hackathon.weights.judges}% متوسط درجات اللجنة.</p>
+      <h3>معايير التقييم</h3>
+      <table><thead><tr><th>المعيار</th><th>الدرجة</th><th>ما يُقاس</th></tr></thead><tbody>${S.hackathon.rubric.map(r=>`<tr><td>${esc(r.label)}</td><td>${r.max}</td><td>${esc(r.guide||"")}</td></tr>`).join("")}</tbody></table>
+      ${foot("2")}</section>`;
+  }
+  // الكتيّب: 3 مشاريع في الصفحة
+  const P = d.projects;
+  for (let i = 0; i < P.length; i += 3) {
+    html += `<section class="page">${i===0?`<h2>📘 المشاريع (${P.length})</h2>`:""}${P.slice(i, i+3).map(p=>`<div class="proj">
+      <div class="hd"><div><b style="font-size:16px">${esc(p.title)}</b>${p.finalist?" 🏅":""}<div class="lab">فريق ${esc(p.team)} · ${esc((p.members||[]).join("، "))} · ${esc(p.label)}</div></div><span class="sc">${p.score}/100</span></div>
+      <p><b>المشكلة:</b> ${esc(p.problem)}</p><p><b>الحل:</b> ${esc(p.solution)}</p><p><b>العميل والسوق:</b> ${esc(p.customer)}</p><p><b>نموذج الربح:</b> ${esc(p.business)}</p>
+      ${p.summary?`<p style="color:#5b6478"><b>خلاصة التقييم:</b> ${esc(p.summary)}</p>`:""}${p.attempts>1&&p.first!=null?`<p style="color:#5b6478;font-size:12px">${p.attempts} محاولات · من ${p.first} إلى ${p.score}</p>`:""}
+    </div>`).join("")}${foot(booklet ? String(i/3+1) : String(i/3+3))}</section>`;
+  }
+  if (!P.length) html += `<section class="page"><h2>📘 المشاريع</h2><p>لا توجد مشاريع مقيّمة بعد.</p></section>`;
+  $("out").innerHTML = html;
+  document.title = (booklet ? "كتيّب المشاريع · " : "التقرير الختامي · ") + S.hackathon.name;
+}
+APP.ready.then(() => { if (KEY) load().catch(() => $("login").style.display = "block"); else $("login").style.display = "block"; });
+</script>
+</body>
+</html>

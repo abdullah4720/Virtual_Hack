@@ -1,0 +1,548 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>الهاكاثون</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="hack.css">
+<script src="app.js"></script>
+<style>
+header{text-align:center;padding:14px 0 18px}
+[data-logo] img{max-height:54px;max-width:200px;margin-bottom:6px}
+.logo{font-size:42px}
+.phase{margin-top:10px;display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap}
+.opts{display:grid;gap:10px}
+.ch{display:flex;gap:12px;align-items:flex-start;text-align:right;width:100%;font:inherit;color:var(--text);background:var(--card2);border:1.5px solid var(--line);border-radius:14px;padding:12px;cursor:pointer}
+.ch .ic{font-size:28px;line-height:1}
+.ch b{display:block}
+.ch small{color:var(--muted);font-size:13.5px;line-height:1.6;display:block}
+.ch[aria-pressed=true]{border-color:var(--accent);background:#1f2440}
+.subopts{display:grid;gap:8px;margin:2px 22px 4px 0;padding-right:12px;border-right:2px solid var(--accent)}
+.subopts .ch{padding:10px 12px}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center}
+.steps div{background:var(--card2);border-radius:12px;padding:10px 6px;font-size:13.5px}
+.steps b{display:block;font-size:22px}
+@media (max-width:520px){.steps{grid-template-columns:repeat(2,1fr)}}
+.rub{display:grid;gap:8px;margin-top:6px}
+.rub div{background:var(--card2);border-radius:10px;padding:8px 12px;font-size:14.5px}
+.rub div span{display:flex;justify-content:space-between}
+.rub small{color:var(--muted);font-size:12.5px}
+.members input{margin-bottom:8px}
+.code{font-size:44px;font-weight:700;letter-spacing:6px;color:var(--accent);text-align:center;direction:ltr;margin:8px 0;font-family:ui-monospace,Menlo,monospace}
+.teamhead{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.total{font-size:52px;font-weight:700;color:var(--accent);line-height:1.1;text-align:center}
+.total small{font-size:20px;color:var(--muted)}
+.rrow{display:grid;grid-template-columns:120px 1fr 52px;gap:10px;align-items:center;margin:7px 0;font-size:14.5px}
+.rrow b{text-align:left;font-variant-numeric:tabular-nums}
+.attempt{display:flex;justify-content:space-between;background:var(--card2);border-radius:10px;padding:8px 12px;margin-top:8px;font-size:14.5px}
+.lb{display:grid;gap:6px}
+.lb div{display:grid;grid-template-columns:30px 1fr auto;gap:10px;align-items:center;background:var(--card2);border-radius:10px;padding:8px 12px}
+.lb .r{font-weight:700;color:var(--muted);text-align:center}
+.lb .s{font-weight:700;color:var(--accent)}
+.loading{text-align:center;padding:30px 10px}
+.spinner{width:42px;height:42px;border:4px solid var(--line);border-top-color:var(--accent);border-radius:50%;margin:0 auto 14px;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:520px){.row2{grid-template-columns:1fr}}
+.hint{font-size:12.5px;color:var(--muted);margin-top:4px}
+.import{border-color:var(--accent)}
+.import .q{background:var(--card2);border-radius:10px;padding:10px 12px;margin:8px 0;white-space:pre-wrap;font-size:14.5px}
+.xlink{display:block;text-align:center;color:var(--muted);font-size:14px;margin-top:-4px;margin-bottom:14px}
+.xlink a{color:var(--accent)}
+.why{font-size:13px;color:var(--muted);margin:-2px 0 10px;line-height:1.7}
+.why .nx{color:var(--text)}
+.caps{font-size:13px;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.3);border-radius:12px;padding:10px;margin-top:10px;line-height:1.8}
+.consent{display:flex;gap:8px;align-items:flex-start;font-size:14px;color:var(--muted);margin:14px 2px 6px;line-height:1.7;cursor:pointer}
+.consent input{width:18px;height:18px;margin-top:4px;accent-color:var(--accent);flex:none}
+.consent a{color:var(--accent)}
+.ann{display:flex;gap:10px;background:color-mix(in srgb,var(--accent) 10%,var(--card2));border-radius:12px;padding:10px 12px;margin-top:8px;line-height:1.7}
+.ann.me{border:1px solid var(--accent)}
+.certrow{display:flex;justify-content:space-between;align-items:center;background:var(--card2);border-radius:10px;padding:8px 12px;margin-top:8px}
+.files{margin-top:18px;padding-top:14px;border-top:1px dashed var(--line)}
+.slot{background:var(--card2);border:1.5px dashed var(--line);border-radius:14px;padding:14px;margin-top:8px}
+.slot.ok{border-style:solid;border-color:rgba(52,211,153,.45)}
+.slot.drag{border-color:var(--accent);background:#1f2440}
+.slot .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.slot .ic{font-size:26px}
+.slot .nm{flex:1;min-width:140px}
+.slot .nm b{display:block;word-break:break-all;font-size:14.5px}
+.slot .nm small{color:var(--muted)}
+.pick{display:block;text-align:center;cursor:pointer;padding:6px 4px}
+.pick b{color:var(--accent)}
+.pick input{display:none}
+.prog{height:6px;background:var(--bg);border-radius:9px;overflow:hidden;margin-top:8px}
+.prog i{display:block;height:100%;width:0;background:var(--accent);transition:width .2s}
+.req{font-size:12px;color:var(--bad);font-weight:700}
+.ib{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:8px;padding:5px 10px;cursor:pointer;text-decoration:none}
+.ib.del{color:var(--bad)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div data-logo hidden></div>
+    <div class="logo">⚡</div>
+    <h1 data-title="hackathon.name">الهاكاثون</h1>
+    <p class="muted" id="host"></p>
+    <p class="muted small" data-text="hackathon.tagline" style="margin-top:4px"></p>
+    <div class="phase"><span class="pill" id="phasePill">…</span><span class="muted small" id="countdown"></span></div>
+  </header>
+
+  <!-- فكرة قادمة من المستثمر الذكي -->
+  <div class="card import hidden" id="importCard"></div>
+
+  <!-- ========== الصفحة الرئيسية ========== -->
+  <section id="v-home" class="hidden">
+    <p class="xlink hidden" id="tryInvestor"></p>
+    <div class="card">
+      <h2>كيف يعمل؟</h2>
+      <div class="steps">
+        <div><b>1</b>سجّل فريقك<br><span class="muted small" id="membersTxt"></span></div>
+        <div><b>2</b>قدّم مشروعك<br><span class="muted small">أونلاين بالكامل</span></div>
+        <div><b>3</b>تقييم فوري<br><span class="muted small">بالذكاء الاصطناعي</span></div>
+        <div><b>4</b>حسّن وأعد<br><span class="muted small" id="attemptsTxt"></span></div>
+      </div>
+      <p class="muted small" style="margin-top:12px" id="finalNote"></p>
+    </div>
+
+    <div class="card">
+      <h2>معايير التقييم</h2>
+      <div class="rub" id="rubric"></div>
+    </div>
+
+    <div class="card hidden" id="gateCard" style="text-align:center;border-color:var(--accent)">
+      <div style="font-size:34px">🎟️</div>
+      <h2>التسجيل للمتأهلين فقط</h2>
+      <p class="muted" id="gateText"></p>
+      <a class="btn" href="index.html" id="gateBtn" style="margin-top:12px"></a>
+    </div>
+
+    <div class="card" id="regCard">
+      <h2>سجّل فريقك</h2>
+      <div id="ticketBox" class="hidden">
+        <label for="tTicket">رمز التأهل أو رمز الدعوة</label>
+        <div class="row2">
+          <input id="tTicket" dir="ltr" maxlength="10" placeholder="مثال: K7M2QX" style="text-transform:uppercase;letter-spacing:3px">
+          <button type="button" class="btn ghost" id="ticketBtn" style="margin:0">تحقّق من الرمز</button>
+        </div>
+        <p class="small" id="ticketMsg" style="margin-top:6px"></p>
+      </div>
+      <label for="tName">اسم الفريق</label>
+      <input id="tName" maxlength="40" placeholder="مثال: فريق نخلة">
+      <label>أعضاء الفريق</label>
+      <div class="members" id="members"></div>
+      <div class="row2">
+        <div><label for="tEmail">البريد الإلكتروني للتواصل</label><input id="tEmail" type="email" dir="ltr" placeholder="name@example.com"></div>
+        <div><label for="tPhone">الجوال (اختياري)</label><input id="tPhone" type="tel" dir="ltr" placeholder="05xxxxxxxx"></div>
+      </div>
+      <label>اختر المسار والتحدي</label>
+      <div class="opts" id="tracks"></div>
+      <label class="consent"><input type="checkbox" id="regConsent"> <span>أوافق على <a href="privacy.html" target="_blank">سياسة الخصوصية</a> وعلى عرض اسم الفريق والمشروع في لوحات الترتيب</span></label>
+      <button class="btn" id="regBtn" style="margin-top:6px">سجّل الفريق</button>
+      <p class="err" id="regErr"></p>
+    </div>
+
+    <div class="card">
+      <h2>مسجّل مسبقًا؟</h2>
+      <div class="row2">
+        <input id="loginCode" dir="ltr" maxlength="6" placeholder="رمز الفريق" style="text-transform:uppercase;letter-spacing:3px">
+        <button class="btn ghost" id="loginBtn">دخول</button>
+      </div>
+      <p class="err" id="loginErr"></p>
+    </div>
+  </section>
+
+  <!-- ========== رمز الفريق ========== -->
+  <section id="v-code" class="hidden">
+    <div class="card" style="text-align:center">
+      <span class="pill ok">✅ تم تسجيل الفريق</span>
+      <p class="small" id="codeMailed" style="margin-top:8px;color:var(--good)"></p>
+      <p style="margin-top:12px">رمز فريقك. <b>احفظه</b> وشاركه مع أعضاء فريقك، فهو طريقتكم للدخول والتقديم:</p>
+      <div class="code" id="newCode"></div>
+      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+        <button class="btn sm ghost" id="copyBtn">📋 نسخ الرمز</button>
+        <button class="btn sm" id="goTeam">ابدأ تقديم المشروع ←</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== صفحة الفريق ========== -->
+  <section id="v-team" class="hidden">
+    <div class="card">
+      <div class="teamhead">
+        <div><h2 id="tmName" style="margin:0"></h2><div class="muted small" id="tmInfo"></div></div>
+        <button class="btn sm ghost" id="logoutBtn">خروج</button>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+        <span class="pill" id="tmChallenge"></span>
+        <span class="pill" id="tmAttempts"></span>
+        <span class="pill" id="tmCode" dir="ltr"></span>
+      </div>
+    </div>
+
+    <div id="annBox"></div>
+    <div id="certBox"></div>
+    <div id="resultBox"></div>
+
+    <div class="card" id="submitCard">
+      <h2 id="formTitle">قدّم مشروعك</h2>
+      <p class="muted small">اكتب بوضوح واختصار. المحكّم يكافئ الوضوح والأدلة، لا طول النص. لديك أكثر من محاولة، وتُحتسب أعلى درجة.</p>
+      <label for="fTitle">اسم المشروع</label>
+      <input id="fTitle" maxlength="60">
+      <label for="fProblem">المشكلة: ما هي؟ ومن يعاني منها؟ وما الدليل؟</label>
+      <textarea id="fProblem" maxlength="800"></textarea>
+      <label for="fSolution">الحل: ماذا تقدّم؟ وما الذي يميّزه عن البدائل الحالية؟</label>
+      <textarea id="fSolution" maxlength="1200" style="min-height:120px"></textarea>
+      <label for="fCustomer">العميل والسوق: من أول عميل سيدفع؟ وكم حجم السوق تقريبًا؟</label>
+      <textarea id="fCustomer" maxlength="600"></textarea>
+      <label for="fBusiness">نموذج الربح: كيف ستكسب المال؟ وما أهم التكاليف؟</label>
+      <textarea id="fBusiness" maxlength="600"></textarea>
+      <label for="fProto">النموذج الأولي: صِف ما بنيتموه (تصميم شاشات، نموذج مبدئي، استبيان، تجربة…)</label>
+      <textarea id="fProto" maxlength="600" style="min-height:80px"></textarea>
+      <div class="row2">
+        <div><label for="fProtoUrl">رابط النموذج الأولي (اختياري)</label><input id="fProtoUrl" dir="ltr" placeholder="https://"></div>
+        <div><label for="fVideo">رابط فيديو العرض (اختياري)</label><input id="fVideo" dir="ltr" placeholder="https://"></div>
+      </div>
+      <p class="hint">مثل رابط Figma أو Canva أو Google Drive أو YouTube (غير مدرج).</p>
+
+      <div class="files">
+        <h2 style="font-size:17px;margin-bottom:2px">📎 الملفات</h2>
+        <p class="muted small" id="filesHint"></p>
+        <label style="margin-top:12px">العرض الاستثماري (Pitch Deck) <span class="req" id="deckReq">· إلزامي</span></label>
+        <div id="deckSlot"></div>
+        <div id="extraWrap"><label style="margin-top:14px">ملفات إضافية (اختياري) <span class="muted small" id="extraCount"></span></label><div id="extraSlots"></div></div>
+        <p class="err" id="fileErr"></p>
+      </div>
+
+      <button class="btn" id="submitBtn" style="margin-top:14px">أرسل للتقييم</button>
+      <p class="err" id="subErr"></p>
+    </div>
+
+    <div class="card hidden" id="historyCard"><h2>محاولاتكم</h2><div id="history"></div></div>
+  </section>
+
+  <div class="card">
+    <h2>🏆 الترتيب الحالي</h2>
+    <div class="lb" id="lb"><p class="muted small">لا توجد مشاريع مقيّمة بعد.</p></div>
+    <p class="muted small" style="margin-top:8px">الترتيب حسب أعلى تقييم للذكاء الاصطناعي، ويُعرض مباشرة على شاشة الجناح.</p>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = APP.esc;
+let CFG = null, chosen = {track:null, challenge:null}, team = null, IMPORT = null;
+const LS = {
+  get(k){ try{return localStorage.getItem(k)}catch(e){return null} },
+  set(k,v){ try{ v==null ? localStorage.removeItem(k) : localStorage.setItem(k,v) }catch(e){} }
+};
+
+async function api(action, body, params=""){
+  const r = await fetch(`api/hack?action=${action}${params}`, body ? {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)} : {});
+  const d = await r.json().catch(()=>({error:"تعذر الاتصال"}));
+  if (!r.ok) throw new Error(d.error || "حدث خطأ");
+  return d;
+}
+function show(id){ ["v-home","v-code","v-team"].forEach(v => $(v).classList.toggle("hidden", v!==id)); }
+
+// ---------- المرحلة ----------
+function renderPhase(){
+  const H = CFG.hackathon, p = H.phase, pill = $("phasePill");
+  pill.className = "pill " + (p==="open"?"ok":p==="closed"?"no":"");
+  pill.textContent = p==="open" ? "🟢 التقديم مفتوح" : p==="closed" ? "🔴 انتهى التقديم" : "⏳ يبدأ قريبًا";
+  const target = p==="soon" ? H.opensAtMs : p==="open" ? H.closesAtMs : null;
+  const tick = () => {
+    if (!target) { $("countdown").textContent = ""; return; }
+    const ms = target - Date.now();
+    if (ms <= 0) { location.reload(); return; }
+    const d=Math.floor(ms/864e5), h=Math.floor(ms/36e5)%24, m=Math.floor(ms/6e4)%60;
+    $("countdown").textContent = (p==="soon"?"يبدأ بعد ":"يُقفل بعد ") + (d?`${d} يوم و`:"") + `${h} ساعة و${m} دقيقة`;
+  };
+  tick(); setInterval(tick, 30000);
+}
+
+// ---------- الرئيسية ----------
+function renderHome(){
+  const H = CFG.hackathon;
+  $("membersTxt").textContent = H.maxMembers > 1 ? `1 إلى ${H.maxMembers} أعضاء` : "مشاركة فردية";
+  $("attemptsTxt").textContent = H.maxAttempts > 1 ? `حتى ${H.maxAttempts} محاولات` : "محاولة واحدة";
+  $("finalNote").textContent = `أفضل ${H.finalists} مشاريع حسب تقييم الذكاء الاصطناعي تتأهل للتحكيم النهائي من لجنة متخصصة. الدرجة النهائية: ${H.weights.ai}% تقييم الذكاء الاصطناعي + ${H.weights.judges}% تقييم اللجنة.`;
+  $("rubric").innerHTML = H.rubric.map(r=>`<div><span><span>${esc(r.label)}</span><b class="gold">${r.max}</b></span>${r.guide?`<small>${esc(r.guide)}</small>`:""}</div>`).join("");
+  $("members").innerHTML = Array.from({length:H.maxMembers},(_,i)=>`<input class="mem" maxlength="50" placeholder="${i===0?(H.maxMembers>1?"اسم العضو الأول (قائد الفريق)":"اسمك"):"اسم العضو "+(i+1)+" (اختياري)"}">`).join("");
+  if (IMPORT?.name) document.querySelector(".mem").value = IMPORT.name;
+  if (IMPORT?.email) $("tEmail").value = IMPORT.email;
+  // بوابة التأهل
+  const gated = H.registration === "ticket";
+  $("ticketBox").classList.toggle("hidden", !gated);
+  if (gated && CFG.modules.investor) {
+    $("gateText").textContent = `ابدأ بعرض فكرتك على ${CFG.investor.title}. إذا حصلت على ${CFG.investor.qualifyScore} من 100 أو أكثر تحصل على رمز تأهل تسجّل به فريقك هنا.`;
+    $("gateBtn").textContent = `اعرض فكرتك على ${CFG.investor.title} ←`;
+  }
+  const t0 = new URLSearchParams(location.search).get("ticket") || IMPORT?.ticket;
+  if (gated && t0) { $("tTicket").value = t0; checkTicket(); }
+  else if (gated) $("gateCard").classList.toggle("hidden", !CFG.modules.investor);
+  renderTracks();
+  if (H.phase==="closed") $("regCard").classList.add("hidden");
+  if (CFG.modules.investor && !IMPORT && H.registration !== "ticket") { $("tryInvestor").innerHTML = `ما زلت تبحث عن فكرة؟ <a href="index.html">جرّبها أولًا مع ${esc(CFG.investor.title)}</a>`; $("tryInvestor").classList.remove("hidden"); }
+}
+function renderTracks(){
+  const box = $("tracks"); box.innerHTML = "";
+  for (const t of CFG.hackathon.tracks) {
+    const on = chosen.track === t.id;
+    const b = document.createElement("button"); b.type="button"; b.className="ch"; b.setAttribute("aria-pressed", on && (!t.challenges.length || chosen.challenge) ? "true" : on ? "true" : "false");
+    b.innerHTML = `<span class="ic">${esc(t.icon)}</span><span><b>${esc(t.title)}</b><small>${esc(t.desc)}</small>${t.challenges.length?`<small class="gold">${t.challenges.length} تحديات ${on?"▾":"◂"}</small>`:""}</span>`;
+    b.onclick = () => { chosen = {track:t.id, challenge: t.challenges.length===1 ? t.challenges[0].id : null}; renderTracks(); };
+    box.appendChild(b);
+    if (on && t.challenges.length) {
+      const sub = document.createElement("div"); sub.className = "subopts";
+      for (const c of t.challenges) {
+        const cb = document.createElement("button"); cb.type="button"; cb.className="ch"; cb.setAttribute("aria-pressed", chosen.challenge===c.id);
+        cb.innerHTML = `<span><b>${esc(c.title)}</b><small>${esc(c.desc)}</small></span>`;
+        cb.onclick = () => { chosen.challenge = c.id; renderTracks(); };
+        sub.appendChild(cb);
+      }
+      box.appendChild(sub);
+    }
+  }
+}
+
+let TICKET_OK = false;
+async function checkTicket(){
+  const c = $("tTicket").value.trim().toUpperCase(), m = $("ticketMsg");
+  TICKET_OK = false; m.style.color = "var(--muted)"; m.textContent = "جارٍ التحقق…";
+  if (!c) { m.textContent = ""; return; }
+  try {
+    const d = await api("ticket", null, "&code=" + encodeURIComponent(c));
+    TICKET_OK = true; m.style.color = "var(--good)";
+    m.textContent = d.kind === "invite" ? "✓ رمز دعوة صالح" : `✓ رمز تأهل صالح لـ${d.name}${d.idea?.score!=null?` (درجتك ${d.idea.score})`:""}`;
+    $("gateCard").classList.add("hidden");
+    const mem0 = document.querySelector(".mem");
+    if (d.name && !mem0.value) mem0.value = d.name;
+    if (d.email && !$("tEmail").value) $("tEmail").value = d.email;
+    if (d.idea && !IMPORT) { IMPORT = {ticket:c, idea:d.idea.idea, title:d.idea.title, at:Date.now()}; }
+  } catch(e){ m.style.color = "var(--bad)"; m.textContent = e.message; }
+}
+$("ticketBtn").onclick = checkTicket;
+$("tTicket").addEventListener("change", checkTicket);
+
+$("regBtn").onclick = async () => {
+  $("regErr").textContent="";
+  if (!$("regConsent").checked) return $("regErr").textContent = "يلزم الموافقة على سياسة الخصوصية";
+  const t = CFG.hackathon.tracks.find(x=>x.id===chosen.track);
+  if (!t) return $("regErr").textContent = "اختر المسار";
+  if (t.challenges.length && !chosen.challenge) return $("regErr").textContent = "اختر التحدي داخل المسار";
+  $("regBtn").disabled=true;
+  try {
+    const d = await api("register", {
+      name:$("tName").value, email:$("tEmail").value, phone:$("tPhone").value, track:chosen.track, challenge:chosen.challenge,
+      members:[...document.querySelectorAll(".mem")].map(i=>i.value.trim()).filter(Boolean), ticket: $("tTicket").value.trim().toUpperCase(), consent: $("regConsent").checked
+    });
+    LS.set("hack_code", d.code); $("newCode").textContent = d.code; $("codeMailed").textContent = d.emailed ? "✉️ أرسلنا الرمز أيضًا إلى البريد المسجّل" : ""; show("v-code"); scrollTo(0,0);
+  } catch(e){ $("regErr").textContent = e.message; }
+  $("regBtn").disabled=false;
+};
+$("copyBtn").onclick = async () => { try{ await navigator.clipboard.writeText($("newCode").textContent); $("copyBtn").textContent="✅ تم النسخ"; }catch(e){} };
+$("goTeam").onclick = () => loadTeam(LS.get("hack_code"));
+$("loginBtn").onclick = async () => { $("loginErr").textContent=""; try { await loadTeam($("loginCode").value.trim().toUpperCase(), true); } catch(e){ $("loginErr").textContent=e.message; } };
+$("logoutBtn").onclick = () => { LS.set("hack_code", null); team=null; show("v-home"); };
+
+// ---------- الفكرة القادمة من المستثمر الذكي ----------
+function renderImport(where){
+  const c = $("importCard");
+  if (!IMPORT) { c.classList.add("hidden"); return; }
+  const fb = [...(IMPORT.weaknesses||[]), IMPORT.tip].filter(Boolean);
+  c.innerHTML = `<span class="pill">💼 من ${esc(CFG.investor.title)}</span>
+    <h2 style="margin-top:8px">${where==="team" ? "عبّأنا فكرتك في النموذج، وهذه ملاحظات المستثمر لتعالجها" : (IMPORT.ticket ? "🎟️ تأهلت! سجّل فريقك بالأسفل" : "فكرتك جاهزة للانتقال إلى الهاكاثون")}</h2>
+    <div class="q">«${esc(IMPORT.idea)}»</div>
+    ${IMPORT.investor ? `<p class="small muted">${esc(IMPORT.investor)}: ${IMPORT.decision==="invest" ? `استثمر ${APP.fmt(IMPORT.amount)} ريال` : "لم يستثمر"}${IMPORT.score!=null?` · درجتك ${IMPORT.score}`:""} · «${esc(IMPORT.verdict)}»</p>` : ""}
+    ${fb.length ? `<h2 style="font-size:15px;margin-top:10px">🔧 عالج هذه النقاط في مشروعك</h2><ul class="clean small">${fb.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>` : ""}
+    ${where==="home" ? `<p class="small muted" style="margin-top:8px">سجّل فريقك بالأسفل، وستجد الفكرة معبّأة في نموذج التقديم.</p>` : ""}
+    ${where==="team" ? `<button class="btn sm ghost" id="dropImport" style="margin-top:10px">إخفاء</button>` : ""}`;
+  c.classList.remove("hidden");
+  if ($("dropImport")) $("dropImport").onclick = () => { LS.set("hack_import", null); IMPORT = null; renderImport(); };
+}
+
+// ---------- صفحة الفريق ----------
+async function loadTeam(code, strict){
+  try {
+    const d = await api("team", null, "&code="+encodeURIComponent(code));
+    team = {code, ...d}; LS.set("hack_code", code); renderTeam(); show("v-team"); scrollTo(0,0);
+  } catch(e){ LS.set("hack_code", null); if (strict) throw e; show("v-home"); }
+}
+let evalPoll = null, evalAsked = false;
+function renderAnnouncements(){
+  const list = team.announcements || [];
+  $("annBox").innerHTML = list.length ? `<div class="card"><h2 style="font-size:17px">📣 الإعلانات والرسائل</h2>${list.map(a=>`<div class="ann ${a.personal?"me":""}"><span>${a.personal?"✉️":"📣"}</span><span><b>${esc(a.title)}</b>${a.body?`<br><span class="small muted" style="white-space:pre-wrap">${esc(a.body)}</span>`:""}<br><span class="small muted">${new Date(a.created_at).toLocaleString("ar-SA-u-nu-latn",{day:"numeric",month:"long",hour:"numeric",minute:"2-digit"})}</span></span></div>`).join("")}</div>` : "";
+  const c = team.certs;
+  const KIND = {participant:"شهادة مشاركة", finalist:"شهادة تأهل للتحكيم النهائي", winner1:"شهادة فوز · المركز الأول", winner2:"شهادة فوز · المركز الثاني", winner3:"شهادة فوز · المركز الثالث"};
+  $("certBox").innerHTML = c ? `<div class="card"><h2 style="font-size:17px">🏅 شهاداتكم: ${KIND[c.kind]||""}</h2>${c.list.map(x=>`<div class="certrow"><span>${esc(x.name)}</span><a class="btn sm" href="certificate.html?c=${encodeURIComponent(x.code)}" target="_blank">عرض وطباعة</a></div>`).join("")}</div>` : "";
+}
+async function checkPending(){
+  const p = team.submissions.some(x => x.status === "pending" || x.status === "failed");
+  clearTimeout(evalPoll);
+  if (!p) return;
+  if (!evalAsked) { evalAsked = true; try { await api("evaluate", {code: team.code}); } catch(e){} }
+  evalPoll = setTimeout(async () => { await loadTeam(team.code); }, 15000);
+}
+function renderTeam(){
+  const t = team, H = CFG.hackathon, all = t.submissions, subs = all.filter(x => x.status === "done"), last = subs[subs.length-1];
+  const pend = all.filter(x => x.status !== "done");
+  renderAnnouncements();
+  $("tmName").textContent = t.team.name;
+  $("tmInfo").textContent = (t.team.members||[]).join("، ");
+  $("tmChallenge").textContent = t.team.label;
+  $("tmAttempts").textContent = `المحاولات المتبقية: ${t.attemptsLeft} من ${H.maxAttempts}`;
+  $("tmCode").textContent = "رمز الفريق: " + t.code;
+  const dq = t.team.status === "disqualified";
+  const closed = t.phase !== "open" || t.attemptsLeft === 0 || dq || pend.length > 0;
+  $("submitCard").classList.toggle("hidden", closed);
+  if (!closed) renderFiles();
+  $("formTitle").textContent = all.length ? `حسّن مشروعك وأعد التقديم (المحاولة ${all.length+1})` : "قدّم مشروعك";
+  if (!subs.length && IMPORT) {
+    if (!$("fTitle").value) $("fTitle").value = IMPORT.title || "";
+    if (!$("fSolution").value) $("fSolution").value = IMPORT.idea || "";
+    renderImport("team");
+  } else if (subs.length) { $("importCard").classList.add("hidden"); }
+  if (last) {
+    const f = {fTitle:"title",fProblem:"problem",fSolution:"solution",fCustomer:"customer",fBusiness:"business",fProto:"prototype_desc",fProtoUrl:"prototype_url",fVideo:"video_url"};
+    for (const [id,k] of Object.entries(f)) if (!$(id).value) $(id).value = last[k] || "";
+    const best = subs.reduce((a,s)=>s.total>a.total?s:a, subs[0]);
+    $("resultBox").innerHTML = resultCard(last, best);
+    setTimeout(()=>document.querySelectorAll("#resultBox .bar i").forEach(i=>i.style.width=i.dataset.w),80);
+    $("historyCard").classList.toggle("hidden", subs.length<2);
+    $("history").innerHTML = all.map(s=>`<div class="attempt"><span>المحاولة ${s.attempt} · ${esc(s.title)}</span><b class="gold">${s.status==="done"?s.total+"/100":"⏳ قيد التقييم"}</b></div>`).join("");
+    $("historyCard").classList.toggle("hidden", all.length<2);
+  } else { $("resultBox").innerHTML=""; $("historyCard").classList.add("hidden"); }
+  if (pend.length) $("resultBox").insertAdjacentHTML("afterbegin", `<div class="card loading"><div class="spinner"></div><b>⏳ المحاولة ${pend[0].attempt} قيد التقييم</b><br><span class="muted small">تم حفظ تقديمكم بأمان. التقييم يكتمل تلقائيًا وتتحدث هذه الصفحة وحدها${CFG.features?.mail?"، وسنرسل لكم النتيجة بالبريد":""}.</span></div>`);
+  if (dq) $("resultBox").insertAdjacentHTML("afterbegin", `<div class="card" style="border-color:var(--bad)"><b style="color:var(--bad)">تم إيقاف مشاركة هذا الفريق.</b> <span class="muted small">للاستفسار تواصلوا مع المنظمين.</span></div>`);
+  checkPending();
+  if (closed && t.phase==="open") $("resultBox").insertAdjacentHTML("beforeend", `<div class="card muted small">استخدمتم كل المحاولات. تُحتسب أعلى درجة لكم في الترتيب.</div>`);
+  if (t.phase==="closed") $("resultBox").insertAdjacentHTML("beforeend", `<div class="card muted small">انتهت فترة التقديم. تابعوا إعلان الفائزين في ${esc(CFG.brand.boothName || CFG.brand.eventName)}.</div>`);
+}
+// ---------- الملفات ----------
+const kb = n => n >= 1048576 ? (n/1048576).toFixed(1)+" م.ب" : Math.max(1, Math.round(n/1024))+" ك.ب";
+const ICON = {pdf:"📕", pptx:"📊", docx:"📄", xlsx:"📗", png:"🖼️", jpg:"🖼️", jpeg:"🖼️"};
+const ext = n => (String(n).toLowerCase().match(/\.([a-z0-9]+)$/)||[])[1] || "";
+const uploading = {};
+function fileRow(f){
+  return `<div class="row"><span class="ic">${ICON[ext(f.name)]||"📎"}</span><span class="nm"><b>${esc(f.name)}</b><small>${kb(f.size)}</small></span>
+    ${f.url?`<a class="ib" href="${esc(f.url)}" target="_blank" rel="noopener">عرض</a>`:""}
+    <button type="button" class="ib del" data-detach="${esc(f.key)}">حذف</button></div>`;
+}
+function pickBox(kind, label){
+  const up = uploading[kind];
+  if (up) return `<div class="slot"><div class="row"><span class="ic">⏳</span><span class="nm"><b>${esc(up.name)}</b><small>جارٍ الرفع… ${Math.round(up.p*100)}%</small></span></div><div class="prog"><i style="width:${up.p*100}%"></i></div></div>`;
+  const accept = kind==="deck" ? ".pdf,application/pdf" : ".pdf,.pptx,.docx,.xlsx,.png,.jpg,.jpeg";
+  return `<div class="slot" data-drop="${kind}"><label class="pick"><input type="file" accept="${accept}" data-kind="${kind}"><span style="font-size:26px">⬆️</span><br><b>${label}</b><br><span class="muted small">أو اسحب الملف وأفلته هنا</span></label></div>`;
+}
+function renderFiles(){
+  const U = CFG.hackathon.uploads, files = team.files || [];
+  const deck = files.find(f=>f.kind==="deck"), extras = files.filter(f=>f.kind==="extra");
+  $("deckReq").classList.toggle("hidden", !U.deckRequired);
+  $("filesHint").textContent = `العرض الاستثماري بصيغة PDF حتى ${U.deckMaxMB} ميجابايت${U.aiReadsDeck?"، ويقرؤه المحكّم الذكي ضمن التقييم":""}. الملفات تبقى محفوظة لمحاولاتكم القادمة.`;
+  $("deckSlot").innerHTML = deck && !uploading.deck ? `<div class="slot ok">${fileRow(deck)}<label class="pick small" style="margin-top:6px"><input type="file" accept=".pdf,application/pdf" data-kind="deck"><b>استبدال العرض</b></label></div>` : pickBox("deck", "اختر ملف العرض (PDF)");
+  $("extraWrap").classList.toggle("hidden", !U.extraFiles);
+  $("extraCount").textContent = `(${extras.length} من ${U.extraFiles}، حتى ${U.extraMaxMB} م.ب للملف)`;
+  $("extraSlots").innerHTML = extras.map(f=>`<div class="slot ok">${fileRow(f)}</div>`).join("") + (extras.length < U.extraFiles || uploading.extra ? pickBox("extra", "إضافة ملف: صور، مستندات، نموذج عمل…") : "");
+}
+async function refreshFiles(){ const d = await api("team", null, "&code="+encodeURIComponent(team.code)); team.files = d.files; renderFiles(); }
+function putFile(up, file, onp){
+  if (up.mode === "local") return fetch(up.url, {method:"PUT", headers:{"Content-Type": up.contentType || file.type || "application/octet-stream"}, body:file})
+    .then(async r => { if (!r.ok) throw new Error((await r.json().catch(()=>({}))).error || "فشل رفع الملف"); onp(1); });
+  return new Promise((res, rej) => {
+    const x = new XMLHttpRequest(); x.open("PUT", up.url); x.setRequestHeader("x-upsert", "false");
+    x.upload.onprogress = e => e.lengthComputable && onp(e.loaded / e.total);
+    x.onload = () => x.status < 300 ? res() : rej(new Error("فشل رفع الملف (" + x.status + ")"));
+    x.onerror = () => rej(new Error("انقطع الاتصال أثناء الرفع، حاول مرة أخرى"));
+    const fd = new FormData(); fd.append("cacheControl", "3600"); fd.append("", file); x.send(fd);
+  });
+}
+async function uploadFile(file, kind){
+  const U = CFG.hackathon.uploads; $("fileErr").textContent = "";
+  const e = ext(file.name), max = (kind==="deck" ? U.deckMaxMB : U.extraMaxMB) * 1048576;
+  if (kind==="deck" && e!=="pdf") return $("fileErr").textContent = "العرض الاستثماري يجب أن يكون PDF. صدّره من PowerPoint أو Canva أو Keynote بصيغة PDF.";
+  if (kind==="extra" && !["pdf","pptx","docx","xlsx","png","jpg","jpeg"].includes(e)) return $("fileErr").textContent = "نوع الملف غير مدعوم.";
+  if (file.size > max) return $("fileErr").textContent = `حجم الملف (${kb(file.size)}) أكبر من الحد المسموح ${max/1048576} ميجابايت.`;
+  uploading[kind] = {name:file.name, p:0}; renderFiles(); $("submitBtn").disabled = true;
+  try {
+    const meta = {code:team.code, kind, name:file.name, size:file.size, type:file.type};
+    const up = await api("upload-url", meta);
+    await putFile(up, file, p => { uploading[kind].p = p; const i = document.querySelector(".prog i"); if (i) i.style.width = (p*100)+"%"; });
+    await api("attach", {...meta, key: up.key});
+    delete uploading[kind]; await refreshFiles();
+  } catch(err){ delete uploading[kind]; renderFiles(); $("fileErr").textContent = err.message; }
+  $("submitBtn").disabled = false;
+}
+$("submitCard").addEventListener("change", e => { const i = e.target.closest("input[type=file][data-kind]"); if (i?.files[0]) uploadFile(i.files[0], i.dataset.kind); });
+$("submitCard").addEventListener("click", async e => {
+  const d = e.target.closest("[data-detach]"); if (!d) return;
+  if (!confirm("حذف هذا الملف؟")) return;
+  try { await api("detach", {code:team.code, key:d.dataset.detach}); await refreshFiles(); } catch(err){ $("fileErr").textContent = err.message; }
+});
+["dragover","dragleave","drop"].forEach(t => $("submitCard").addEventListener(t, e => {
+  const z = e.target.closest("[data-drop]"); if (!z) return; e.preventDefault();
+  z.classList.toggle("drag", t==="dragover");
+  if (t==="drop" && e.dataTransfer.files[0]) uploadFile(e.dataTransfer.files[0], z.dataset.drop);
+}));
+
+function resultCard(s, best){
+  const R = CFG.hackathon.rubric;
+  return `<div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center"><h2 style="margin:0">تقييم المحاولة ${s.attempt}</h2>
+      ${best.attempt!==s.attempt?`<span class="pill">أعلى درجة: ${best.total}</span>`:`<span class="pill ok">أعلى درجة لكم</span>`}</div>
+    <div class="total" style="margin:10px 0">${s.total}<small> / 100</small></div>
+    ${s.deck_read ? `<p class="small" style="text-align:center;color:var(--good)">✓ قرأ المحكّم الذكي عرضكم الاستثماري ضمن التقييم</p>` : ""}
+    ${s.feedback?.demo ? `<div style="border:1.5px solid var(--bad);border-radius:12px;padding:10px;margin:8px 0;font-size:14px"><b style="color:var(--bad)">⚠️ تقييم وهمي عشوائي</b>: الذكاء الاصطناعي غير مفعّل.</div>` : ""}
+    ${s.feedback?.reviewed ? `<p class="small muted" style="text-align:center">🔍 راجعه محكّم ذكي ثانٍ للتأكد من عدم التساهل</p>` : ""}
+    ${R.map(r=>{ const v=s.scores?.[r.key]; if (v==null) return ""; const dt = s.feedback?.details?.[r.key]; return `<div class="rrow"><span>${esc(r.label)}</span><div class="bar"><i data-w="${v/r.max*100}%" style="width:0"></i></div><b>${v}/${r.max}</b></div>
+      ${dt?.reason?`<div class="why">${dt.capped?"🔒 ":""}${esc(dt.reason)}${dt.next?`<br><span class="nx">⬆️ ${esc(dt.next)}</span>`:""}</div>`:""}`}).join("")}
+    ${(s.feedback?.caps||[]).length?`<div class="caps"><b>🔒 قيود طُبّقت على الدرجة:</b> ${s.feedback.caps.map(esc).join("، ")}</div>`:""}
+    ${s.feedback?.summary?`<p style="margin-top:12px">${esc(s.feedback.summary)}</p>`:""}
+    <h2 style="margin-top:14px;font-size:16px">✅ نقاط القوة</h2><ul class="clean">${(s.feedback?.strengths||[]).map(x=>`<li>${esc(x)}</li>`).join("")}</ul>
+    <h2 style="margin-top:10px;font-size:16px">🔧 للتحسين قبل المحاولة القادمة</h2><ul class="clean">${(s.feedback?.improvements||[]).map(x=>`<li>${esc(x)}</li>`).join("")}</ul>
+  </div>`;
+}
+
+$("submitBtn").onclick = async () => {
+  $("subErr").textContent="";
+  const body = { code:team.code, title:$("fTitle").value, problem:$("fProblem").value, solution:$("fSolution").value, customer:$("fCustomer").value,
+    business:$("fBusiness").value, prototype_desc:$("fProto").value, prototype_url:$("fProtoUrl").value.trim(), video_url:$("fVideo").value.trim() };
+  if (CFG.hackathon.uploads.deckRequired && !(team.files||[]).some(f=>f.kind==="deck")) { $("subErr").textContent = "ارفع العرض الاستثماري (PDF) قبل التقديم"; $("deckSlot").scrollIntoView({behavior:"smooth",block:"center"}); return; }
+  if (!confirm(`سيتم استخدام محاولة من ${team.attemptsLeft} متبقية. متأكد من الإرسال؟`)) return;
+  $("submitCard").classList.add("hidden");
+  $("resultBox").innerHTML = `<div class="card loading"><div class="spinner"></div>المحكّم الذكي يقرأ مشروعكم ويقيّمه…<br><span class="muted small">قد يستغرق ذلك حتى 30 ثانية</span></div>`;
+  scrollTo({top:$("resultBox").offsetTop-10,behavior:"smooth"});
+  try {
+    await api("submit", body);
+    LS.set("hack_import", null); IMPORT = null; evalAsked = true;
+    await loadTeam(team.code); refreshBoard();
+    scrollTo({top:$("resultBox").offsetTop-10,behavior:"smooth"});
+  } catch(e){ renderTeam(); $("submitCard").classList.remove("hidden"); $("subErr").textContent = e.message; }
+};
+
+// ---------- الترتيب ----------
+async function refreshBoard(){
+  try {
+    const d = await api("board");
+    $("lb").innerHTML = d.leaderboard.length ? d.leaderboard.slice(0,10).map(r=>`
+      <div><span class="r">${r.rank}</span><span><b>${esc(r.team)}</b> <span class="muted small">· ${esc(r.title)}</span></span><span class="s">${r.score}</span></div>`).join("")
+      : `<p class="muted small">لا توجد مشاريع مقيّمة بعد. كونوا أول فريق!</p>`;
+  } catch(e){ console.warn(e); }
+}
+
+APP.ready.then(async c => {
+  CFG = c;
+  if (!c.modules.hackathon) return APP.disabled(`${c.hackathon.name} غير متاح حاليًا`);
+  document.title = c.hackathon.name;
+  $("host").textContent = [c.brand.boothName, c.brand.eventName].filter(Boolean).join(" · ");
+  try { const imp = JSON.parse(LS.get("hack_import") || "null"); if (imp && Date.now() - imp.at < 14*864e5) IMPORT = imp; } catch(e){}
+  renderPhase(); renderHome(); refreshBoard();
+  const code = new URLSearchParams(location.search).get("code") || LS.get("hack_code");
+  if (code) await loadTeam(code.toUpperCase()); else { show("v-home"); renderImport("home"); }
+  if (team && !team.submissions.length && IMPORT) renderImport("team");
+  setInterval(refreshBoard, 20000);
+}).catch(() => { $("phasePill").textContent = "تعذر الاتصال"; });
+</script>
+</body>
+</html>
