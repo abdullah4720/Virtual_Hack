@@ -4,7 +4,7 @@ import { saveDeal } from "../lib/store.js";
 import { select } from "../lib/db.js";
 import { createTicket } from "../lib/tickets.js";
 import { aiAvailable } from "../lib/ai.js";
-import { SCREEN as ENGINE_SCREEN, screenQuestion, screenFinal } from "../lib/evaluator.js";
+import { SCREEN as ENGINE_SCREEN, screenQuestion, screenFinal, quickIdeaCheck, checkIdea, checkAnswer } from "../lib/evaluator.js";
 import { checkLimits, recordUse } from "../lib/limits.js";
 import { mailEnabled } from "../lib/mailer.js";
 import { notify } from "../lib/notify.js";
@@ -100,13 +100,42 @@ export default async function handler(req, res) {
       const limitMsg = await checkLimits(s, req, "pitch");
       if (limitMsg) return res.status(429).json({ error: limitMsg });
     }
+    // ===== التحقق من الفكرة قبل بدء الحوار (لا تُحتسب محاولة) =====
+    if (step === 0) {
+      const quick = quickIdeaCheck(idea);
+      if (quick) return res.status(422).json({ error: quick, needFix: true });
+      if (AI) {
+        try {
+          const c = await checkIdea(s, idea);
+          await recordUse(req, "ai");
+          if (!c.valid) return res.status(422).json({ error: c.message || "يُرجى توضيح المشكلة والحل المقترح.", needFix: true });
+        } catch (e) { console.error("idea check failed", e.message); }
+      }
+    }
+
+    // ===== التحقق من أن آخر إجابة إجابة حقيقية (يُطلب التوضيح مرة واحدة لكل سؤال) =====
+    if (step >= 1) {
+      const idx = step - 1;
+      const clarified = Array.isArray(b.clarified) ? b.clarified.map(Number) : [];
+      if (!clarified.includes(idx)) {
+        let verdict = null;
+        const quickBad = /^(لا\s*(أعرف|اعرف|أدري|ادري|يوجد|شيء|شي)|ما\s*(أدري|ادري|أعرف|اعرف|عندي|فكرت)|مدري|أي\s*شي|اي\s*شي|كذا|ما\s*أعرف)[\s.!؟?]*$/.test(answers[idx]) || answers[idx].split(/\s+/).length < 2;
+        if (quickBad) verdict = { ok: false, message: `شكرًا لك. لم تتضمن إجابتك معلومة تجيب عن السؤال. أرجو أن تجيب بمعلومة محددة ولو تقديرية: ${(questions[idx].match(/[^.!؟?]*[؟?][^.!؟?]*$/) || [questions[idx]])[0].trim()}` };
+        else if (AI) {
+          try { verdict = await checkAnswer(s, inv, { idea, question: questions[idx], answer: answers[idx] }); await recordUse(req, "ai"); }
+          catch (e) { console.error("answer check failed", e.message); }
+        }
+        if (verdict && !verdict.ok) return res.status(200).json({ step, clarify: idx, message: verdict.message || `أرجو توضيح إجابتك: ${questions[idx]}`, investor: inv.id, attemptsLeft: I.maxAttempts - used });
+      }
+    }
+
     if (step < 2) {
       let question;
       if (!AI) question = DEMO_Q[step];
       else {
         try { question = (await screenQuestion(s, inv, { name, idea, questions, answers })).question; }
         catch (e) { console.error("AI question failed", e.message); return res.status(503).json({ error: "الخدمة مشغولة حاليًا. يُرجى المحاولة بعد دقيقة، ولن تُحتسب عليك محاولة.", retry: true }); }
-        await recordUse(req, "pitch");
+        await recordUse(req, step === 0 ? "pitch" : "ai"); // حد الساعة يُحسب مرة واحدة لكل عرض
       }
       return res.status(200).json({ step: step + 1, question, investor: inv.id, attemptsLeft: I.maxAttempts - used });
     }
@@ -116,9 +145,9 @@ export default async function handler(req, res) {
     let f, ev = null;
     if (!AI) f = demoFinal(idea, s);
     else {
-      try { ev = await screenFinal(s, inv, { name, idea, questions, answers }); f = ev; }
+      try { ev = await screenFinal(s, inv, { name, idea, questions, answers, clarified: (Array.isArray(b.clarified) ? b.clarified : []).map(Number) }); f = ev; }
       catch (e) { console.error("AI final failed", e.message); return res.status(503).json({ error: "تعذّر التقييم الآن بسبب ضغط على الخدمة. اضغط «أرسل الإجابة» مرة أخرى بعد دقيقة، ولن تُحسب عليك محاولة.", retry: true }); }
-      await recordUse(req, "pitch");
+      await recordUse(req, "ai");
     }
 
     const scores = ev
