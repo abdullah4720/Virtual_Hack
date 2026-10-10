@@ -95,6 +95,7 @@ node dev.js
 | `ADMIN_KEY` | كلمة سر لوحة التحكم (إلزامية) |
 | `ANTHROPIC_API_KEY` | مفتاح Claude API |
 | `ANTHROPIC_MODEL` | اختياري للمحادثة، الافتراضي `claude-sonnet-5-5` |
+| `ANTHROPIC_WORKSPACE_ID` | اختياري: فقط إن كان المفتاح غير مرتبط بمساحة عمل (يبدأ بـ `wrkspc_`) |
 | `ANTHROPIC_EVAL_MODEL` | اختياري للتقييم، الافتراضي `claude-opus-5-5` |
 | `SUPABASE_URL` | رابط المشروع، مثل `https://xxxx.supabase.co` |
 | `SUPABASE_SERVICE_KEY` | **المفتاح السري** `sb_secret_...` (أو `service_role` القديم) من Settings ← API Keys. ليس المفتاح العام `sb_publishable_...` |
