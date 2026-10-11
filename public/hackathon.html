@@ -450,7 +450,7 @@ function renderTeam(){
   $("tmInfo").textContent = (t.team.members||[]).join("، ");
   $("tmChallenge").textContent = t.team.label;
   $("tmAttempts").textContent = `المحاولات المتبقية: ${t.attemptsLeft} من ${H.maxAttempts}`;
-  $("tmCode").textContent = "رمز الفريق: " + t.code;
+  $("tmCode").innerHTML = `رمز الفريق: <bdi dir="ltr">${APP.esc(t.code)}</bdi>`;
   const dq = t.team.status === "disqualified";
   const closed = t.phase !== "open" || t.attemptsLeft === 0 || dq || pend.length > 0;
   $("submitCard").classList.toggle("hidden", closed);

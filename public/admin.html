@@ -12,7 +12,9 @@
 <style>
 body{padding-bottom:90px}
 .shell{display:grid;grid-template-columns:230px 1fr;gap:20px;max-width:1180px;margin:0 auto;padding:20px 16px}
-@media (max-width:860px){.shell{grid-template-columns:1fr}}
+@media (max-width:860px){.shell{grid-template-columns:minmax(0,1fr)}}
+.shell>*{min-width:0}
+@media (max-width:640px){.savebar{flex-wrap:wrap;gap:8px}.savebar .msg{flex-basis:100%}.tbl{font-size:13px}}
 nav{position:sticky;top:20px;align-self:start;display:flex;flex-direction:column;gap:4px}
 @media (max-width:860px){nav{position:static;flex-direction:row;overflow-x:auto;padding-bottom:6px}}
 nav .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px;margin-bottom:12px;padding:0 6px}
