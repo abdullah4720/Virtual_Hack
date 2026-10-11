@@ -317,7 +317,7 @@ const P = {
   },
   tickets(){
     const T = D.tickets || [];
-    return `<h1>التأهيل والدعوات</h1><p class="lead">رموز التأهل التي حصل عليها المتأهلون من ${esc(S.investor.title)}، ورموز الدعوة التي تمنحها للفرق مباشرة.</p>
+    return `<h1>التأهيل والدعوات</h1><p class="lead">رموز التأهل التي حصل عليها المتأهلون من «${esc(S.investor.title)}»، ورموز الدعوة التي تمنحها للفرق مباشرة.</p>
       <div class="stats"><div class="stat"><b>${fmt(D.stats.qualified)}</b><span>متأهل من «اختبر فكرتك»</span></div><div class="stat"><b>${fmt(T.filter(t=>t.kind==="invite").length)}</b><span>رمز دعوة</span></div><div class="stat"><b>${fmt(D.stats.ticketsUsed)}</b><span>رمز استُخدم للتسجيل</span></div></div>
       ${card("توليد رموز دعوة", `<p class="muted small">للفرق المرشّحة مسبقًا أو الشركاء: كل رمز يسجّل فريقًا واحدًا دون المرور باختبر فكرتك.</p>
         ${f("المدعوون بالبريد (اختياري)","_people",{type:"textarea",rows:4,max:20000,ph:"سطر لكل مدعو، مثل:\nفريق كلية الحاسب، cs@qu.edu.sa\nnora@example.com",help:D.system.mail?"يُولَّد رمز لكل مدعو ويُرسل إليه بالبريد مع رابط التسجيل. اتركه فارغًا لتوليد رموز تنسخها بنفسك.":"البريد غير مفعّل: تُولَّد الرموز وتُربط بالمدعوين، لكن لن تُرسل."})}
@@ -408,7 +408,7 @@ const P = {
     if (!PITCHES) return `<h1>عروض الأفكار</h1><p class="muted">جارٍ التحميل…</p>`;
     const q = (tmp._pq||"").trim().toLowerCase();
     const list = PITCHES.filter(p => !q || [p.name, p.email, p.title, p.idea, p.ticket, p.team].join(" ").toLowerCase().includes(q));
-    return `<h1>عروض الأفكار</h1><p class="lead">كل فكرة عُرضت على ${esc(S.investor.title)}: ${PITCHES.length} عرض، منها ${PITCHES.filter(p=>p.qualified).length} متأهل. هذه العروض هي ما يظهر على شاشة المستثمر ولوحة البيانات، وحذف أي عرض يزيله منها فورًا.</p>
+    return `<h1>عروض الأفكار</h1><p class="lead">كل فكرة عُرضت في «${esc(S.investor.title)}»: ${PITCHES.length} عرض، منها ${PITCHES.filter(p=>p.qualified).length} متأهل. هذه العروض هي ما يظهر على شاشة المستثمر ولوحة البيانات، وحذف أي عرض يزيله منها فورًا.</p>
       <div class="card">${f("","_pq",{ph:"بحث بالاسم أو البريد أو الفكرة أو الرمز…"})}</div>
       ${card(`العروض (${list.length})`, list.length ? `<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>الوقت</th><th>صاحب الفكرة</th><th>الفكرة</th><th>الدرجة</th><th>الحالة</th><th></th></tr></thead><tbody>
         ${list.map(p=>`<tr><td>${when(p.at)}</td><td><b>${esc(p.name)}</b><div class="help" dir="ltr">${esc(p.email)}</div></td>

@@ -94,7 +94,7 @@ async function load(){
   let html = cover;
   if (!booklet) {
     html += `<section class="page"><h2>ملخص البرنامج</h2>
-      <p>أُتيح للزوار عرض أفكارهم على «${esc(S.investor.title)}» كمرحلة فرز، وتأهل من بلغ ${S.investor.qualifyScore} من 100 للمنافسة في «${esc(S.hackathon.name)}»، حيث قدّمت الفرق مشاريعها وعروضها الاستثمارية وقُيّمت آليًا، ثم حكّمت اللجنة أفضل ${S.hackathon.finalists} مشاريع.</p>
+      <p>أُتيح للزوار عرض أفكارهم في «${esc(S.investor.title)}» كمرحلة فرز، وتأهل من بلغ ${S.investor.qualifyScore} من 100 للمنافسة في «${esc(S.hackathon.name)}»، حيث قدّمت الفرق مشاريعها وعروضها الاستثمارية وقُيّمت آليًا، ثم حكّمت اللجنة أفضل ${S.hackathon.finalists} مشاريع.</p>
       <h3>مسار المشاركين</h3>
       <div class="funnel"><div><b>${fmt(st.pitches)}</b><span>فكرة عُرضت</span></div><div><b>${fmt(st.qualified)}</b><span>متأهل</span></div><div><b>${fmt(st.teams)}</b><span>فريق</span></div><div><b>${fmt(st.evaluated)}</b><span>مشروع مُقيَّم</span></div><div><b>${fmt(Math.min(S.hackathon.finalists, st.evaluated))}</b><span>متأهل نهائي</span></div></div>
       <div class="kpis">

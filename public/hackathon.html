@@ -334,15 +334,15 @@ function renderHome(){
   const gated = H.registration === "ticket";
   $("ticketBox").classList.toggle("hidden", !gated);
   if (gated && CFG.modules.investor) {
-    $("gateText").textContent = `يبدأ التسجيل بعرض الفكرة على ${CFG.investor.title}، ومن يحصل على ${CFG.investor.qualifyScore} من 100 أو أكثر يُمنح رمز تأهل يسجّل به فريقه هنا.`;
-    $("gateBtn").innerHTML = `اعرض فكرتك على ${APP.esc(CFG.investor.title)} <i data-icon="arrow-left"></i>`;
+    $("gateText").textContent = `يبدأ التسجيل بعرض الفكرة في «${CFG.investor.title}»، ومن يحصل على ${CFG.investor.qualifyScore} من 100 أو أكثر يُمنح رمز تأهل يسجّل به فريقه هنا.`;
+    $("gateBtn").innerHTML = `ابدأ «${APP.esc(CFG.investor.title)}» <i data-icon="arrow-left"></i>`;
   }
   const t0 = new URLSearchParams(location.search).get("ticket") || IMPORT?.ticket;
   if (gated && t0) { $("tTicket").value = t0; checkTicket(); }
   else if (gated) $("gateCard").classList.toggle("hidden", !CFG.modules.investor);
   renderTracks();
   if (H.phase==="closed") $("regCard").classList.add("hidden");
-  if (CFG.modules.investor && !IMPORT && H.registration !== "ticket") { $("tryInvestor").innerHTML = `ما زلت تبحث عن فكرة؟ <a href="index.html">جرّبها أولًا مع ${esc(CFG.investor.title)}</a>`; $("tryInvestor").classList.remove("hidden"); }
+  if (CFG.modules.investor && !IMPORT && H.registration !== "ticket") { $("tryInvestor").innerHTML = `ما زلت تبحث عن فكرة؟ <a href="index.html">جرّبها أولًا في «${esc(CFG.investor.title)}»</a>`; $("tryInvestor").classList.remove("hidden"); }
 }
 let LOCKED = null; // المسار المعتمد من عرض الفكرة (لا يتغير بعد التأهل)
 function renderTracks(){
@@ -433,7 +433,7 @@ function renderImport(where){
   const c = $("importCard");
   if (!IMPORT) { c.classList.add("hidden"); return; }
   const fb = [...(IMPORT.weaknesses||[]), IMPORT.tip].filter(Boolean);
-  c.innerHTML = `<span class="pill"><i data-icon="briefcase-business"></i> من ${esc(CFG.investor.title)}</span>
+  c.innerHTML = `<span class="pill"><i data-icon="briefcase-business"></i> من «${esc(CFG.investor.title)}»</span>
     <h2 style="margin-top:8px">${where==="team" ? "أُدرجت فكرتك في النموذج، وهذه ملاحظات المستشار لمعالجتها" : (IMPORT.ticket ? '<i data-icon="ticket"></i> مبروك التأهل، الرجاء تسجيل أعضاء الفريق أدناه' : "فكرتك جاهزة للانتقال إلى " + esc(CFG.hackathon.name))}</h2>
     <div class="q">«${esc(IMPORT.idea)}»</div>
     ${IMPORT.investor ? `<p class="small muted">${esc(IMPORT.investor)}: ${IMPORT.decision==="invest" ? "متأهل" : "غير متأهل"}${IMPORT.score!=null?` · درجتك ${IMPORT.score}`:""} · «${esc(IMPORT.verdict)}»</p>` : ""}

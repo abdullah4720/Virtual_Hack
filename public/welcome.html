@@ -109,11 +109,11 @@ APP.ready.then(async c => {
   const H = c.hackathon, I = c.investor;
   const gate = c.modules.investor && c.modules.hackathon && H.registration === "ticket";
   $("pInvText").textContent = I.tagline;
-  $("pHackText").textContent = gate ? `للمتأهلين من ${I.title}: سجّل فريقك وقدّم مشروعك وعرضك الاستثماري، واحصل على تقييم فوري، ونافس على الجوائز.` : H.tagline;
+  $("pHackText").textContent = gate ? `للمتأهلين من «${esc(I.title)}»: سجّل فريقك وقدّم مشروعك وعرضك الاستثماري، واحصل على تقييم فوري، ونافس على الجوائز.` : H.tagline;
   if (!c.modules.investor) $("pInv").classList.add("off");
   if (!c.modules.hackathon) $("pHack").classList.add("off");
   if (gate) $("pHackGo").textContent = "لديّ رمز تأهل";
-  $("journey").innerHTML = gate ? `<div>اعرض فكرتك على ${esc(I.title)}</div><div>احصل على ${I.qualifyScore} درجة أو أكثر لتتأهل</div><div>سجّل فريقك وقدّم مشروعك</div><div>التحكيم وإعلان الفائزين</div>` : "";
+  $("journey").innerHTML = gate ? `<div>اعرض فكرتك في «${esc(I.title)}»</div><div>احصل على ${I.qualifyScore} درجة أو أكثر لتتأهل</div><div>سجّل فريقك وقدّم مشروعك</div><div>التحكيم وإعلان الفائزين</div>` : "";
   // ترحيب بالاسم لمن زار المنصة من قبل (لا يظهر على الجهاز اللوحي المشترك)
   try { const nm = !APP.kiosk && localStorage.getItem("si_name"); if (nm) { $("hello").textContent = `أهلًا بعودتك، ${nm}`; $("hello").classList.remove("hidden"); } } catch(e){}
   // بعد إعلان الفائزين: تنبيه بالنتائج والشهادات
