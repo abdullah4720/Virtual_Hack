@@ -69,7 +69,13 @@ export default async function handler(req, res) {
     }
 
     if (action === "save" && req.method === "POST") {
+      const wasPublished = Boolean(s.hackathon.resultsPublished);
       const r = await saveSettings(b.settings);
+      // عند إعلان النتائج: إشعار تلقائي يظهر للفرق في صفحاتها وعلى الشاشات
+      if (r.ok && !wasPublished && r.settings.hackathon.resultsPublished) {
+        const H = r.settings.hackathon;
+        await insert("announcements", { title: `أُعلنت نتائج ${H.name}`, body: `شكرًا لجميع الفرق المشاركة. النتيجة وشهادات الأعضاء متاحة الآن في صفحة كل فريق${(H.awards || "track") === "track" ? "، ومبروك للفائزين بالمركز الأول في كل مسار" : "، ومبروك للفائزين"}.`, audience: "all", active: true });
+      }
       return res.status(r.ok ? 200 : 400).json(r);
     }
 
@@ -138,7 +144,7 @@ export default async function handler(req, res) {
       for (const t of (await select(T.teams)).filter((t) => !t.password_hash && t.status !== "disqualified")) {
         const pass = genPass();
         await update(T.teams, t.id, { password_hash: await hashPassword(pass) });
-        list.push({ team: t.name, email: t.email, members: t.member_emails || [], code: t.code, password: pass });
+        list.push({ team: t.name, email: t.email, members: (t.member_emails || []).filter(Boolean), code: t.code, password: pass });
       }
       return res.status(200).json({ list });
     }
@@ -413,7 +419,7 @@ export default async function handler(req, res) {
         ["الترتيب", "الفريق", "الحالة", "الأعضاء", "البريد", "بريد الأعضاء", "الجوال", "رمز الفريق", "المسار والتحدي", "المصدر", "المشروع", "المحاولات", ...s.hackathon.rubric.map((c) => `${c.label} (${c.max})`), "درجة الذكاء الاصطناعي", "عدد المحكّمين", "متوسط اللجنة", "النهائية", "متأهل للتحكيم", "الترتيب النهائي", "ملخص التقييم", "تنبيه تلاعب", "تاريخ التسجيل"],
         teams.map((t) => {
           const r = byId.get(t.id);
-          return [r?.rank ?? "", t.name, t.status === "disqualified" ? "مستبعد" : "نشط", t.members, t.email, t.member_emails || [], t.phone, t.code, optionLabel(s, t.track, t.challenge),
+          return [r?.rank ?? "", t.name, t.status === "disqualified" ? "مستبعد" : "نشط", t.members, t.email, (t.member_emails || []).filter(Boolean), t.phone, t.code, optionLabel(s, t.track, t.challenge),
             { investor: "المستثمر الذكي", invite: "دعوة" }[t.source] || "مباشر", r?.best.title ?? "", r?.attempts ?? 0, ...s.hackathon.rubric.map((c) => r?.best.ai_scores?.[c.key] ?? ""), r?.best.ai_total ?? "",
             r ? r.judges.filter((j) => !j.coi).length : "", r?.judgeAvg ?? "", r?.final ?? "", r?.finalist ? "نعم" : "", r?.finalRank ?? "", r?.best.ai_feedback?.summary ?? "", r?.flagged ? "نعم" : "", t.created_at];
         })));

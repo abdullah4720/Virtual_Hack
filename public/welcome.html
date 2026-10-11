@@ -59,12 +59,14 @@ details.faq p{margin-top:8px;color:var(--muted);line-height:1.85}
 footer{text-align:center;color:var(--muted);font-size:13px;margin-top:20px}
 footer a{color:var(--muted)}
 .team-login{text-align:center;margin:-6px 0 16px;font-size:14px;color:var(--muted)}
+.topbar .hello{color:rgba(255,255,255,.85);font-size:15px;margin-top:6px}
 </style>
 </head>
 <body>
 <header class="topbar">
   <div class="in">
     <div class="org"><span data-logo hidden></span><span data-text="brand.orgName"></span></div>
+    <p class="hello hidden" id="hello"></p>
     <h1 id="title"></h1>
     <div class="ev"><span data-text="brand.boothName"></span></div>
     <p class="about" data-text="program.about"></p>
@@ -112,6 +114,10 @@ APP.ready.then(async c => {
   if (!c.modules.hackathon) $("pHack").classList.add("off");
   if (gate) $("pHackGo").textContent = "لديّ رمز تأهل";
   $("journey").innerHTML = gate ? `<div>اعرض فكرتك على ${esc(I.title)}</div><div>احصل على ${I.qualifyScore} درجة أو أكثر لتتأهل</div><div>سجّل فريقك وقدّم مشروعك</div><div>التحكيم وإعلان الفائزين</div>` : "";
+  // ترحيب بالاسم لمن زار المنصة من قبل (لا يظهر على الجهاز اللوحي المشترك)
+  try { const nm = !APP.kiosk && localStorage.getItem("si_name"); if (nm) { $("hello").textContent = `أهلًا بعودتك، ${nm}`; $("hello").classList.remove("hidden"); } } catch(e){}
+  // بعد إعلان الفائزين: تنبيه بالنتائج والشهادات
+  if (H.resultsPublished) { const n = document.createElement("div"); n.className = "card note gold"; n.style.textAlign = "center"; n.innerHTML = `<b><i data-icon="trophy"></i> أُعلنت نتائج ${esc(H.name)}</b><br><span class="small">شهادات الفرق المشاركة متاحة في <a href="hackathon.html">صفحة الفريق</a>.</span>`; document.querySelector(".wrap")?.prepend(n); }
   try { if (localStorage.getItem("hack_code")) $("teamLogin").innerHTML = `فريقك مسجّل؟ <a href="hackathon.html">ادخل صفحة فريقك</a>`; } catch(e){}
   // الجدول والجوائز والأسئلة والشركاء
   const P = c.program;

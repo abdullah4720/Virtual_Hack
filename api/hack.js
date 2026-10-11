@@ -76,6 +76,7 @@ export default async function handler(req, res) {
     // التحقق من شهادة (عام)
     if (action === "cert") {
       const code = clip(q.get("code"), 20).toUpperCase();
+      if (!H.resultsPublished) return res.status(404).json({ valid: false, error: "تصدر الشهادات بعد انتهاء البرنامج وإعلان الفائزين" });
       const { teams, rows } = await standings(s);
       for (const t of teams) {
         const i = (t.certs || []).indexOf(code);
@@ -120,7 +121,8 @@ export default async function handler(req, res) {
       const members = pairs.map(([m]) => m);
       const badMail = pairs.find(([, e]) => e && !/^\S+@\S+\.\S+$/.test(e));
       if (badMail) return res.status(400).json({ error: `بريد العضو «${badMail[0]}» غير صحيح` });
-      const member_emails = [...new Set(pairs.map(([, e]) => e).filter(Boolean))];
+      // بريد كل عضو بترتيب الأعضاء (فارغ لمن لم يُدخل بريده)، للترحيب باسمه عند الدخول
+      const member_emails = pairs.map(([, e]) => e || "");
       const email = clip(b.email, 80).toLowerCase();
       const phone = clip(b.phone, 20);
       // المسار المختار عند عرض الفكرة يُعتمد للفريق (لا يتغير بعد التأهل)
@@ -179,20 +181,22 @@ export default async function handler(req, res) {
       if (!team) return res.status(404).json({ error: "رمز الفريق غير صحيح" });
       const subs = await select(T.subs, { team_id: team.id });
       const ann = (await select("announcements")).filter((a) => a.active && (a.audience === "all" || a.audience === "participants" || a.audience === `team:${team.id}`));
-      let certs = null;
-      if (ph === "closed" && subs.length && team.status !== "disqualified") {
+      let certs = null, result = null;
+      // الشهادات والنتيجة تصدر بعد انتهاء البرنامج وإعلان الفائزين
+      if (H.resultsPublished && subs.length && team.status !== "disqualified") {
         const { rows } = await standings(s);
         const row = rows.find((r) => r.team.id === team.id);
+        if (row) result = { kind: certKind(s, row), award: row.award ?? null, trackTitle: row.trackTitle || "", finalist: Boolean(row.finalist), final: row.final ?? row.best.ai_total, awards: H.awards || "track" };
         const codes = await ensureCerts(team);
         certs = { kind: certKind(s, row), list: team.members.map((m, i) => ({ name: m, code: codes[i] })) };
       }
       return res.status(200).json({
-        team: { name: team.name, members: team.members, email: team.email, hasPassword: Boolean(team.password_hash), track: team.track, challenge: team.challenge, label: optionLabel(s, team.track, team.challenge), source: team.source, status: team.status || "active" },
+        team: { name: team.name, members: team.members, memberEmails: team.member_emails || [], email: team.email, hasPassword: Boolean(team.password_hash), track: team.track, challenge: team.challenge, label: optionLabel(s, team.track, team.challenge), source: team.source, status: team.status || "active" },
         submissions: subs.map(publicSub),
         files: await withUrls(team.files),
         announcements: ann.reverse().slice(0, 20).map(({ id, title, body, created_at, audience }) => ({ id, title, body, created_at, personal: audience.startsWith("team:") })),
         attemptsLeft: Math.max(0, H.maxAttempts - subs.length),
-        phase: ph, certs,
+        phase: ph, certs, result, resultsPublished: Boolean(H.resultsPublished),
       });
     }
 

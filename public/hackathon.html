@@ -85,6 +85,9 @@
 .ib.del{color:var(--bad)}
 .lglinks{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:10px;font-size:14px}
 .hint .lu{color:var(--accent)}
+.hello{color:var(--muted);font-size:14px;margin-bottom:2px}
+.hello b{color:var(--text)}
+.card.result.win{border-color:var(--gold);background:var(--gold-soft)}
 </style>
 </head>
 <body>
@@ -197,7 +200,7 @@
   <section id="v-team" class="hidden">
     <div class="card">
       <div class="teamhead">
-        <div><h2 id="tmName" style="margin:0"></h2><div class="muted small" id="tmInfo"></div></div>
+        <div><div class="hello" id="tmHello"></div><h2 id="tmName" style="margin:0"></h2><div class="muted small" id="tmInfo"></div></div>
         <button class="btn sm ghost" id="logoutBtn">خروج</button>
       </div>
       <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
@@ -207,6 +210,7 @@
       </div>
     </div>
 
+    <div id="finalBox"></div>
     <div id="annBox"></div>
     <div id="certBox"></div>
     <div id="pwBox"></div>
@@ -384,7 +388,7 @@ $("regBtn").onclick = async () => {
 };
 $("copyBtn").onclick = async () => { try{ await navigator.clipboard.writeText($("newCode").textContent); $("copyBtn").textContent="✓ تم النسخ"; }catch(e){} };
 $("goTeam").onclick = () => loadTeam(LS.get("hack_code"));
-$("loginBtn").onclick = async () => { $("loginErr").textContent=""; try { await loadTeam($("loginCode").value.trim().toUpperCase(), true); } catch(e){ $("loginErr").textContent=e.message; } };
+$("loginBtn").onclick = async () => { $("loginErr").textContent=""; LS.set("hack_me", null); try { await loadTeam($("loginCode").value.trim().toUpperCase(), true); } catch(e){ $("loginErr").textContent=e.message; } };
 // ---------- الدخول بالبريد وكلمة المرور ----------
 const lgShow = id => { ["lgPass","lgCode"].forEach(x => $(x).classList.toggle("hidden", x !== id)); $("loginErr").textContent = ""; };
 $("toCode").onclick = e => { e.preventDefault(); lgShow("lgCode"); };
@@ -392,11 +396,11 @@ document.querySelectorAll(".toPass").forEach(a => a.onclick = e => { e.preventDe
 $("lgPw").onkeydown = e => { if (e.key === "Enter") $("lgBtn").click(); };
 $("lgBtn").onclick = async () => {
   $("loginErr").textContent = ""; $("lgBtn").disabled = true;
-  try { const d = await api("login", {email: $("lgEmail").value.trim(), password: $("lgPw").value}); $("lgPw").value = ""; await loadTeam(d.code, true); }
+  try { const em = $("lgEmail").value.trim().toLowerCase(); const d = await api("login", {email: em, password: $("lgPw").value}); $("lgPw").value = ""; LS.set("hack_me", em); await loadTeam(d.code, true); }
   catch(e){ $("loginErr").textContent = e.message; }
   $("lgBtn").disabled = false;
 };
-$("logoutBtn").onclick = () => { LS.set("hack_code", null); team=null; show("v-home"); };
+$("logoutBtn").onclick = () => { LS.set("hack_code", null); LS.set("hack_me", null); team=null; show("v-home"); };
 
 // ---------- الفكرة القادمة من المستثمر الذكي ----------
 function renderImport(where){
@@ -451,10 +455,29 @@ function renderPassword(){
     catch(e){ m.textContent = e.message; }
   };
 }
+// النتيجة بعد انتهاء البرنامج وإعلان الفائزين، وقبلها تنبيه بموعد صدور الشهادات
+function renderResult(){
+  const r = team.result, H = CFG.hackathon;
+  if (r) {
+    const win = r.award, track = r.awards === "track";
+    const head = win ? `<i data-icon="trophy" class="medal-1"></i> مبروك! فاز مشروعكم بالمركز ${track ? "الأول في مسار «" + esc(r.trackTitle) + "»" : ["","الأول","الثاني","الثالث"][win] || win}`
+      : r.finalist ? `<i data-icon="award"></i> مبروك! تأهل مشروعكم للتحكيم النهائي` : `<i data-icon="award"></i> شكرًا لمشاركتكم في ${esc(H.name)}`;
+    const sub = win ? "تهانينا لكل أعضاء الفريق، وشهادات الفوز جاهزة أدناه." : r.finalist ? "وصل مشروعكم إلى لجنة التحكيم ضمن أفضل المشاريع. شهاداتكم جاهزة أدناه." : "انتهى البرنامج وأُعلن الفائزون. نأمل أن تكون التجربة مفيدة لكم، وشهادات المشاركة جاهزة أدناه.";
+    $("finalBox").innerHTML = `<div class="card result ${win ? "win" : ""}"><span class="pill ok"><i data-icon="megaphone"></i> أُعلنت النتائج</span><h2 style="margin-top:8px">${head}</h2><p class="muted">${sub}</p><div class="small muted">الدرجة النهائية: <b class="gold">${r.final}</b></div></div>`;
+  } else if (team.phase === "closed" && (team.submissions || []).length) {
+    $("finalBox").innerHTML = `<div class="card note"><b><i data-icon="hourglass"></i> انتهى التقديم</b><p class="small" style="margin-top:4px">تُعلن النتائج وتصدر شهادات الفريق في هذه الصفحة بعد انتهاء التحكيم، وسنرسلها أيضًا إلى البريد المسجّل.</p></div>`;
+  } else $("finalBox").innerHTML = "";
+}
 function renderTeam(){
   const t = team, H = CFG.hackathon, all = t.submissions, subs = all.filter(x => x.status === "done"), last = subs[subs.length-1];
   const pend = all.filter(x => x.status !== "done");
   renderAnnouncements(); renderPassword();
+  // الترحيب باسم العضو الذي دخل (من بريده)، وإلا بالفريق
+  const me = (LS.get("hack_me") || "").toLowerCase(), M = t.team.members || [];
+  const idx = me && me === (t.team.email || "").toLowerCase() ? 0 : (t.team.memberEmails || []).findIndex(e => e && e.toLowerCase() === me);
+  const who = idx >= 0 && M[idx] ? M[idx] : "";
+  $("tmHello").innerHTML = who ? `مرحبًا <b>${esc(who)}</b>، أهلًا بك في صفحة فريقك` : `مرحبًا بكم في صفحة فريقكم`;
+  renderResult();
   $("tmName").textContent = t.team.name;
   $("tmInfo").textContent = (t.team.members||[]).join("، ");
   $("tmChallenge").textContent = t.team.label;
@@ -484,7 +507,6 @@ function renderTeam(){
   if (dq) $("resultBox").insertAdjacentHTML("afterbegin", `<div class="card" style="border-color:var(--bad)"><b style="color:var(--bad)">تم إيقاف مشاركة هذا الفريق.</b> <span class="muted small">للاستفسار تواصلوا مع المنظمين.</span></div>`);
   checkPending();
   if (closed && t.phase==="open") $("resultBox").insertAdjacentHTML("beforeend", `<div class="card muted small">استخدمتم كل المحاولات. تُحتسب أعلى درجة لكم في الترتيب.</div>`);
-  if (t.phase==="closed") $("resultBox").insertAdjacentHTML("beforeend", `<div class="card muted small">انتهت فترة التقديم، ونرجو متابعة إعلان الفائزين في ${esc(CFG.brand.boothName || CFG.brand.eventName)}.</div>`);
 }
 // ---------- الملفات ----------
 const kb = n => n >= 1048576 ? (n/1048576).toFixed(1)+" م.ب" : Math.max(1, Math.round(n/1024))+" ك.ب";
