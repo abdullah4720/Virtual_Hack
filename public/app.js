@@ -211,5 +211,14 @@ window.APP = (() => {
 
   self.aiReady = aiReady;
   self.setDemoKey = (k) => { try { k ? localStorage.setItem("demo_ai_key", k) : localStorage.removeItem("demo_ai_key"); } catch (e) {} };
-  return Object.assign(self, { ready, esc, fmt, short, title, disabled, refreshConfig });
+  // شاشات العرض: إخفاء العناصر التي لا تتسع كاملة داخل لوحتها، فلا يظهر صف مقطوع
+  function fit(list) {
+    if (!list) return;
+    const kids = [...list.children]; kids.forEach((k) => (k.style.display = ""));
+    const panel = list.closest(".panel") || list.parentElement;
+    const bottom = panel.getBoundingClientRect().bottom - (parseFloat(getComputedStyle(panel).paddingBottom) || 0);
+    for (const k of kids) if (k.getBoundingClientRect().bottom > bottom + 1) k.style.display = "none";
+  }
+  addEventListener("resize", () => document.querySelectorAll("[data-fit]").forEach(fit));
+  return Object.assign(self, { ready, esc, fmt, short, title, disabled, refreshConfig, fit });
 })();
