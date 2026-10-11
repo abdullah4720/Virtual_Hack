@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>الهاكاثون</title>
+<title>تسجيل الفرق</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="hack.css">
 <script src="icons.js"></script>
@@ -92,7 +92,7 @@
   <div class="in">
     <div class="org"><span data-logo hidden></span><span id="host"></span></div>
     <div class="mark"><i data-icon="zap"></i></div>
-    <h1 data-title="hackathon.name">الهاكاثون</h1>
+    <h1 data-title="hackathon.name">&nbsp;</h1>
     <p class="sub" data-text="hackathon.tagline"></p>
     <div class="phase"><span class="pill" id="phasePill">…</span><span class="small" id="countdown"></span></div>
   </div>
@@ -404,7 +404,7 @@ function renderImport(where){
   if (!IMPORT) { c.classList.add("hidden"); return; }
   const fb = [...(IMPORT.weaknesses||[]), IMPORT.tip].filter(Boolean);
   c.innerHTML = `<span class="pill"><i data-icon="briefcase-business"></i> من ${esc(CFG.investor.title)}</span>
-    <h2 style="margin-top:8px">${where==="team" ? "أُدرجت فكرتك في النموذج، وهذه ملاحظات المستشار لمعالجتها" : (IMPORT.ticket ? '<i data-icon="ticket"></i> مبروك التأهل، الرجاء تسجيل أعضاء الفريق أدناه' : "فكرتك جاهزة للانتقال إلى الهاكاثون")}</h2>
+    <h2 style="margin-top:8px">${where==="team" ? "أُدرجت فكرتك في النموذج، وهذه ملاحظات المستشار لمعالجتها" : (IMPORT.ticket ? '<i data-icon="ticket"></i> مبروك التأهل، الرجاء تسجيل أعضاء الفريق أدناه' : "فكرتك جاهزة للانتقال إلى " + esc(CFG.hackathon.name))}</h2>
     <div class="q">«${esc(IMPORT.idea)}»</div>
     ${IMPORT.investor ? `<p class="small muted">${esc(IMPORT.investor)}: ${IMPORT.decision==="invest" ? "متأهل" : "غير متأهل"}${IMPORT.score!=null?` · درجتك ${IMPORT.score}`:""} · «${esc(IMPORT.verdict)}»</p>` : ""}
     ${fb.length ? `<h2 style="font-size:15px;margin-top:10px"><i data-icon="wrench"></i> نقاط يُنصح بمعالجتها في المشروع</h2><ul class="clean small">${fb.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>` : ""}

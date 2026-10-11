@@ -69,7 +69,7 @@ h1 span[data-title] .gold{color:var(--accent)}
     <div class="brandrow"><div data-logo hidden></div><div><h1><i data-icon="briefcase-business"></i> <span data-title="investor.title">المستثمر الذكي</span></h1><div class="sub2"><span data-text="brand.boothName"></span> · <span data-text="brand.eventName"></span></div></div></div>
     <div class="stats">
       <div class="stat"><b id="sPitches">0</b><small>عرض</small></div>
-      <div class="stat"><b id="sDeals">0</b><small>تأهّل للهاكاثون</small></div>
+      <div class="stat"><b id="sDeals">0</b><small>متأهل</small></div>
       <div class="stat"><b id="sTotal">0</b><small>ريال استثمارات</small></div>
     </div>
   </header>
@@ -135,7 +135,7 @@ async function refresh(){
       if (key !== lastId) {
         const ok = latest.decision === "invest";
         $("spot").innerHTML = `
-          <span class="tag ${ok?"ok":"no"}">${latest.qualified?'<i data-icon="ticket"></i> تأهّل للهاكاثون':ok?"متأهل":"غير متأهل"}</span>
+          <span class="tag ${ok?"ok":"no"}">${latest.qualified?'<i data-icon="ticket"></i> تأهّل':ok?"متأهل":"غير متأهل"}</span>
           <div class="name">${esc(latest.name)}</div>
           <div class="idea">«${esc(latest.title)}»</div>
           ${ok ? `<div class="amt">${fmt(latest.amount)} ريال <small style="font-size:1.4vw;color:var(--muted)">مقابل ${fmt(latest.equity)}%</small></div>` : ""}

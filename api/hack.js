@@ -59,7 +59,7 @@ export default async function handler(req, res) {
     const H = s.hackathon;
     const ph = phase(s);
     const isPublic = ["board", "register", "team", "submit", "ticket", "evaluate"].includes(action);
-    if (isPublic && !s.modules.hackathon) return res.status(403).json({ error: "الهاكاثون غير مفعّل حاليًا", disabled: true });
+    if (isPublic && !s.modules.hackathon) return res.status(403).json({ error: `${s.hackathon.name} غير مفعّل حاليًا`, disabled: true });
 
     // ===================== عام =====================
     if (action === "board") {
@@ -110,7 +110,7 @@ export default async function handler(req, res) {
       let ticket = null;
       if (H.registration === "ticket") {
         ticket = await findTicket(b.ticket);
-        if (!ticket) return res.status(403).json({ error: "التسجيل في الهاكاثون للمتأهلين فقط. أدخل رمز التأهل الذي حصلت عليه من المستثمر الذكي، أو رمز الدعوة من المنظمين." });
+        if (!ticket) return res.status(403).json({ error: `التسجيل في ${H.name} للمتأهلين فقط. أدخل رمز التأهل الذي حصلت عليه من المستثمر الذكي، أو رمز الدعوة من المنظمين.` });
         if (ticket.used_by_team) return res.status(409).json({ error: "رمز التأهل استُخدم لتسجيل فريق من قبل" });
       }
       const name = clip(b.name, 40);

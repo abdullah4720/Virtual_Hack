@@ -119,7 +119,7 @@ input[type=range]{accent-color:var(--accent);padding:0}
     <button data-p="overview" class="on"><i data-icon="layout-dashboard"></i>نظرة عامة</button>
     <button data-p="brand"><i data-icon="palette"></i>الهوية والعامة</button>
     <button data-p="investor"><i data-icon="briefcase-business"></i>المستثمر الذكي</button>
-    <button data-p="hack"><i data-icon="zap"></i>الهاكاثون: الإعدادات</button>
+    <button data-p="hack"><i data-icon="zap"></i>التحدي: الإعدادات</button>
     <button data-p="tracks"><i data-icon="layers"></i>المسارات والتحديات</button>
     <button data-p="rubric"><i data-icon="list-checks"></i>معايير التقييم</button>
     <button data-p="tickets"><i data-icon="ticket"></i>التأهيل والدعوات</button>
@@ -218,15 +218,15 @@ const P = {
     const ok = (b, y, n) => `<span class="pill ${b?"ok":"no"}">${b?y:n}</span>`;
     const ph = {open:'<span class="dot ok"></span> مفتوح', soon:'<span class="dot wait"></span> لم يبدأ', closed:'<span class="dot no"></span> مُقفل'}[sy.phase];
     const links = [
-      ["صفحة الترحيب (رمز QR الموحد)","welcome.html"],["المستثمر الذكي (الزوار)","index.html"],["الهاكاثون (الفرق)","hackathon.html"],["شاشة الجناح (المتحكَّم بها)","booth.html"],
+      ["صفحة الترحيب (رمز QR الموحد)","welcome.html"],["المستثمر الذكي (الزوار)","index.html"],["تسجيل الفرق وصفحاتها","hackathon.html"],["شاشة الجناح (المتحكَّم بها)","booth.html"],
       ["لوحة البيانات","dashboard.html"],["لوحة اللجنة","judges.html"],["إعلان الفائزين","winners.html"],["التقرير الختامي","report.html"]];
     return `<h1>نظرة عامة</h1><p class="lead">${esc(S.brand.orgName)} · ${esc(S.brand.eventName)}</p>
       ${(sy.schemaMissing||[]).length ? `<div class="card note warn"><b style="color:var(--bad)"><i data-icon="triangle-alert"></i> قاعدة البيانات تحتاج تحديثًا</b><p class="small" style="margin-top:4px">الرجاء فتح Supabase ← SQL Editor، ولصق محتوى ملف supabase.sql كاملًا من المستودع ثم الضغط على Run (التشغيل آمن ولا يحذف البيانات). الناقص: <span dir="ltr">${sy.schemaMissing.map(esc).join(", ")}</span></p></div>` : ""}
       <div class="stats">
         <div class="stat"><b>${fmt(st.pitches)}</b><span>عرض على المستثمر الذكي</span></div>
-        <div class="stat"><b>${fmt(st.qualified)}</b><span>متأهل للهاكاثون</span></div>
+        <div class="stat"><b>${fmt(st.qualified)}</b><span>متأهل للتحدي</span></div>
         <div class="stat"><b>${fmt(st.ticketsUsed)}</b><span>رمز تأهل استُخدم للتسجيل</span></div>
-        <div class="stat"><b>${fmt(st.teams)}</b><span>فريق في الهاكاثون</span></div>
+        <div class="stat"><b>${fmt(st.teams)}</b><span>فريق في التحدي</span></div>
         <div class="stat"><b>${fmt(st.submissions)}</b><span>تقديم مُقيَّم</span></div>
         <div class="stat"><b>${fmt(st.fromInvestor)}</b><span>فريق جاء من المستثمر الذكي</span></div>
         <div class="stat"><b>${st.judged}/${st.finalists}</b><span>متأهل قيّمته اللجنة</span></div>
@@ -236,7 +236,7 @@ const P = {
           <div><span>قاعدة البيانات</span>${ok(sy.database,"متصلة (Supabase)","ذاكرة مؤقتة: للتجربة فقط")}</div>
           <div><span>الذكاء الاصطناعي</span>${ok(sy.ai, {server:"مفعّل على الخادم", "claude-account":"مفعّل عبر حسابك في Claude", "browser-key":"مفعّل بمفتاح على هذا الجهاز"}[sy.aiMode] || "مفعّل", "غير مفعّل: التقييمات وهمية")}</div>
           <div><span>مفتاح اللجنة</span>${ok(sy.judgeKeySet,"مضبوط","غير مضبوط")}</div>
-          <div><span>التقديم في الهاكاثون</span><span class="pill">${ph}</span></div>
+          <div><span>التقديم في التحدي</span><span class="pill">${ph}</span></div>
           <div><span>إرسال البريد</span>${ok(sy.mail,"مفعّل","غير مفعّل (RESEND_API_KEY)")}</div>
           <div><span>استهلاك الذكاء الاصطناعي اليوم</span><span class="pill ${sy.usageToday > sy.dailyAiCalls*0.8 ? "no" : ""}">${fmt(sy.usageToday)} / ${fmt(sy.dailyAiCalls)}</span></div>
           <div><span>اختبار الذكاء الاصطناعي</span><button class="ib" data-act="aitest"><i data-icon="flask-conical"></i> اختبر الآن</button></div><div id="aiTest" class="help" style="display:block;background:none;padding:0"></div>
@@ -246,7 +246,7 @@ const P = {
           : `<p class="muted small">بدون ذكاء اصطناعي تكون الأسئلة ثابتة والدرجات <b style="color:var(--bad)">عشوائية وهمية</b>. للتقييم الحقيقي على هذا الجهاز أدخل مفتاح Claude API (من console.anthropic.com). يُحفظ في هذا المتصفح فقط، ولا يُرسل إلا إلى Anthropic.</p>
             <div class="grid2" style="margin-top:10px"><input id="demoKey" type="password" dir="ltr" placeholder="sk-ant-..." value=""><div style="display:flex;gap:8px"><button class="btn" data-act="savekey" style="width:auto;padding:10px 18px">تفعيل</button>${sy.aiMode==="browser-key"?`<button class="btn ghost" data-act="clearkey" style="width:auto;padding:10px 18px">إزالة المفتاح</button>`:""}</div></div>
             <p class="help">عند النشر الفعلي يوضع المفتاح في إعدادات الخادم (ANTHROPIC_API_KEY)، ولا حاجة لهذا الحقل.</p>`, sy.ai ? "" : "danger") : ""}
-        ${card("الأنشطة", tog("المستثمر الذكي","modules.investor","لعبة سريعة لزوار المعرض") + tog("الهاكاثون الافتراضي","modules.hackathon","منافسة أونلاين خلال أيام الفعالية"))}
+        ${card("الأنشطة", tog("المستثمر الذكي","modules.investor","لعبة سريعة لزوار المعرض") + tog("التحدي (تسجيل الفرق وتقديم المشاريع)","modules.hackathon","منافسة أونلاين خلال أيام الفعالية"))}
       </div>
       ${card("روابط المنصة", `<div class="links">${links.map(([l,p])=>`<div><span>${l}</span><code>${esc(abs(p))}</code><a class="ib" href="${p}" target="_blank">فتح</a><button class="ib" data-copy="${attr(abs(p))}">نسخ</button></div>`).join("")}</div>`)}`;
   },
@@ -273,7 +273,7 @@ const P = {
     return `<h1>المستثمر الذكي</h1><p class="lead">الزائر يعرض فكرته على مستثمر افتراضي، يُسأل سؤالين، ثم يحصل على قرار الاستثمار وتقييم.</p>
       ${card("العامة", `${f("اسم النشاط","investor.title")}${f("الوصف المختصر","investor.tagline",{type:"textarea",rows:2,max:300})}
         <div class="grid2">${f("أقل مبلغ استثمار (ريال)","investor.minAmount",{type:"num",min:1000,step:1000})}${f("أعلى مبلغ استثمار (ريال)","investor.maxAmount",{type:"num",min:1000,step:1000})}</div>`)}
-      ${card("الفرز والتأهل للهاكاثون", `${tog("اختيار المسار قبل عرض الفكرة","investor.chooseTrack","يختار الزائر مسار الهاكاثون أولًا، ويُضاف معيار «ملاءمة الفكرة للمسار» (15 درجة)، ويُعتمد المسار نفسه للفريق عند التسجيل. عند الإيقاف: أربعة معايير (25 لكل منها)، ويختار الفريق مساره عند التسجيل.")}${f("صرامة التقييم","investor.strictness",{type:"select",opts:[["lenient","ميسّر: يكافئ أي فكرة واضحة ومنطقية (للتعلّم والتشجيع)"],["balanced","متوازن: يكافئ الوضوح والمنطق ولا يطلب أدلة سوقية (موصى به)"],["strict","صارم: يتطلب أرقامًا وأدلة ومنطقًا قويًا (للمسابقات المتقدمة)"]],help:"تؤثر في تحويل المستويات إلى درجات، والقيود على الدرجة، وفحص الإجابات. الفكرة بلا حل تُرفض في كل المستويات."})}<div class="grid2">${f("درجة التأهل (من 100)","investor.qualifyScore",{type:"num",min:0,max:100,help:"من يحصل عليها أو أكثر يُمنح رمز تأهل للهاكاثون"})}${f("عدد المحاولات لكل بريد","investor.maxAttempts",{type:"num",min:1,max:20})}</div>
+      ${card("الفرز والتأهل للتحدي", `${tog("اختيار المسار قبل عرض الفكرة","investor.chooseTrack","يختار الزائر مسار التحدي أولًا، ويُضاف معيار «ملاءمة الفكرة للمسار» (15 درجة)، ويُعتمد المسار نفسه للفريق عند التسجيل. عند الإيقاف: أربعة معايير (25 لكل منها)، ويختار الفريق مساره عند التسجيل.")}${f("صرامة التقييم","investor.strictness",{type:"select",opts:[["lenient","ميسّر: يكافئ أي فكرة واضحة ومنطقية (للتعلّم والتشجيع)"],["balanced","متوازن: يكافئ الوضوح والمنطق ولا يطلب أدلة سوقية (موصى به)"],["strict","صارم: يتطلب أرقامًا وأدلة ومنطقًا قويًا (للمسابقات المتقدمة)"]],help:"تؤثر في تحويل المستويات إلى درجات، والقيود على الدرجة، وفحص الإجابات. الفكرة بلا حل تُرفض في كل المستويات."})}<div class="grid2">${f("درجة التأهل (من 100)","investor.qualifyScore",{type:"num",min:0,max:100,help:"من يحصل عليها أو أكثر يُمنح رمز تأهل للتحدي"})}${f("عدد المحاولات لكل بريد","investor.maxAttempts",{type:"num",min:1,max:20})}</div>
         <p class="help">التقييم بأربعة معايير موحّدة (25 لكل منها): المشكلة والحل، العميل والسوق، نموذج الربح، جودة الإجابات. كل معيار بمستويات 0–5 مثبّتة بأوصاف، ثم تُطبَّق قيود حسب مستوى الصرامة. يُسند المستشار عشوائيًا، وشخصيته تغيّر الأسلوب فقط.</p>`)}
       ${card("شخصيات المستثمرين", L.map((x,i)=>`<div class="item"><div class="head"><b>${glyph(x.emoji)} ${esc(x.name)||"مستشار جديد"}</b>${tools("investor.investors",i,L.length)}</div>
         <div class="row-inline">${iconField("الأيقونة","investor.investors."+i+".emoji")}${f("الاسم","investor.investors."+i+".name",{max:40})}</div>
@@ -284,8 +284,8 @@ const P = {
   },
   hack(){
     const w = S.hackathon.weights;
-    return `<h1>الهاكاثون: الإعدادات</h1><p class="lead">المواعيد، حجم الفرق، المحاولات، والتأهل.</p>
-      ${card("العامة", `${f("اسم الهاكاثون","hackathon.name")}${f("الوصف المختصر","hackathon.tagline",{type:"textarea",rows:2,max:300})}
+    return `<h1>التحدي: الإعدادات</h1><p class="lead">المواعيد، حجم الفرق، المحاولات، والتأهل.</p>
+      ${card("العامة", `${f("اسم التحدي","hackathon.name")}${f("الوصف المختصر","hackathon.tagline",{type:"textarea",rows:2,max:300})}
         ${f("من يستطيع تسجيل فريق؟","hackathon.registration",{type:"select",opts:[["ticket","المتأهلون فقط (رمز تأهل من المستثمر الذكي أو رمز دعوة)"],["open","مفتوح للجميع"]]})}`)}
       ${card("المواعيد", `<div class="grid2">${f("فتح التسجيل والتقديم","hackathon.opensAt",{type:"datetime-local",ltr:true})}${f("إقفال التقديم","hackathon.closesAt",{type:"datetime-local",ltr:true})}</div>
         <p class="help">بالمنطقة الزمنية المحددة في «الهوية والعامة». اتركهما فارغين ليبقى التقديم مفتوحًا.</p>`)}
@@ -312,7 +312,7 @@ const P = {
       ${card(`<span style="display:flex;justify-content:space-between;align-items:center">المعايير <span class="sum" id="rubSum"></span></span>`,
         R.map((r,i)=>`<div class="item"><div class="rub">${f("المعيار","hackathon.rubric."+i+".label",{max:60})}${f("الدرجة","hackathon.rubric."+i+".max",{type:"num",min:1,max:100})}<div class="g">${f("إرشاد للمحكّم","hackathon.rubric."+i+".guide",{max:300})}</div>${tools("hackathon.rubric",i,R.length)}</div></div>`).join("") + addBtn("hackathon.rubric","إضافة معيار"))}
       ${card("صرامة التقييم", `${f("مستوى الصرامة","hackathon.evaluation.strictness",{type:"select",opts:[["lenient","ميسّر: يكافئ أي فكرة واضحة ومنطقية (للتعلّم والتشجيع)"],["balanced","متوازن: يكافئ الوضوح والمنطق ولا يطلب أدلة سوقية (موصى به)"],["strict","صارم: يتطلب أرقامًا وأدلة ومنطقًا قويًا (للمسابقات المتقدمة)"]]})}<p class="muted small" style="margin:10px 0">كل معيار يُقيَّم بمستوى من 0 إلى 5 بسلّم موحد (من «ادعاء عام» إلى «تحقق فعلي من السوق»)، ويجب أن يدعمه اقتباس من المشروع. ثم تطبّق المنصة سقوفًا إلزامية: مثلًا لا درجة كاملة بلا تحقق من السوق، ولا درجة للعرض الاستثماري إن لم يُرفق.</p>` + tog("مراجعة ثانية مستقلة","hackathon.evaluation.reviewPass","محكّم ذكي ثانٍ يراجع التقييم ويخفض أي درجة متساهلة (لا يرفع أبدًا). أدق، وضعف التكلفة تقريبًا"))}
-      <p class="help">تنبيه: تعديل المعايير أثناء الهاكاثون لا يعيد تقييم المشاريع المقدَّمة سابقًا.</p>`;
+      <p class="help">تنبيه: تعديل المعايير أثناء التحدي لا يعيد تقييم المشاريع المقدَّمة سابقًا.</p>`;
   },
   tickets(){
     const T = D.tickets || [];
@@ -352,7 +352,7 @@ const P = {
         ${J.scope==="top"?f("عدد المشاريع المتأهلة للتحكيم","hackathon.finalists",{type:"num",min:1,max:50}):`<div class="help" style="align-self:end">كل فريق قدّم مشروعه (وغير مستبعد) يدخل التحكيم.</div>`}</div>
         ${f("طريقة توزيع المشاريع على المحكّمين","hackathon.judging.mode",{type:"select",opts:MODES})}
         ${tog("التحكيم مفتوح","hackathon.judging.open","عند الإيقاف: يرى المحكّمون المشاريع ودرجاتهم، ولا يستطيعون الحفظ أو التعديل. أوقفه بعد اكتمال التحكيم وقبل نشر النتائج.")}
-        <p class="help" style="margin-top:8px">الدرجة النهائية = ${S.hackathon.weights.ai}% الذكاء الاصطناعي + ${100-S.hackathon.weights.ai}% متوسط اللجنة (يُعدَّل الوزن من «الهاكاثون: الإعدادات»). درجة من أقرّ بتعارض المصالح لا تُحتسب.</p>`);
+        <p class="help" style="margin-top:8px">الدرجة النهائية = ${S.hackathon.weights.ai}% الذكاء الاصطناعي + ${100-S.hackathon.weights.ai}% متوسط اللجنة (يُعدَّل الوزن من «التحدي: الإعدادات»). درجة من أقرّ بتعارض المصالح لا تُحتسب.</p>`);
     if (J.mode==="committees") {
       const cnt = id => Object.values(J.assign||{}).filter(x=>x===id).length;
       h += card(`<span style="display:flex;align-items:center;gap:8px"><i data-icon="users-round"></i> لجان التحكيم (${C.length})</span>`, `<p class="muted small" style="margin-bottom:10px">تضم كل لجنة عددًا من المحكّمين، ويُسنَد المشروع إلى لجنة واحدة يقيّمه جميع أعضائها. يمكن أن يكون المحكّم عضوًا في أكثر من لجنة.</p>
@@ -433,7 +433,7 @@ const P = {
     const K = D.notifyKinds || {}, N = S.notify, mail = D.system.mail;
     const ST = {sent:["ok","أُرسلت"], failed:["no","فشلت"], skipped:["","لم تُرسل: البريد غير مفعّل"], sending:["warn","قيد الإرسال"]};
     const tot = LOGS?.totals;
-    const groups = [["الزوار والمستثمر الذكي",["otp","qualified","notQualified","invite"]],["الفرق في الهاكاثون",["registered","passwordReset","evaluated","reminderNoSubmit","reminderClose","finalists","winner","results","message"]],["المحكّمون",["judgeInvite","judgeReminder"]],["عامة",["announcement"]]];
+    const groups = [["الزوار والمستثمر الذكي",["otp","qualified","notQualified","invite"]],["الفرق في التحدي",["registered","passwordReset","evaluated","reminderNoSubmit","reminderClose","finalists","winner","results","message"]],["المحكّمون",["judgeInvite","judgeReminder"]],["عامة",["announcement"]]];
     const tpl = k => { const m = K[k], t = N.templates[k]; if (!m || !t) return "";
       const open = OPEN.has(k), base = "notify.templates."+k+".";
       return `<div class="item ntpl ${t.on||m.locked?"":"off"}"><div class="head"><div><b>${esc(m.label)}</b><div class="meta"><i data-icon="send"></i> ${esc(m.to)} · <i data-icon="clock"></i> ${esc(m.when)}</div></div>
@@ -465,15 +465,15 @@ const P = {
   screens(){
     const B = S.booth;
     return `<h1>الشاشات</h1><p class="lead">تحكّم في ما يظهر على شاشة الجناح (booth) لحظيًا. تتحدث الشاشة خلال 15 ثانية من الحفظ.</p>
-      ${card("ماذا تعرض شاشة الجناح الآن؟", f("الوضع","booth.mode",{type:"select",opts:[["rotate","تناوب تلقائي بين الشاشات المختارة"],["investor","المستثمر الذكي فقط"],["hackathon","ترتيب الهاكاثون فقط"],["dashboard","لوحة البيانات فقط"],["countdown","عدّ تنازلي (فتح/إقفال التقديم)"],["announcement","آخر إعلان بملء الشاشة"]]}))}
-      ${card("شاشات التناوب", tog("شاشة المستثمر الذكي","booth.screens.investor") + tog("شاشة ترتيب الهاكاثون","booth.screens.hackathon") + tog("لوحة البيانات","booth.screens.dashboard") + f("مدة كل شاشة (ثانية)","booth.rotateSeconds",{type:"num",min:8,max:300}))}
+      ${card("ماذا تعرض شاشة الجناح الآن؟", f("الوضع","booth.mode",{type:"select",opts:[["rotate","تناوب تلقائي بين الشاشات المختارة"],["investor","المستثمر الذكي فقط"],["hackathon","ترتيب الفرق فقط"],["dashboard","لوحة البيانات فقط"],["countdown","عدّ تنازلي (فتح/إقفال التقديم)"],["announcement","آخر إعلان بملء الشاشة"]]}))}
+      ${card("شاشات التناوب", tog("شاشة المستثمر الذكي","booth.screens.investor") + tog("شاشة ترتيب الفرق","booth.screens.hackathon") + tog("لوحة البيانات","booth.screens.dashboard") + f("مدة كل شاشة (ثانية)","booth.rotateSeconds",{type:"num",min:8,max:300}))}
       ${card(`<span style="display:flex;align-items:center;gap:8px"><i data-icon="smartphone"></i> الجهاز اللوحي في الجناح</span>`, `<p class="muted small">يعرض الزائر فكرته على جهاز لوحي ثابت في الجناح. في هذا الوضع: تُمسح بيانات الزائر تلقائيًا بعد انتهائه أو بعد مدة من عدم الاستخدام، ولا يُطبَّق على الجهاز حد المحاولات في الساعة، ويظهر للمتأهل رمز QR ليكمل تسجيل فريقه من جواله.</p>
         ${B.kioskKey ? `<div class="links" style="margin-top:10px"><div><span>رابط الجهاز اللوحي</span><code>${esc(abs("index.html?kiosk="+B.kioskKey))}</code><a class="ib" href="index.html?kiosk=${attr(B.kioskKey)}" target="_blank">فتح</a><button class="ib" data-copy="${attr(abs("index.html?kiosk="+B.kioskKey))}">نسخ</button></div></div>
           <div class="grid2" style="margin-top:10px">${f("إعادة الضبط بعد عدم الاستخدام (ثانية)","booth.kioskIdle",{type:"num",min:30,max:600})}<div><label>&nbsp;</label><button class="btn ghost" data-act="kioskkey"><i data-icon="refresh-cw"></i> توليد رابط جديد (يُبطل القديم)</button></div></div>`
         : `<button class="btn" data-act="kioskkey" style="margin-top:10px"><i data-icon="key-round"></i> إنشاء رابط الجهاز اللوحي</button>`}
         <p class="help">الرابط سري: لا يُعرض للزوار. بعد إنشائه الرجاء حفظ التغييرات ثم فتحه على الجهاز اللوحي، ويُستحسن تثبيت الجهاز على وضع الشاشة الكاملة (Guided Access في iPad).</p>`)}
       ${card(`<span style="display:flex;align-items:center;gap:8px"><i data-icon="monitor"></i> الشاشة الكبيرة</span>`, `<p class="muted small">افتح «شاشة الجناح» على الشاشة الكبيرة واضغط F11 (أو انقر على الشاشة) للعرض الكامل. تتناوب تلقائيًا بين الشاشات المختارة أعلاه، وتعرض رمز QR ليعرض الزوار أفكارهم من جوالاتهم، وتتحدث مباشرة مع كل عرض جديد من الجهاز اللوحي أو الجوالات.</p>`)}
-      ${card("روابط الشاشات", `<div class="links">${[["شاشة الجناح (المتحكَّم بها)","booth.html"],["لوحة البيانات","dashboard.html"],["شاشة المستثمر","screen.html"],["شاشة الهاكاثون","hack-screen.html"],["إعلان الفائزين","winners.html"]].map(([l,p])=>`<div><span>${l}</span><code>${esc(abs(p))}</code><a class="ib" href="${p}" target="_blank">فتح</a><button class="ib" data-copy="${attr(abs(p))}">نسخ</button></div>`).join("")}</div>`)}`;
+      ${card("روابط الشاشات", `<div class="links">${[["شاشة الجناح (المتحكَّم بها)","booth.html"],["لوحة البيانات","dashboard.html"],["شاشة المستثمر","screen.html"],["شاشة الفرق","hack-screen.html"],["إعلان الفائزين","winners.html"]].map(([l,p])=>`<div><span>${l}</span><code>${esc(abs(p))}</code><a class="ib" href="${p}" target="_blank">فتح</a><button class="ib" data-copy="${attr(abs(p))}">نسخ</button></div>`).join("")}</div>`)}`;
   },
   welcome(){
     const P = S.program;
@@ -489,7 +489,7 @@ const P = {
   privacy(){
     return `<h1>الحماية والحدود</h1><p class="lead">التحقق من البريد، وحدود الاستخدام التي تحمي رصيد الذكاء الاصطناعي.</p>
       ${card("التحقق من البريد", tog("التحقق برمز قبل عرض الفكرة","investor.verifyEmail", D.system.mail ? "يُرسل رمز من 6 أرقام إلى بريد الزائر. يمنع التحايل على حد المحاولات ببريد وهمي." : "يتطلب تفعيل الإرسال (RESEND_API_KEY و MAIL_FROM) وإلا يبقى معطّلًا"))}
-      ${card("حدود الاستخدام", `<div class="grid3">${f("عروض المستثمر لكل جهاز في الساعة","limits.pitchesPerHour",{type:"num",min:1,max:1000})}${f("تقديمات الهاكاثون لكل جهاز في الساعة","limits.submitsPerHour",{type:"num",min:1,max:1000})}${f("سقف استدعاءات الذكاء الاصطناعي يوميًا","limits.dailyAiCalls",{type:"num",min:10,max:1000000})}</div>
+      ${card("حدود الاستخدام", `<div class="grid3">${f("عروض المستثمر لكل جهاز في الساعة","limits.pitchesPerHour",{type:"num",min:1,max:1000})}${f("تقديمات المشاريع لكل جهاز في الساعة","limits.submitsPerHour",{type:"num",min:1,max:1000})}${f("سقف استدعاءات الذكاء الاصطناعي يوميًا","limits.dailyAiCalls",{type:"num",min:10,max:1000000})}</div>
         <p class="help">عند بلوغ السقف اليومي تتوقف التقييمات الجديدة برسالة واضحة حتى اليوم التالي. استهلاك اليوم: ${fmt(D.system.usageToday)}. ملاحظة: أجهزة شبكة الجناح قد تشترك في عنوان واحد، فارفع الحد لكل جهاز إن استخدم الزوار شبكة المعرض.</p>`)}`;
   },
   reports(){
@@ -502,9 +502,9 @@ const P = {
   },
   data(){
     return `<h1>البيانات</h1><p class="lead">تصدير النتائج لإعداد التقارير، أو تهيئة المنصة لفعالية جديدة.</p>
-      ${card("تصدير (CSV يفتح في Excel)", `<div class="grid3"><button class="btn ghost" data-act="export" data-what="teams"><i data-icon="download"></i> فرق الهاكاثون ونتائجها</button><button class="btn ghost" data-act="export" data-what="deals"><i data-icon="download"></i> عروض المستثمر الذكي</button><button class="btn ghost" data-act="export" data-what="scores"><i data-icon="download"></i> درجات المحكّمين</button></div><p class="help">ملف الفرق يتضمن: الأعضاء وبريدهم ورمز الفريق، ودرجة كل معيار، ومتوسط اللجنة، والدرجة النهائية، والترتيب.</p>`)}
+      ${card("تصدير (CSV يفتح في Excel)", `<div class="grid3"><button class="btn ghost" data-act="export" data-what="teams"><i data-icon="download"></i> الفرق ونتائجها</button><button class="btn ghost" data-act="export" data-what="deals"><i data-icon="download"></i> عروض المستثمر الذكي</button><button class="btn ghost" data-act="export" data-what="scores"><i data-icon="download"></i> درجات المحكّمين</button></div><p class="help">ملف الفرق يتضمن: الأعضاء وبريدهم ورمز الفريق، ودرجة كل معيار، ومتوسط اللجنة، والدرجة النهائية، والترتيب.</p>`)}
       ${card("حذف البيانات", `<p class="muted small">يحذف المشاركات نهائيًا ولا يمكن التراجع. الإعدادات لا تتأثر. صدّر البيانات أولًا.</p>
-        <div class="grid2" style="margin-top:10px">${f("اكتب «حذف» للتأكيد","_confirm",{ph:"حذف"})}${f("ما الذي يُحذف؟","_scope",{type:"select",opts:[["investor","عروض المستثمر الذكي"],["hackathon","فرق الهاكاثون وتقديماتها ودرجات اللجنة"],["all","كل البيانات"]]})}</div>
+        <div class="grid2" style="margin-top:10px">${f("اكتب «حذف» للتأكيد","_confirm",{ph:"حذف"})}${f("ما الذي يُحذف؟","_scope",{type:"select",opts:[["investor","عروض المستثمر الذكي"],["hackathon","الفرق وتقديماتها ودرجات اللجنة"],["all","كل البيانات"]]})}</div>
         <button class="btn red" data-act="reset" style="margin-top:12px">حذف البيانات</button><p class="err" id="resetMsg"></p>`, "danger")}
       ${card("استعادة الإعدادات الافتراضية", `<p class="muted small">تعيد كل الإعدادات إلى القالب الأصلي (لا تحذف البيانات). تحتاج الحفظ بعدها.</p><button class="btn ghost" data-act="defaults" style="margin-top:10px">استعادة القالب</button>`)}`;
   },

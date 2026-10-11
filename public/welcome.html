@@ -112,7 +112,7 @@ APP.ready.then(async c => {
   if (!c.modules.hackathon) $("pHack").classList.add("off");
   if (gate) $("pHackGo").textContent = "لديّ رمز تأهل";
   $("journey").innerHTML = gate ? `<div>اعرض فكرتك على ${esc(I.title)}</div><div>احصل على ${I.qualifyScore} درجة أو أكثر لتتأهل</div><div>سجّل فريقك وقدّم مشروعك</div><div>التحكيم وإعلان الفائزين</div>` : "";
-  try { if (localStorage.getItem("hack_code")) $("teamLogin").innerHTML = `مسجّل في الهاكاثون؟ <a href="hackathon.html">ادخل صفحة فريقك</a>`; } catch(e){}
+  try { if (localStorage.getItem("hack_code")) $("teamLogin").innerHTML = `فريقك مسجّل؟ <a href="hackathon.html">ادخل صفحة فريقك</a>`; } catch(e){}
   // الجدول والجوائز والأسئلة والشركاء
   const P = c.program;
   if (P.schedule.length) { $("schedCard").classList.remove("hidden"); $("sched").innerHTML = P.schedule.map(x=>`<div class="it"><small>${esc(x.day)}</small><div><b>${esc(x.title)}</b></div>${x.desc?`<div class="muted small">${esc(x.desc)}</div>`:""}</div>`).join(""); }
