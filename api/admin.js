@@ -116,15 +116,51 @@ export default async function handler(req, res) {
       for (const x of (await select(T.scores)).filter((x) => x.team_id === id)) await removeOne(T.scores, x.id);
       for (const x of subs) await removeOne(T.subs, x.id);
       for (const x of (await select("announcements")).filter((x) => x.audience === `team:${id}`)) await removeOne("announcements", x.id);
-      for (const t of (await select(TICKETS)).filter((x) => x.used_by_team === id)) await update(TICKETS, t.id, { used_by_team: null, used_at: null });
+      for (const t of (await select(TICKETS)).filter((x) => x.used_by_team === id)) await update(TICKETS, t.id, { used_by_team: null, used_at: null, deal_id: null });
       await removeOne(T.teams, id);
+      // عرض الفكرة الذي تأهل منه الفريق يُحذف أيضًا، فيختفي من شاشات الجناح ولوحة البيانات
+      // وكل محاولاته السابقة في المستثمر الذكي (ببريده نفسه)، حتى لا يبقى له أثر على الشاشات
+      let pitch = 0;
+      if (team.deal_id) {
+        const [d] = await select("deals", { id: team.deal_id });
+        const mail = (d?.email || "").toLowerCase();
+        const mine = (await select("deals")).filter((x) => x.id === team.deal_id || (mail && (x.email || "").toLowerCase() === mail));
+        const usedByOthers = new Set((await select(T.teams)).filter((t) => t.id !== id && t.deal_id).map((t) => t.deal_id));
+        for (const x of mine) {
+          if (usedByOthers.has(x.id)) continue;
+          for (const t of (await select(TICKETS)).filter((t) => t.deal_id === x.id && !t.used_by_team)) await removeOne(TICKETS, t.id);
+          await removeOne("deals", x.id); pitch++;
+        }
+      }
       // إزالة الفريق من إسناد اللجان وترتيب العرض
       const J = s.hackathon.judging;
       if (J && (J.assign?.[String(id)] || J.order?.[String(id)])) {
         const next = JSON.parse(JSON.stringify(s)); delete next.hackathon.judging.assign[String(id)]; delete next.hackathon.judging.order[String(id)];
         await saveSettings(next);
       }
-      return res.status(200).json({ ok: true, files: keys.size, submissions: subs.length, ticketFreed: Boolean(team.ticket) });
+      return res.status(200).json({ ok: true, files: keys.size, submissions: subs.length, ticketFreed: Boolean(team.ticket), pitch });
+    }
+
+    // ---------- عروض الأفكار في المستثمر الذكي: القائمة والحذف ----------
+    if (action === "pitches") {
+      const [deals, tickets, teams] = await Promise.all([select("deals"), select(TICKETS), select(T.teams)]);
+      return res.status(200).json({
+        pitches: deals.sort((a, c) => Date.parse(c.created_at) - Date.parse(a.created_at)).map((d) => {
+          const tk = tickets.find((t) => t.deal_id === d.id), tm = teams.find((t) => t.deal_id === d.id);
+          return { id: d.id, at: d.created_at, name: d.name, email: d.email || "", title: d.title || "", idea: d.idea || "", score: d.score, qualified: Boolean(d.qualified), ticket: tk?.code || null, team: tm?.name || null };
+        }),
+      });
+    }
+    if (action === "pitch-delete" && req.method === "POST") {
+      const id = Number(b.id);
+      const [d] = await select("deals", { id });
+      if (!d) return res.status(404).json({ error: "العرض غير موجود" });
+      const team = (await select(T.teams)).find((t) => t.deal_id === id);
+      if (team) return res.status(409).json({ error: `هذا العرض سجّل به فريق «${team.name}». احذف الفريق من «المشاركون» ليُحذف معه.` });
+      // رمز التأهل غير المستخدم يُلغى مع العرض
+      for (const t of (await select(TICKETS)).filter((x) => x.deal_id === id)) await removeOne(TICKETS, t.id);
+      await removeOne("deals", id);
+      return res.status(200).json({ ok: true });
     }
 
     // كلمات مرور الفرق: تُعيّنها الإدارة وتسلّمها للفرق (لا تُرسل بالبريد)

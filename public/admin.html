@@ -123,6 +123,7 @@ input[type=range]{accent-color:var(--accent);padding:0}
     <button data-p="tracks"><i data-icon="layers"></i>المسارات والتحديات</button>
     <button data-p="rubric"><i data-icon="list-checks"></i>معايير التقييم</button>
     <button data-p="tickets"><i data-icon="ticket"></i>التأهيل والدعوات</button>
+    <button data-p="pitches"><i data-icon="lightbulb"></i>عروض الأفكار</button>
     <button data-p="participants"><i data-icon="users"></i>المشاركون</button>
     <button data-p="judges"><i data-icon="scale"></i>المحكّمون</button>
     <button data-p="judging"><i data-icon="clipboard-check"></i>إدارة التحكيم</button>
@@ -207,7 +208,7 @@ const NEW = {
   "hackathon.judging.committees": () => ({id:uid("com"), name:`اللجنة ${(S.hackathon.judging.committees||[]).length+1}`, judges:[]}),
 };
 function genKey(n=10){ const a="ABCDEFGHJKMNPQRSTUVWXYZ23456789"; return Array.from(crypto.getRandomValues(new Uint8Array(n)),x=>a[x%a.length]).join(""); }
-let TEAMS = null, CERTS = null, LOGS = null, PASSLIST = null, JG = null; const OPEN = new Set();
+let TEAMS = null, CERTS = null, LOGS = null, PASSLIST = null, JG = null, PITCHES = null; const OPEN = new Set();
 const when = d => new Date(d).toLocaleString("ar-SA-u-nu-latn",{day:"numeric",month:"short",hour:"numeric",minute:"2-digit"});
 
 // ---------- الأقسام ----------
@@ -403,6 +404,20 @@ const P = {
       : `<p class="muted">لا يوجد محكّمون. أضفهم من «المحكّمون».</p>`);
     return h;
   },
+  pitches(){
+    if (!PITCHES) return `<h1>عروض الأفكار</h1><p class="muted">جارٍ التحميل…</p>`;
+    const q = (tmp._pq||"").trim().toLowerCase();
+    const list = PITCHES.filter(p => !q || [p.name, p.email, p.title, p.idea, p.ticket, p.team].join(" ").toLowerCase().includes(q));
+    return `<h1>عروض الأفكار</h1><p class="lead">كل فكرة عُرضت على ${esc(S.investor.title)}: ${PITCHES.length} عرض، منها ${PITCHES.filter(p=>p.qualified).length} متأهل. هذه العروض هي ما يظهر على شاشة المستثمر ولوحة البيانات، وحذف أي عرض يزيله منها فورًا.</p>
+      <div class="card">${f("","_pq",{ph:"بحث بالاسم أو البريد أو الفكرة أو الرمز…"})}</div>
+      ${card(`العروض (${list.length})`, list.length ? `<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>الوقت</th><th>صاحب الفكرة</th><th>الفكرة</th><th>الدرجة</th><th>الحالة</th><th></th></tr></thead><tbody>
+        ${list.map(p=>`<tr><td>${when(p.at)}</td><td><b>${esc(p.name)}</b><div class="help" dir="ltr">${esc(p.email)}</div></td>
+          <td style="white-space:normal;max-width:320px"><b>${esc(p.title||"—")}</b><div class="help">${esc((p.idea||"").slice(0,140))}</div></td>
+          <td><b class="gold">${p.score??"—"}</b></td>
+          <td>${p.qualified?`<span class="pill ok">متأهل</span>`:`<span class="pill">غير متأهل</span>`}${p.team?`<div class="help">سجّل فريق «${esc(p.team)}»</div>`:p.ticket?`<div class="help" dir="ltr">${esc(p.ticket)}</div>`:""}</td>
+          <td>${p.team?`<span class="help">يُحذف مع الفريق</span>`:`<button class="ib del" data-act="pdelete" data-id="${p.id}" data-name="${attr(p.name)}"><i data-icon="trash-2"></i> حذف</button>`}</td></tr>`).join("")}
+        </tbody></table></div>` : `<p class="muted">لا توجد عروض.</p>`)}`;
+  },
   participants(){
     if (!TEAMS) return `<h1>المشاركون</h1><p class="muted">جارٍ التحميل…</p>`;
     const q = (tmp._q||"").trim().toLowerCase();
@@ -535,6 +550,7 @@ $("nav").onclick = async e => {
   const b = e.target.closest("button[data-p]"); if (!b) return; pane = b.dataset.p; render(); scrollTo(0,0);
   if (pane === "participants") { TEAMS = (await api("teams")).teams; render(); }
   if (pane === "judging") await loadJudging();
+  if (pane === "pitches") { PITCHES = (await api("pitches")).pitches; render(); }
   if (pane === "reports") CERTS = null;
   if (pane === "notify") { LOGS = await api("mail-log").catch(()=>null); render(); }
 };
@@ -545,7 +561,7 @@ $("main").addEventListener("input", e => {
   if (el.dataset.type==="num") v = v===""? "" : Number(v);
   if (el.dataset.type==="bool") v = el.checked;
   if (el.dataset.type==="lines") v = v.split("\n").map(x=>x.trim()).filter(Boolean);
-  if (k.startsWith("_")) { tmp[k]=v; if (k==="_q") { const pos = el.selectionStart; render(); const n=$("main").querySelector('[data-k="_q"]'); n.focus(); n.setSelectionRange(pos,pos); } return; }
+  if (k.startsWith("_")) { tmp[k]=v; if (k==="_q" || k==="_pq") { const pos = el.selectionStart; render(); const n=$("main").querySelector(`[data-k="${k}"]`); n.focus(); n.setSelectionRange(pos,pos); } return; }
   setP(S,k,v); computed(); dirty();
 });
 // قراءة الصفحة الأولى من ملف PDF كصورة (pdf.js يُحمَّل عند الحاجة فقط)
@@ -719,9 +735,14 @@ $("main").addEventListener("click", async e => {
   if (act==="kioskkey") { if (S.booth.kioskKey && !confirm("سيتوقف الرابط الحالي للجهاز اللوحي. متابعة؟")) return; S.booth.kioskKey = genKey(16); render(); dirty("أُنشئ رابط الجهاز اللوحي. الرجاء حفظ التغييرات.", "ok"); return; }
   if (act==="genkey") { S.hackathon.judgeKey = genKey(); render(); dirty(); return; }
   if (act==="reeval") { const old = b.innerHTML; b.disabled = true; b.textContent = "جارٍ التقييم…"; try { const r = await api("reeval", {}); D = await api("get"); render(); dirty(`اكتمل تقييم ${r.evaluated}${r.remaining?`، وبقي ${r.remaining}`:""}`, "ok"); } catch(err){ b.disabled = false; b.innerHTML = old; alert(err.message); } return; }
+  if (act==="pdelete") {
+    if (!confirm(`حذف عرض «${b.dataset.name}» نهائيًا؟\n\nسيختفي من شاشة المستثمر ولوحة البيانات والتقارير، ويُلغى رمز تأهله إن لم يُستخدم.`)) return;
+    await api("pitch-delete", {id: Number(b.dataset.id)});
+    PITCHES = (await api("pitches")).pitches; D = await api("get"); render(); dirty("✓ حُذف العرض، واختفى من الشاشات", "ok"); return;
+  }
   if (act==="tdelete") {
     const name = b.dataset.name;
-    const typed = prompt(`حذف فريق «${name}» نهائيًا؟\n\nسيُحذف الفريق وأعضاؤه وكل تقديماته وملفاته ودرجات المحكّمين له ورسائله، ولا يمكن التراجع. ويعود رمز التأهل الذي سجّل به صالحًا للتسجيل من جديد.\n\nللتأكيد اكتب اسم الفريق كما هو:`, "");
+    const typed = prompt(`حذف فريق «${name}» نهائيًا؟\n\nسيُحذف الفريق وأعضاؤه وكل تقديماته وملفاته ودرجات المحكّمين له ورسائله، وعرض فكرته في المستثمر الذكي، فيختفي من كل الشاشات. لا يمكن التراجع. ويعود رمز التأهل الذي سجّل به صالحًا للتسجيل من جديد.\n\nللتأكيد اكتب اسم الفريق كما هو:`, "");
     if (typed == null) return;
     if (typed.trim() !== name) return alert("لم يُحذف الفريق: الاسم المكتوب لا يطابق اسم الفريق.");
     const r = await api("team-delete", {id: Number(b.dataset.id), confirm: typed.trim()});
@@ -729,7 +750,7 @@ $("main").addEventListener("click", async e => {
     TEAMS = (await api("teams")).teams; D = await api("get"); JG = null;
     if (wasDirty) { delete S.hackathon.judging?.assign?.[sid]; delete S.hackathon.judging?.order?.[sid]; } else { S = JSON.parse(JSON.stringify(D.settings)); saved = JSON.stringify(S); }
     render();
-    dirty(`✓ حُذف فريق «${name}» (${r.submissions} تقديم، ${r.files} ملف)${r.ticketFreed ? "، وعاد رمز تأهله صالحًا" : ""}`, "ok"); return;
+    dirty(`✓ حُذف فريق «${name}» (${r.submissions} تقديم، ${r.files} ملف)${r.pitch ? `، وحُذفت عروض فكرته (${r.pitch}) من الشاشات` : ""}${r.ticketFreed ? "، وعاد رمز تأهله صالحًا" : ""}`, "ok"); return;
   }
   if (act==="tstatus") {
     const dq = b.dataset.s === "disqualified";

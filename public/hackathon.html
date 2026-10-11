@@ -88,6 +88,23 @@
 .hello{color:var(--muted);font-size:14px;margin-bottom:2px}
 .hello b{color:var(--text)}
 .card.result.win{border-color:var(--gold);background:var(--gold-soft)}
+.tsteps{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:14px;counter-reset:t}
+.tsteps div{position:relative;text-align:center;font-size:12.5px;color:var(--muted);padding-top:34px}
+.tsteps div::before{counter-increment:t;content:counter(t);position:absolute;top:0;left:50%;transform:translateX(-50%);width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:13px;background:var(--card2);border:1.5px solid var(--line);color:var(--muted)}
+.tsteps div.done::before{content:"✓";background:var(--good);border-color:var(--good);color:#fff}
+.tsteps div.now{color:var(--text);font-weight:700}
+.tsteps div.now::before{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.tsteps small{display:block;font-weight:400;color:var(--muted);font-size:11.5px;line-height:1.5;margin-top:2px}
+.draft{font-size:12.5px;color:var(--muted);min-height:18px;margin:-4px 0 6px}
+.draft.ok{color:var(--good)}
+details.ex{margin:4px 0 2px}
+details.ex summary{cursor:pointer;font-size:12.5px;color:var(--accent);list-style:none;display:inline-block}
+details.ex summary::-webkit-details-marker{display:none}
+details.ex p{font-size:13px;color:var(--muted);background:var(--soft);border-radius:10px;padding:8px 12px;margin-top:4px;line-height:1.8}
+.cmp{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.cmp span{font-size:12.5px;border-radius:99px;padding:2px 10px;background:var(--card2);border:1px solid var(--line)}
+.cmp span.up{color:var(--good);border-color:color-mix(in srgb,var(--good) 35%,transparent)}
+.cmp span.down{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 35%,transparent)}
 </style>
 </head>
 <body>
@@ -208,6 +225,7 @@
         <span class="pill" id="tmAttempts"></span>
         <span class="pill" id="tmCode" dir="ltr"></span>
       </div>
+      <div class="tsteps" id="tmSteps"></div>
     </div>
 
     <div id="finalBox"></div>
@@ -218,19 +236,26 @@
 
     <div class="card" id="submitCard">
       <h2 id="formTitle">قدّم مشروعك</h2>
+      <p class="draft" id="draftMsg"></p>
       <p class="muted small">الرجاء الكتابة بوضوح واختصار؛ فالتقييم يكافئ الوضوح والأدلة لا طول النص. لديكم أكثر من محاولة، وتُحتسب أعلى درجة.</p>
       <label for="fTitle">اسم المشروع</label>
       <input id="fTitle" maxlength="60">
+      <details class="ex"><summary>عرض مثال</summary><p>مثال توضيحي: «رطب»: حساسات ذكية لحفظ التمور</p></details>
       <label for="fProblem">المشكلة: ما هي؟ ومن يعاني منها؟ وما الدليل؟</label>
       <textarea id="fProblem" maxlength="800"></textarea>
+      <details class="ex"><summary>عرض مثال</summary><p>مثال توضيحي: يفقد بعض مزارعي النخيل في القصيم جزءًا من محصول التمور بسبب ارتفاع الرطوبة في المستودعات. تحدّثنا مع 12 مزارعًا في بريدة، وذكر 9 منهم أنهم تعرّضوا لهذا التلف في الموسم الماضي.</p></details>
       <label for="fSolution">الحل: ماذا تقدّم؟ وما الذي يميّزه عن البدائل الحالية؟</label>
       <textarea id="fSolution" maxlength="1200" style="min-height:120px"></textarea>
+      <details class="ex"><summary>عرض مثال</summary><p>مثال توضيحي: حسّاس منخفض التكلفة يُثبَّت في المستودع، يقيس الرطوبة والحرارة ويرسل تنبيهًا للمزارع عبر واتساب قبل أن تتلف التمور. يتميّز عن الأجهزة المستوردة بسعره المنخفض وتنبيهاته باللغة العربية.</p></details>
       <label for="fCustomer">العميل والسوق: من أول عميل سيدفع؟ وكم حجم السوق تقريبًا؟</label>
       <textarea id="fCustomer" maxlength="600"></textarea>
+      <details class="ex"><summary>عرض مثال</summary><p>مثال توضيحي: العميل الأول: مزارع النخيل المتوسطة في بريدة وعنيزة، ويدفع صاحب المزرعة. نستهدف 100 مزرعة في السنة الأولى، ثم مصانع التمور ومستودعات التبريد.</p></details>
       <label for="fBusiness">نموذج الربح: كيف ستكسب المال؟ وما أهم التكاليف؟</label>
       <textarea id="fBusiness" maxlength="600"></textarea>
+      <details class="ex"><summary>عرض مثال</summary><p>مثال توضيحي: بيع الجهاز بسعر 199 ريالًا، واشتراك شهري 29 ريالًا للتنبيهات والتقارير. أهم التكاليف: تصنيع الجهاز، والتسويق الميداني في مواسم التمور.</p></details>
       <label for="fProto">النموذج الأولي: صِف ما بنيتموه (تصميم شاشات، نموذج مبدئي، استبيان، تجربة…)</label>
       <textarea id="fProto" maxlength="600" style="min-height:80px"></textarea>
+      <details class="ex"><summary>عرض مثال</summary><p>مثال توضيحي: صمّمنا شاشات التطبيق في Figma، وجرّبنا نموذجًا أوليًا للحسّاس في مستودع مزرعة واحدة لمدة أسبوع، وسجّلنا ثلاثة تنبيهات صحيحة.</p></details>
       <div class="row2">
         <div><label for="fProtoUrl">رابط النموذج الأولي (اختياري)</label><input id="fProtoUrl" dir="ltr" placeholder="https://"></div>
         <div><label for="fVideo">رابط فيديو العرض (اختياري)</label><input id="fVideo" dir="ltr" placeholder="https://"></div>
@@ -455,6 +480,48 @@ function renderPassword(){
     catch(e){ m.textContent = e.message; }
   };
 }
+// مؤشر الخطوات: التسجيل ← التقديم ← التحكيم ← النتائج
+function renderSteps(){
+  const t = team, done = (t.submissions || []).some(x => x.status === "done");
+  const H = CFG.hackathon, closes = H.closesAtMs ? new Date(H.closesAtMs).toLocaleString("ar-SA-u-ca-gregory-nu-latn", {weekday:"long", day:"numeric", month:"long", hour:"numeric", minute:"2-digit"}) : "";
+  const st = [
+    ["تسجيل الفريق", true, ""],
+    ["تقديم المشروع", done && t.phase !== "open", t.phase === "open" ? (done ? (closes ? `قدّمتم مشروعكم ✓ والتحسين متاح حتى ${closes}` : "قدّمتم مشروعكم ✓ والتحسين متاح") : (closes ? `حتى ${closes}` : "")) : ""],
+    ["التحكيم", Boolean(t.resultsPublished), t.phase === "closed" && !t.resultsPublished ? "جارٍ الآن" : ""],
+    ["النتائج", Boolean(t.resultsPublished), t.resultsPublished ? "أُعلنت" : ""],
+  ];
+  const now = st.findIndex(x => !x[1]);
+  $("tmSteps").innerHTML = st.map((x, i) => `<div class="${x[1] ? "done" : i === now ? "now" : ""}">${x[0]}${x[2] && (i === now || i === 3) ? `<small>${esc(x[2])}</small>` : ""}</div>`).join("");
+}
+// حفظ المسودة تلقائيًا على هذا الجهاز، واستعادتها إن لم تُرسل
+const DRAFT_F = ["fTitle","fProblem","fSolution","fCustomer","fBusiness","fProto","fProtoUrl","fVideo"];
+let draftT = null, draftDone = null;
+const draftKey = () => "hack_draft:" + (team?.code || "");
+function saveDraft(){
+  if (!team) return;
+  const v = Object.fromEntries(DRAFT_F.map(id => [id, $(id).value]));
+  if (!Object.values(v).some(x => x.trim())) return;
+  LS.set(draftKey(), JSON.stringify({v, at: Date.now()}));
+  const m = $("draftMsg"); m.className = "draft ok"; m.textContent = "✓ حُفظت المسودة تلقائيًا على هذا الجهاز " + new Date().toLocaleTimeString("ar-SA-u-nu-latn", {hour:"numeric", minute:"2-digit"});
+}
+DRAFT_F.forEach(id => $(id).addEventListener("input", () => { clearTimeout(draftT); draftT = setTimeout(saveDraft, 700); }));
+function restoreDraft(){
+  if (draftDone === team.code) return; draftDone = team.code;
+  let d = null; try { d = JSON.parse(LS.get(draftKey()) || "null"); } catch(e){}
+  const lastAt = Math.max(0, ...(team.submissions || []).map(x => Date.parse(x.created_at) || 0));
+  if (!d || d.at <= lastAt) { LS.set(draftKey(), null); $("draftMsg").textContent = ""; return; }
+  DRAFT_F.forEach(id => { if (d.v[id] != null) $(id).value = d.v[id]; });
+  const m = $("draftMsg"); m.className = "draft ok"; m.textContent = "✓ استعدنا مسودتكم غير المرسلة من هذا الجهاز";
+}
+// المقارنة بين آخر محاولتين: الدرجة الكلية وكل معيار
+function compareCard(subs, best){
+  if (subs.length < 2) return "";
+  const a = subs[subs.length - 2], b = subs[subs.length - 1], d = b.total - a.total, R = CFG.hackathon.rubric;
+  const chips = R.map(r => { const x = (b.scores?.[r.key] ?? 0) - (a.scores?.[r.key] ?? 0); return x ? `<span class="${x > 0 ? "up" : "down"}">${esc(r.label)} ${x > 0 ? "+" : "−"}${Math.abs(x)}</span>` : ""; }).join("");
+  const head = d > 0 ? `<i data-icon="trending-up" style="color:var(--good)"></i> ارتفعت درجتكم من ${a.total} إلى ${b.total} (+${d})`
+    : d < 0 ? `انخفضت درجتكم من ${a.total} إلى ${b.total}، وتُحتسب أعلى درجة لكم (${best.total})` : `بقيت درجتكم ${b.total} كما في المحاولة السابقة`;
+  return `<div class="card"><b>${head}</b>${chips ? `<div class="cmp">${chips}</div>` : ""}<p class="small muted" style="margin-top:6px">مقارنة المحاولة ${b.attempt} بالمحاولة ${a.attempt}.</p></div>`;
+}
 // النتيجة بعد انتهاء البرنامج وإعلان الفائزين، وقبلها تنبيه بموعد صدور الشهادات
 function renderResult(){
   const r = team.result, H = CFG.hackathon;
@@ -477,7 +544,7 @@ function renderTeam(){
   const idx = me && me === (t.team.email || "").toLowerCase() ? 0 : (t.team.memberEmails || []).findIndex(e => e && e.toLowerCase() === me);
   const who = idx >= 0 && M[idx] ? M[idx] : "";
   $("tmHello").innerHTML = who ? `مرحبًا <b>${esc(who)}</b>، أهلًا بك في صفحة فريقك` : `مرحبًا بكم في صفحة فريقكم`;
-  renderResult();
+  renderResult(); renderSteps();
   $("tmName").textContent = t.team.name;
   $("tmInfo").textContent = (t.team.members||[]).join("، ");
   $("tmChallenge").textContent = t.team.label;
@@ -488,6 +555,7 @@ function renderTeam(){
   $("submitCard").classList.toggle("hidden", closed);
   if (!closed) renderFiles();
   $("formTitle").textContent = all.length ? `تحسين المشروع وإعادة التقديم (المحاولة ${all.length+1})` : "تقديم المشروع";
+  restoreDraft();
   if (!subs.length && IMPORT) {
     if (!$("fTitle").value) $("fTitle").value = IMPORT.title || "";
     if (!$("fSolution").value) $("fSolution").value = IMPORT.idea || "";
@@ -497,7 +565,7 @@ function renderTeam(){
     const f = {fTitle:"title",fProblem:"problem",fSolution:"solution",fCustomer:"customer",fBusiness:"business",fProto:"prototype_desc",fProtoUrl:"prototype_url",fVideo:"video_url"};
     for (const [id,k] of Object.entries(f)) if (!$(id).value) $(id).value = last[k] || "";
     const best = subs.reduce((a,s)=>s.total>a.total?s:a, subs[0]);
-    $("resultBox").innerHTML = resultCard(last, best);
+    $("resultBox").innerHTML = resultCard(last, best) + compareCard(subs, best);
     setTimeout(()=>document.querySelectorAll("#resultBox .bar i").forEach(i=>i.style.width=i.dataset.w),80);
     $("historyCard").classList.toggle("hidden", subs.length<2);
     $("history").innerHTML = all.map(s=>`<div class="attempt"><span>المحاولة ${s.attempt} · ${esc(s.title)}</span><b class="gold">${s.status==="done"?s.total+"/100":"قيد التقييم"}</b></div>`).join("");
@@ -603,7 +671,7 @@ $("submitBtn").onclick = async () => {
   scrollTo({top:$("resultBox").offsetTop-10,behavior:"smooth"});
   try {
     await api("submit", body);
-    LS.set("hack_import", null); IMPORT = null; evalAsked = true;
+    LS.set("hack_import", null); IMPORT = null; evalAsked = true; clearTimeout(draftT); LS.set(draftKey(), null); $("draftMsg").textContent = "";
     await loadTeam(team.code); refreshBoard();
     scrollTo({top:$("resultBox").offsetTop-10,behavior:"smooth"});
   } catch(e){ renderTeam(); $("submitCard").classList.remove("hidden"); $("subErr").textContent = e.message; }
