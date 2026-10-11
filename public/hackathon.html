@@ -427,6 +427,7 @@ function renderAnnouncements(){
   $("annBox").innerHTML = list.length ? `<div class="card"><h2 style="font-size:17px"><i data-icon="megaphone"></i> الإعلانات والرسائل</h2>${list.map(a=>`<div class="ann ${a.personal?"me":""}"><span>${a.personal?'<i data-icon="mail"></i>':'<i data-icon="megaphone"></i>'}</span><span><b>${esc(a.title)}</b>${a.body?`<br><span class="small muted" style="white-space:pre-wrap">${esc(a.body)}</span>`:""}<br><span class="small muted">${new Date(a.created_at).toLocaleString("ar-SA-u-nu-latn",{day:"numeric",month:"long",hour:"numeric",minute:"2-digit"})}</span></span></div>`).join("")}</div>` : "";
   const c = team.certs;
   const KIND = {participant:"شهادة مشاركة", finalist:"شهادة تأهل للتحكيم النهائي", winner1:"شهادة فوز · المركز الأول", winner2:"شهادة فوز · المركز الثاني", winner3:"شهادة فوز · المركز الثالث"};
+  if (c?.kind === "winner1" && (CFG.hackathon.awards || "track") === "track") KIND.winner1 = "شهادة فوز · المركز الأول في المسار";
   $("certBox").innerHTML = c ? `<div class="card"><h2 style="font-size:17px"><i data-icon="award"></i> شهاداتكم: ${KIND[c.kind]||""}</h2>${c.list.map(x=>`<div class="certrow"><span>${esc(x.name)}</span><a class="btn sm" href="certificate.html?c=${encodeURIComponent(x.code)}" target="_blank">عرض وطباعة</a></div>`).join("")}</div>` : "";
 }
 async function checkPending(){

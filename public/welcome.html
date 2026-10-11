@@ -116,7 +116,7 @@ APP.ready.then(async c => {
   // الجدول والجوائز والأسئلة والشركاء
   const P = c.program;
   if (P.schedule.length) { $("schedCard").classList.remove("hidden"); $("sched").innerHTML = P.schedule.map(x=>`<div class="it"><small>${esc(x.day)}</small><div><b>${esc(x.title)}</b></div>${x.desc?`<div class="muted small">${esc(x.desc)}</div>`:""}</div>`).join(""); }
-  if (P.prizes.length) { $("prizeCard").classList.remove("hidden"); $("prizes").innerHTML = P.prizes.map((x,i)=>`<div class="prize"><i data-icon="award" class="medal-${i+1}"></i><div class="pl">${esc(x.place)}</div><b>${esc(x.title)}</b>${x.desc?`<div class="muted small">${esc(x.desc)}</div>`:""}</div>`).join(""); }
+  if (P.prizes.length) { $("prizeCard").classList.remove("hidden"); $("prizes").innerHTML = P.prizes.map((x,i)=>`<div class="prize"><i data-icon="award" class="medal-${(H.awards||"track")==="track"?1:i+1}"></i><div class="pl">${esc(x.place)}</div><b>${esc(x.title)}</b>${x.desc?`<div class="muted small">${esc(x.desc)}</div>`:""}</div>`).join(""); }
   if (P.faq.length) { $("faqCard").classList.remove("hidden"); $("faq").innerHTML = P.faq.map(x=>`<details class="faq"><summary>${esc(x.q)}<i data-icon="chevron-down"></i></summary><p>${esc(x.a)}</p></details>`).join(""); }
   if (P.partners.length) { $("partCard").classList.remove("hidden"); $("partners").innerHTML = P.partners.map(x=>x.logoUrl?`<img src="${esc(x.logoUrl)}" alt="${esc(x.name)}" title="${esc(x.name)}">`:`<span>${esc(x.name)}</span>`).join(""); }
   // عدّاد ومرحلة الهاكاثون

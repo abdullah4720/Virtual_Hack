@@ -109,8 +109,8 @@ async function load(){
       <h3>الفرق حسب المسار</h3>${bars(d.tracks.map(t=>({label:t.title, v:t.teams})))}
       ${foot("1")}</section>
       <section class="page"><h2>الفائزون والمتأهلون</h2>
-      <table><thead><tr><th>المركز</th><th>الفريق</th><th>المشروع</th><th>المسار</th><th>الذكاء الاصطناعي</th><th>اللجنة</th><th>النهائية</th></tr></thead><tbody>
-      ${d.winners.map(w=>`<tr><td class="medal">${w.place<=3?`<i data-icon="medal" class="medal-${w.place}"></i>`:w.place}</td><td><b>${esc(w.team)}</b><br><span style="color:#5b6478;font-size:12px">${esc((w.members||[]).join("، "))}</span></td><td>${esc(w.title)}</td><td>${esc(w.label)}</td><td>${w.ai}</td><td>${w.judges??"—"}</td><td><b>${w.final??"—"}</b></td></tr>`).join("") || `<tr><td colspan="7">لا يوجد متأهلون بعد</td></tr>`}
+      <table><thead><tr><th>${d.awards==="track"?"الفائز":"المركز"}</th><th>الفريق</th><th>المشروع</th><th>المسار</th><th>الذكاء الاصطناعي</th><th>اللجنة</th><th>النهائية</th></tr></thead><tbody>
+      ${d.winners.map(w=>`<tr><td class="medal">${d.awards==="track" ? (w.winner?`<i data-icon="medal" class="medal-1"></i>`:"") : (w.place<=3?`<i data-icon="medal" class="medal-${w.place}"></i>`:w.place)}</td><td><b>${esc(w.team)}</b><br><span style="color:#5b6478;font-size:12px">${esc((w.members||[]).join("، "))}</span></td><td>${esc(w.title)}</td><td>${esc(w.label)}</td><td>${w.ai}</td><td>${w.judges??"—"}</td><td><b>${w.final??"—"}</b></td></tr>`).join("") || `<tr><td colspan="7">لا يوجد متأهلون بعد</td></tr>`}
       </tbody></table>
       <p style="color:#5b6478;font-size:12.5px;margin-top:10px">الدرجة النهائية = ${S.hackathon.weights.ai}% تقييم الذكاء الاصطناعي + ${S.hackathon.weights.judges}% متوسط درجات اللجنة.</p>
       <h3>معايير التقييم</h3>

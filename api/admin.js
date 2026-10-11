@@ -257,7 +257,7 @@ export default async function handler(req, res) {
           expected: exp.map((j) => ({ id: j.id, name: j.name, done: scored.has(j.id) })),
           done: exp.filter((j) => scored.has(j.id)).length,
           scores: r.judges.map((x) => ({ judge_id: x.judge_id, judge: x.judge, score: x.score, coi: x.coi, note: x.note, at: x.at })),
-          judgeAvg: r.judgeAvg, final: r.final, finalRank: r.finalRank ?? null,
+          judgeAvg: r.judgeAvg, final: r.final, finalRank: r.finalRank ?? null, trackRank: r.trackRank ?? null, award: r.award ?? null,
           spread: vals.length > 1 ? Math.max(...vals) - Math.min(...vals) : 0, flagged: r.flagged,
         };
       });
@@ -299,7 +299,8 @@ export default async function handler(req, res) {
           improved: [...subsByTeam.values()].filter((l) => l.length > 1 && l[l.length - 1].ai_total > l[0].ai_total).length,
         },
         byDay, tracks,
-        winners: finals.map((r, i) => ({ place: i + 1, team: r.team.name, members: r.team.members, title: r.best.title, label: r.label, ai: r.best.ai_total, judges: r.judgeAvg, final: r.final })),
+        awards: s.hackathon.awards || "track",
+        winners: ((s.hackathon.awards || "track") === "track" ? [...finals].sort((a, c) => (a.trackRank || 99) - (c.trackRank || 99) || (c.final ?? c.best.ai_total) - (a.final ?? a.best.ai_total)) : finals).map((r, i) => ({ place: (s.hackathon.awards || "track") === "track" ? (r.trackRank === 1 ? 1 : 4) : i + 1, winner: Boolean(r.award), trackTitle: r.trackTitle, team: r.team.name, members: r.team.members, title: r.best.title, label: r.label, ai: r.best.ai_total, judges: r.judgeAvg, final: r.final })),
         projects: rows.map((r) => ({
           rank: r.rank, team: r.team.name, members: r.team.members, label: r.label, title: r.best.title, problem: r.best.problem, solution: r.best.solution,
           customer: r.best.customer, business: r.best.business, score: r.best.ai_total, summary: r.best.ai_feedback?.summary || "", finalist: r.finalist,

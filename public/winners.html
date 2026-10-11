@@ -53,23 +53,27 @@ canvas{position:fixed;inset:0;pointer-events:none}
 const $ = id => document.getElementById(id);
 const esc = s => { const d=document.createElement("div"); d.textContent=s??""; return d.innerHTML; };
 let KEY; try { KEY = sessionStorage.getItem("jk"); } catch(e){}
-let F = [], step = 0, C = null;
+let F = [], step = 0, C = null, BY_TRACK = true;
 const MEDAL = [1,2,3].map(n=>`<i data-icon="medal" class="medal-${n}"></i>`), PLACE = ["المركز الأول","المركز الثاني","المركز الثالث"];
 
 async function load(){
   const r = await fetch("api/hack?action=results",{headers:{"x-judge-key":KEY}});
   const d = await r.json(); if (!r.ok) throw new Error(d.error||"خطأ");
-  F = d.finalists; C = d.config; document.title = "إعلان الفائزين · " + C.hackathon.name;
+  F = d.finalists; C = d.config; BY_TRACK = (d.awards || "track") === "track";
+  // الفوز حسب المسار: فائز واحد لكل مسار، بترتيب المسارات في الإعدادات
+  if (BY_TRACK) { const order = C.hackathon.tracks.map(t => t.id); F = F.filter(f => f.award === 1).sort((a, b) => order.indexOf(a.track) - order.indexOf(b.track)); }
+  document.title = "إعلان الفائزين · " + C.hackathon.name;
   $("loginView").classList.add("hidden"); $("stage").classList.remove("hidden");
   $("hint").textContent = "اضغط مسافة أو انقر للانتقال ←";
-  const pending = F.slice(0,3).filter(f=>f.pending).length;
-  if (pending) { $("warn").textContent = `تنبيه للمنظّم: ${pending} من الثلاثة الأوائل بلا درجات لجنة بعد، والترتيب الحالي مبني على تقييم الذكاء الاصطناعي فقط`; $("warn").classList.remove("hidden"); }
+  const pending = (BY_TRACK ? F : F.slice(0,3)).filter(f=>f.pending).length;
+  if (pending) { $("warn").textContent = `تنبيه للمنظّم: ${pending} من ${BY_TRACK ? "الفائزين" : "الثلاثة الأوائل"} بلا درجات لجنة بعد، والترتيب الحالي مبني على تقييم الذكاء الاصطناعي فقط`; $("warn").classList.remove("hidden"); }
   render();
 }
 $("go").onclick = async () => { KEY=$("k").value.trim(); try{ await load(); try{sessionStorage.setItem("jk",KEY)}catch(e){} }catch(e){ $("err").textContent=e.message; } };
 
 // التسلسل: مقدمة → الثالث → الثاني → الأول → منصة التتويج
 function render(){
+  if (BY_TRACK) return renderTracks();
   const s = $("stage"), n = Math.min(3, F.length);
   if (!F.length) { s.innerHTML = `<div class="title">لا توجد مشاريع متأهلة بعد</div>`; return; }
   if (step === 0) {
@@ -96,7 +100,35 @@ function render(){
     <div class="kicker">شكرًا لجميع الفرق المشاركة</div>`;
   $("hint").textContent = "";
 }
-function next(){ if (!F.length) return; const max = Math.min(3,F.length)+1; if (step < max) { step++; render(); } }
+// التسلسل حسب المسار: مقدمة ← فائز كل مسار ← لوحة الفائزين
+function renderTracks(){
+  const s = $("stage"), n = F.length;
+  if (!n) { s.innerHTML = `<div class="title">لا توجد مشاريع متأهلة بعد</div>`; return; }
+  if (step === 0) {
+    s.innerHTML = `<div style="display:flex;gap:3vw;align-items:center;justify-content:center">${(C.brand.logos||[]).map(l=>`<img src="${esc(l.url)}" alt="" class="${l.mono?"mono":""}" style="max-height:7vw;max-width:24vw">`).join("")}</div>
+      <div class="kicker">${esc([C.brand.boothName, C.brand.eventName].filter(Boolean).join(" · "))}</div>
+      <div class="title"><i data-icon="zap"></i> ${APP.title(C.hackathon.name)}</div>
+      <div class="place">إعلان الفائزين بالمركز الأول في كل مسار</div>`;
+    return;
+  }
+  if (step <= n) {
+    const f = F[step - 1], t = C.hackathon.tracks.find(x => x.id === f.track);
+    s.innerHTML = `<div class="kicker">${glyph(t?.icon)} مسار ${esc(f.trackTitle)}</div>
+      <div class="place p1">المركز الأول</div>
+      <div class="medal">${MEDAL[0]}</div>
+      <div class="team">${esc(f.team)}</div>
+      <div class="proj">«${esc(f.title)}»</div>
+      <div class="mem">${esc((f.members||[]).join(" · "))}</div>
+      <div class="score">الدرجة النهائية <b>${f.final}</b></div>`;
+    confetti();
+    return;
+  }
+  s.innerHTML = `<div class="title" style="font-size:3.4vw"><i data-icon="trophy"></i> الفائزون في ${esc(C.hackathon.name)}</div>
+    <div class="podium" style="grid-template-columns:repeat(${Math.min(F.length,4)},1fr);align-items:stretch">${F.map(f=>`<div class="pc first"><div class="m">${MEDAL[0]}</div><span>${esc(f.trackTitle)}</span><b>${esc(f.team)}</b><span>${esc(f.title)}</span><span class="gold" style="margin-top:.5vw">${f.final}</span></div>`).join("")}</div>
+    <div class="kicker">شكرًا لجميع الفرق المشاركة</div>`;
+  $("hint").textContent = "";
+}
+function next(){ if (!F.length) return; const max = (BY_TRACK ? F.length : Math.min(3,F.length))+1; if (step < max) { step++; render(); } }
 function prev(){ if (step>0){ step--; render(); } }
 document.addEventListener("keydown", e => { if ([" ","ArrowLeft","Enter","PageDown"].includes(e.key)) { e.preventDefault(); next(); } if (["ArrowRight","PageUp","Backspace"].includes(e.key)) prev(); });
 $("stage").addEventListener("click", next);

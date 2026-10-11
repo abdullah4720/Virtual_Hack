@@ -56,7 +56,10 @@ APP.ready.then(async () => {
   const d = await r.json().catch(() => ({}));
   if (!r.ok || !d.valid) { out.innerHTML = `<div class="verify"><div style="font-size:40px;color:#c0392b"><i data-icon="circle-x"></i></div><h2>شهادة غير صالحة</h2><p>لم نجد شهادة بالرمز <b dir="ltr">${esc(code)}</b>.</p></div>`; return; }
   document.documentElement.style.setProperty("--accent", d.brand.accent); if (d.brand.bg) document.documentElement.style.setProperty("--navy", d.brand.bg);
-  const [medal, title, why] = KIND[d.kind] || KIND.participant;
+  let [medal, title, why] = KIND[d.kind] || KIND.participant;
+  // الفوز حسب المسار: المركز الأول في مسار محدد
+  const trackWin = d.kind === "winner1" && d.awards === "track" && d.trackTitle;
+  if (trackWin) why = `لفوزه بالمركز الأول في مسار «${esc(d.trackTitle)}» في`;
   const date = new Date(d.date).toLocaleDateString("ar-SA-u-nu-latn", {year: "numeric", month: "long", day: "numeric"});
   out.innerHTML = `<div class="cert">
     ${(d.brand.logos||[]).length ? `<div class="logos">${d.brand.logos.map(l=>`<img class="logo" src="${esc(l.url)}" alt="">`).join("")}</div>` : ""}
@@ -65,7 +68,7 @@ APP.ready.then(async () => {
     <div class="kind">${APP.title(title)}</div>
     <div class="to">تُمنح هذه الشهادة إلى</div>
     <div class="name">${esc(d.name)}</div>
-    <div class="txt">${why} <b>${esc(d.hackathon)}</b> ضمن فريق <b>${esc(d.team)}</b>${d.project ? ` بمشروع «<b>${esc(d.project)}</b>»` : ""}${d.label ? `، مسار ${esc(d.label)}` : ""}.</div>
+    <div class="txt">${why} <b>${esc(d.hackathon)}</b> ضمن فريق <b>${esc(d.team)}</b>${d.project ? ` بمشروع «<b>${esc(d.project)}</b>»` : ""}${d.label && !trackWin ? `، مسار ${esc(d.label)}` : ""}.</div>
     <div class="meta"><div>${date}</div><div style="text-align:center">رمز التحقق<br><b dir="ltr" style="font-size:14px;color:#1a1f36">${esc(d.code)}</b></div><div class="qr" id="qr"></div></div>
   </div>`;
   try { new QRCode(document.getElementById("qr"), {text: location.href, width: 200, height: 200}); } catch(e){}

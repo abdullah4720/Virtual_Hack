@@ -84,7 +84,7 @@ export default async function handler(req, res) {
         const row = rows.find((r) => r.team.id === t.id);
         return res.status(200).json({
           valid: true, code, name: t.members[i], team: t.name, project: row?.best.title || "", label: optionLabel(s, t.track, t.challenge),
-          kind: certKind(s, row), brand: { ...s.brand, logos: await resolveLogos(s) }, hackathon: H.name, date: row?.best.created_at || t.created_at,
+          kind: certKind(s, row), awards: H.awards || "track", trackTitle: row?.trackTitle || "", brand: { ...s.brand, logos: await resolveLogos(s) }, hackathon: H.name, date: row?.best.created_at || t.created_at,
         });
       }
       return res.status(404).json({ valid: false, error: "الشهادة غير موجودة" });
@@ -344,8 +344,9 @@ export default async function handler(req, res) {
         const finalists = rows.filter((r) => r.finalist).map((r) => ({
           team: r.team.name, members: r.team.members, title: r.best.title, challenge: r.label, ai: r.best.ai_total,
           judgeAvg: r.judgeAvg, final: r.final ?? r.best.ai_total, pending: r.final == null,
+          track: r.team.track, trackTitle: r.trackTitle, trackRank: r.trackRank, award: r.award ?? null,
         })).sort((a, c) => c.final - a.final);
-        return res.status(200).json({ config: publicSettings(s), finalists });
+        return res.status(200).json({ config: publicSettings(s), finalists, awards: H.awards || "track" });
       }
     }
 
