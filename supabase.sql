@@ -170,3 +170,23 @@ alter table mail_log enable row level security;
 
 -- ============ v4: الدخول بالبريد وكلمة المرور ============
 alter table hack_teams add column if not exists password_hash text;
+
+-- ============ v5: ربط الجداول ببعضها (مفاتيح خارجية) ============
+-- آمن للتشغيل أكثر من مرة، ولا يفشل على بيانات قديمة (NOT VALID يطبّق الربط على الجديد فقط)
+-- رمز التأهل ← الفريق الذي سجّل به: عند حذف الفريق يعود الرمز صالحًا
+do $$ begin
+  alter table tickets add constraint tickets_used_by_team_fk foreign key (used_by_team) references hack_teams(id) on delete set null not valid;
+exception when duplicate_object then null; end $$;
+-- رمز التأهل ← عرض الفكرة في المستثمر الذكي
+do $$ begin
+  alter table tickets add constraint tickets_deal_fk foreign key (deal_id) references deals(id) on delete set null not valid;
+exception when duplicate_object then null; end $$;
+-- الفريق ← عرض الفكرة الذي تأهل منه
+do $$ begin
+  alter table hack_teams add constraint hack_teams_deal_fk foreign key (deal_id) references deals(id) on delete set null not valid;
+exception when duplicate_object then null; end $$;
+-- فهارس للربط السريع
+create index if not exists tickets_team_idx on tickets (used_by_team);
+create index if not exists tickets_deal_idx on tickets (deal_id);
+create index if not exists hack_teams_deal_idx on hack_teams (deal_id);
+create index if not exists hack_scores_team_idx on hack_judge_scores (team_id);

@@ -13,6 +13,7 @@ import { siteUrl } from "../lib/site.js";
 import { keyProblem } from "../lib/supabase.js";
 import { hashPassword, passwordProblem } from "../lib/password.js";
 import { resolveLogos, storeLogo } from "../lib/logos.js";
+import { remove as removeFile } from "../lib/files.js";
 
 const clip = (s, n) => String(s ?? "").trim().slice(0, n);
 const csvCell = (v) => {
@@ -93,8 +94,31 @@ export default async function handler(req, res) {
 
     if (action === "team-status" && req.method === "POST") {
       const status = b.status === "disqualified" ? "disqualified" : "active";
-      await update(T.teams, Number(b.id), { status, status_note: clip(b.note, 300) });
+      await update(T.teams, Number(b.id), { status });
       return res.status(200).json({ ok: true });
+    }
+
+    // ---------- حذف فريق نهائيًا: تقديماته ودرجاته وملفاته ورسائله، وتحرير رمز التأهل ليُستخدم من جديد ----------
+    if (action === "team-delete" && req.method === "POST") {
+      const id = Number(b.id);
+      const [team] = await select(T.teams, { id });
+      if (!team) return res.status(404).json({ error: "الفريق غير موجود" });
+      if (b.confirm !== team.name) return res.status(400).json({ error: "اكتب اسم الفريق كما هو للتأكيد" });
+      const subs = (await select(T.subs)).filter((x) => x.team_id === id);
+      const keys = new Set([...(team.files || []), ...subs.flatMap((x) => x.files || [])].map((f) => f?.key).filter(Boolean));
+      for (const k of keys) { try { await removeFile(k); } catch (e) { console.error("file delete", k, e.message); } }
+      for (const x of (await select(T.scores)).filter((x) => x.team_id === id)) await removeOne(T.scores, x.id);
+      for (const x of subs) await removeOne(T.subs, x.id);
+      for (const x of (await select("announcements")).filter((x) => x.audience === `team:${id}`)) await removeOne("announcements", x.id);
+      for (const t of (await select(TICKETS)).filter((x) => x.used_by_team === id)) await update(TICKETS, t.id, { used_by_team: null, used_at: null });
+      await removeOne(T.teams, id);
+      // إزالة الفريق من إسناد اللجان وترتيب العرض
+      const J = s.hackathon.judging;
+      if (J && (J.assign?.[String(id)] || J.order?.[String(id)])) {
+        const next = JSON.parse(JSON.stringify(s)); delete next.hackathon.judging.assign[String(id)]; delete next.hackathon.judging.order[String(id)];
+        await saveSettings(next);
+      }
+      return res.status(200).json({ ok: true, files: keys.size, submissions: subs.length, ticketFreed: Boolean(team.ticket) });
     }
 
     // كلمات مرور الفرق: تُعيّنها الإدارة وتسلّمها للفرق (لا تُرسل بالبريد)
@@ -352,7 +376,11 @@ export default async function handler(req, res) {
       const scope = b.scope;
       if (b.confirm !== "حذف") return res.status(400).json({ error: "اكتب كلمة «حذف» للتأكيد" });
       if (scope === "investor" || scope === "all") { await removeAll("deals"); await removeAll(TICKETS); await removeAll("otp"); }
-      if (scope === "hackathon" || scope === "all") { await removeAll(T.scores); await removeAll(T.subs); await removeAll(T.teams); }
+      if (scope === "hackathon" || scope === "all") {
+        await removeAll(T.scores); await removeAll(T.subs); await removeAll(T.teams);
+        // رموز التأهل المستخدمة تعود صالحة للتسجيل، فلا تبقى مرتبطة بفرق محذوفة
+        if (scope === "hackathon") for (const t of (await select(TICKETS)).filter((x) => x.used_by_team)) await update(TICKETS, t.id, { used_by_team: null, used_at: null });
+      }
       if (scope === "all") { await removeAll("announcements"); await removeAll(USAGE); await removeAll(LOG); }
       return res.status(200).json({ ok: true });
     }

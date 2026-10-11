@@ -417,7 +417,7 @@ const P = {
           <td>${esc(t.label)}</td><td>${esc(t.title||"—")}</td><td>${t.attempts}${t.pending?` <span class="pill"><i data-icon="hourglass"></i>${t.pending}</span>`:""}</td>
           <td><b class="gold">${t.best??"—"}</b>${t.final!=null?`<div class="help">نهائية ${t.final}</div>`:""}</td><td>${SRC[t.source]||"—"}</td>
           <td>${t.status==="disqualified"?'<span class="pill no">مستبعد</span>':'<span class="pill ok">نشط</span>'}</td>
-          <td style="white-space:nowrap"><a class="ib" href="hackathon.html?code=${esc(t.code)}" target="_blank" title="فتح صفحة الفريق">صفحته</a> <button class="ib" data-act="tpass" data-id="${t.id}" data-name="${attr(t.name)}" title="إعادة تعيين كلمة المرور"><i data-icon="key-round"></i> إعادة تعيين</button> <button class="ib" data-act="msg" data-id="${t.id}" data-name="${attr(t.name)}"><i data-icon="mail"></i> رسالة</button> ${t.status==="disqualified"?`<button class="ib" data-act="tstatus" data-id="${t.id}" data-s="active">استعادة</button>`:`<button class="ib del" data-act="tstatus" data-id="${t.id}" data-s="disqualified">استبعاد</button>`}</td></tr>`).join("")}
+          <td style="white-space:nowrap"><a class="ib" href="hackathon.html?code=${esc(t.code)}" target="_blank" title="فتح صفحة الفريق">صفحته</a> <button class="ib" data-act="tpass" data-id="${t.id}" data-name="${attr(t.name)}" title="إعادة تعيين كلمة المرور"><i data-icon="key-round"></i> إعادة تعيين</button> <button class="ib" data-act="msg" data-id="${t.id}" data-name="${attr(t.name)}"><i data-icon="mail"></i> رسالة</button> ${t.status==="disqualified"?`<button class="ib" data-act="tstatus" data-id="${t.id}" data-s="active">استعادة</button>`:`<button class="ib del" data-act="tstatus" data-id="${t.id}" data-s="disqualified">استبعاد</button>`} <button class="ib del" data-act="tdelete" data-id="${t.id}" data-name="${attr(t.name)}" title="حذف الفريق نهائيًا"><i data-icon="trash-2"></i> حذف</button></td></tr>`).join("")}
         </tbody></table></div>` : `<p class="muted">لا توجد فرق.</p>`)}`;
   },
   announce(){
@@ -612,6 +612,12 @@ $("main").addEventListener("change", async e => {
   }
 });
 
+// أي خطأ غير معالج في الأزرار يظهر للمنظّم بدل أن يفشل بصمت
+addEventListener("unhandledrejection", e => {
+  const m = e.reason?.message || String(e.reason || ""); if (!m) return;
+  try { dirty("تعذّر تنفيذ العملية: " + m, "err"); } catch(_){}
+  alert("تعذّر تنفيذ العملية: " + m);
+});
 $("main").addEventListener("click", async e => {
   const c = e.target.closest("[data-copy]");
   if (c) { const old = c.textContent; try { await navigator.clipboard.writeText(c.dataset.copy); c.textContent="✓"; setTimeout(()=>c.textContent=old,1200);} catch(_){} return; }
@@ -712,7 +718,19 @@ $("main").addEventListener("click", async e => {
   }
   if (act==="kioskkey") { if (S.booth.kioskKey && !confirm("سيتوقف الرابط الحالي للجهاز اللوحي. متابعة؟")) return; S.booth.kioskKey = genKey(16); render(); dirty("أُنشئ رابط الجهاز اللوحي. الرجاء حفظ التغييرات.", "ok"); return; }
   if (act==="genkey") { S.hackathon.judgeKey = genKey(); render(); dirty(); return; }
-  if (act==="reeval") { b.disabled = true; b.textContent = "جارٍ التقييم…"; try { const r = await api("reeval", {}); D = await api("get"); render(); dirty(`اكتمل تقييم ${r.evaluated}${r.remaining?`، وبقي ${r.remaining}`:""}`, "ok"); } catch(err){ alert(err.message); } return; }
+  if (act==="reeval") { const old = b.innerHTML; b.disabled = true; b.textContent = "جارٍ التقييم…"; try { const r = await api("reeval", {}); D = await api("get"); render(); dirty(`اكتمل تقييم ${r.evaluated}${r.remaining?`، وبقي ${r.remaining}`:""}`, "ok"); } catch(err){ b.disabled = false; b.innerHTML = old; alert(err.message); } return; }
+  if (act==="tdelete") {
+    const name = b.dataset.name;
+    const typed = prompt(`حذف فريق «${name}» نهائيًا؟\n\nسيُحذف الفريق وأعضاؤه وكل تقديماته وملفاته ودرجات المحكّمين له ورسائله، ولا يمكن التراجع. ويعود رمز التأهل الذي سجّل به صالحًا للتسجيل من جديد.\n\nللتأكيد اكتب اسم الفريق كما هو:`, "");
+    if (typed == null) return;
+    if (typed.trim() !== name) return alert("لم يُحذف الفريق: الاسم المكتوب لا يطابق اسم الفريق.");
+    const r = await api("team-delete", {id: Number(b.dataset.id), confirm: typed.trim()});
+    const wasDirty = JSON.stringify(S) !== saved, sid = String(b.dataset.id);
+    TEAMS = (await api("teams")).teams; D = await api("get"); JG = null;
+    if (wasDirty) { delete S.hackathon.judging?.assign?.[sid]; delete S.hackathon.judging?.order?.[sid]; } else { S = JSON.parse(JSON.stringify(D.settings)); saved = JSON.stringify(S); }
+    render();
+    dirty(`✓ حُذف فريق «${name}» (${r.submissions} تقديم، ${r.files} ملف)${r.ticketFreed ? "، وعاد رمز تأهله صالحًا" : ""}`, "ok"); return;
+  }
   if (act==="tstatus") {
     const dq = b.dataset.s === "disqualified";
     if (dq && !confirm("استبعاد هذا الفريق؟ سيختفي من الترتيب ولن يستطيع التقديم.")) return;
@@ -760,6 +778,7 @@ $("main").addEventListener("click", async e => {
   if (act==="defaults") { if (!confirm("استعادة كل الإعدادات الافتراضية؟")) return; S = JSON.parse(JSON.stringify(D.defaults)); S.hackathon.judgeKey = D.settings.hackathon.judgeKey; render(); dirty("تمت الاستعادة. اضغط «حفظ التغييرات» لاعتمادها."); return; }
   if (act==="export") {
     const r = await fetch(`api/admin?action=export&what=${b.dataset.what}`, {headers:{"x-admin-key":KEY}});
+    if (!r.ok) { const d = await r.json().catch(()=>({})); return alert("تعذّر التصدير: " + (d.error || r.status)); }
     const blob = await r.blob(); const a = document.createElement("a");
     a.href = URL.createObjectURL(blob); a.download = {deals:"investor-pitches.csv", scores:"judges-scores.csv"}[b.dataset.what] || "hackathon-teams.csv"; a.click(); return;
   }
