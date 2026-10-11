@@ -93,9 +93,10 @@ async function refresh(){
     const H = CFG.hackathon;
     $("sTeams").textContent = d.stats.teams; $("sSubs").textContent = d.stats.submissions; $("sEval").textContent = d.stats.evaluated;
     const trackIcon = id => H.tracks.find(t=>t.id===id)?.icon || "";
-    $("legend").textContent = `▍ المميَّزون بالخط الذهبي ضمن أفضل ${H.finalists} ويتأهلون لتحكيم اللجنة`;
+    const sc = H.judging?.scope;
+    $("legend").textContent = sc === "all" ? "▍ كل المشاريع المقدَّمة تدخل تحكيم اللجنة" : `▍ المميَّزون بالخط الذهبي يتأهلون لتحكيم اللجنة: ${sc === "perTrack" ? `${H.finalistsPerTrack === 2 ? "أفضل مشروعين" : `أفضل ${H.finalistsPerTrack}`} من كل مسار` : `أفضل ${H.finalists}`}`;
     $("rows").innerHTML = d.leaderboard.length ? d.leaderboard.slice(0,7).map(r=>`
-      <div class="row ${r.rank<=H.finalists?"fin":""}"><span class="rank">${r.rank}</span>
+      <div class="row ${r.finalist?"fin":""}"><span class="rank">${r.rank}</span>
         <div class="who"><b>${esc(r.team)}</b><small>${glyph(trackIcon(r.track))} ${esc(r.title)}</small></div>
         <div class="bar"><i style="width:${r.score}%"></i></div>
         <span class="score">${r.score}</span></div>`).join("")

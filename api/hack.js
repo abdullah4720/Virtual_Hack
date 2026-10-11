@@ -68,7 +68,7 @@ export default async function handler(req, res) {
         phase: ph,
         stats: { teams: active.length, submissions: subs.length, evaluated: rows.length },
         leaderboard: rows.slice(0, 20).map((r) => ({
-          rank: r.rank, team: r.team.name, title: r.best.title, track: r.team.track, label: r.label, score: r.best.ai_total, attempts: r.attempts,
+          rank: r.rank, team: r.team.name, title: r.best.title, track: r.team.track, label: r.label, score: r.best.ai_total, attempts: r.attempts, finalist: Boolean(r.finalist),
         })),
       });
     }

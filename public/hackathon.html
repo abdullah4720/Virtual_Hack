@@ -323,7 +323,8 @@ function renderHome(){
   const H = CFG.hackathon;
   $("membersTxt").textContent = H.maxMembers > 1 ? `1 إلى ${H.maxMembers} أعضاء` : "مشاركة فردية";
   $("attemptsTxt").textContent = H.maxAttempts > 1 ? `حتى ${H.maxAttempts} محاولات` : "محاولة واحدة";
-  $("finalNote").textContent = `أفضل ${H.finalists} مشاريع حسب تقييم الذكاء الاصطناعي تتأهل للتحكيم النهائي من لجنة متخصصة. الدرجة النهائية: ${H.weights.ai}% تقييم الذكاء الاصطناعي + ${H.weights.judges}% تقييم اللجنة.`;
+  const sc = H.judging?.scope;
+  $("finalNote").textContent = `${sc === "all" ? "كل المشاريع المقدَّمة تدخل" : sc === "perTrack" ? `${H.finalistsPerTrack === 1 ? "أفضل مشروع" : H.finalistsPerTrack === 2 ? "أفضل مشروعين" : `أفضل ${H.finalistsPerTrack} مشاريع`} في كل مسار حسب تقييم الذكاء الاصطناعي تتأهل إلى` : `أفضل ${H.finalists} مشاريع حسب تقييم الذكاء الاصطناعي تتأهل إلى`} التحكيم النهائي من لجنة متخصصة${(H.awards || "track") === "track" ? "، ويفوز الأول في كل مسار" : ""}. الدرجة النهائية: ${H.weights.ai}% تقييم الذكاء الاصطناعي + ${H.weights.judges}% تقييم اللجنة.`;
   $("rubric").innerHTML = H.rubric.map(r=>`<div><span><span>${esc(r.label)}</span><b class="gold">${r.max}</b></span>${r.guide?`<small>${esc(r.guide)}</small>`:""}</div>`).join("");
   // العضو الأول (القائد) بريده هو بريد التواصل؛ لبقية الأعضاء بريد اختياري ليصلهم كل جديد
   $("members").innerHTML = Array.from({length:H.maxMembers},(_,i)=>`<div class="mrow ${i===0?"one":""}"><input class="mem" maxlength="50" placeholder="${i===0?(H.maxMembers>1?"اسم العضو الأول (قائد الفريق)":"اسمك"):"اسم العضو "+(i+1)+" (اختياري)"}">${i===0?"":`<input class="memMail" type="email" dir="ltr" maxlength="80" placeholder="بريده (اختياري)">`}</div>`).join("");

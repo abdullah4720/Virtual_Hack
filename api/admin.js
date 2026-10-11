@@ -121,10 +121,11 @@ export default async function handler(req, res) {
       // عرض الفكرة الذي تأهل منه الفريق يُحذف أيضًا، فيختفي من شاشات الجناح ولوحة البيانات
       // وكل محاولاته السابقة في المستثمر الذكي (ببريده نفسه)، حتى لا يبقى له أثر على الشاشات
       let pitch = 0;
-      if (team.deal_id) {
-        const [d] = await select("deals", { id: team.deal_id });
-        const mail = (d?.email || "").toLowerCase();
-        const mine = (await select("deals")).filter((x) => x.id === team.deal_id || (mail && (x.email || "").toLowerCase() === mail));
+      {
+        const [d] = team.deal_id ? await select("deals", { id: team.deal_id }) : [];
+        // بريد صاحب العرض + بريد القائد والأعضاء (لمن سجّل مباشرة أو بدعوة وعرض فكرته منفصلًا)
+        const mails = new Set([d?.email, team.email, ...(team.member_emails || [])].map((e) => String(e || "").trim().toLowerCase()).filter(Boolean));
+        const mine = (await select("deals")).filter((x) => x.id === team.deal_id || mails.has(String(x.email || "").trim().toLowerCase()));
         const usedByOthers = new Set((await select(T.teams)).filter((t) => t.id !== id && t.deal_id).map((t) => t.deal_id));
         for (const x of mine) {
           if (usedByOthers.has(x.id)) continue;
@@ -245,10 +246,14 @@ export default async function handler(req, res) {
     if (action === "notify-finalists" && req.method === "POST") {
       const { rows } = await standings(s);
       let sent = 0;
+      const H = s.hackathon, sc = H.judging?.scope;
       for (const r of rows.filter((x) => x.finalist)) {
-        const title = `🎉 تأهل فريق «${r.team.name}» للتحكيم النهائي`;
-        await insert("announcements", { title, body: `مبروك! مشروعكم «${r.best.title}» ضمن أفضل ${s.hackathon.finalists} مشاريع، وسيقيّمه أعضاء لجنة التحكيم.`, audience: `team:${r.team.id}`, active: true });
-        sent += (await notify(s, "finalists", teamEmails(s, r.team), { team: r.team.name, project: r.best.title, finalists: s.hackathon.finalists, link: `${site}/hackathon?code=${r.team.code}` }, { ref: r.team.id })).ok ? 1 : 0;
+        const title = `مبروك: تأهل فريق «${r.team.name}» للتحكيم النهائي`;
+        // وصف التأهل حسب نطاق التحكيم: أفضل N في المسار، أو أفضل N إجمالًا، أو كل المشاريع
+        const best = (n) => (n === 1 ? "أفضل مشروع" : n === 2 ? "أفضل مشروعين" : `أفضل ${n} مشاريع`);
+        const group = sc === "perTrack" ? `${best(H.finalistsPerTrack)} في مسار «${(H.tracks.find((t) => t.id === r.team.track) || {}).title || r.label}»` : sc === "all" ? "المشاريع المتأهلة للتحكيم النهائي" : best(H.finalists);
+        await insert("announcements", { title, body: `مشروعكم «${r.best.title}» ضمن ${group}، وسيقيّمه أعضاء لجنة التحكيم.`, audience: `team:${r.team.id}`, active: true });
+        sent += (await notify(s, "finalists", teamEmails(s, r.team), { team: r.team.name, project: r.best.title, finalists: group, link: `${site}/hackathon?code=${r.team.code}` }, { ref: r.team.id })).ok ? 1 : 0;
       }
       return res.status(200).json({ ok: true, emailed: sent });
     }

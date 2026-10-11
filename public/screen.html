@@ -144,6 +144,9 @@ async function refresh(){
         if (lastId !== null) { $("spotPanel").classList.remove("flash"); void $("spotPanel").offsetWidth; $("spotPanel").classList.add("flash"); }
         lastId = key;
       }
+    } else if (lastId !== "empty") {
+      // لا توجد عروض (بعد الحذف مثلًا): تُفرغ البطاقة فلا يبقى اسم محذوف
+      $("spot").innerHTML = `<p class="empty">بانتظار أول عرض… كن أنت الأول.</p>`; lastId = "empty";
     }
   } catch(e) { console.warn(e); }
 }
