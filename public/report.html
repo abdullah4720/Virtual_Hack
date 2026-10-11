@@ -99,7 +99,7 @@ async function load(){
       <div class="funnel"><div><b>${fmt(st.pitches)}</b><span>فكرة عُرضت</span></div><div><b>${fmt(st.qualified)}</b><span>متأهل</span></div><div><b>${fmt(st.teams)}</b><span>فريق</span></div><div><b>${fmt(st.evaluated)}</b><span>مشروع مُقيَّم</span></div><div><b>${fmt(Math.min(S.hackathon.finalists, st.evaluated))}</b><span>متأهل نهائي</span></div></div>
       <div class="kpis">
         <div class="kpi"><b>${fmt(st.members)}</b><span>مشارك في الفرق</span></div>
-        <div class="kpi"><b>${st.pitches ? Math.round(st.qualified/st.pitches*100) : 0}%</b><span>نسبة التأهل من المستثمر الذكي</span></div>
+        <div class="kpi"><b>${st.pitches ? Math.round(st.qualified/st.pitches*100) : 0}%</b><span>نسبة التأهل من «${esc(S.investor.title)}»</span></div>
         <div class="kpi"><b>${fmt(st.avgPitch)}</b><span>متوسط درجات الأفكار</span></div>
         <div class="kpi"><b>${fmt(st.submissions)}</b><span>تقديم (مع إعادة التقديم)</span></div>
         <div class="kpi"><b>${fmt(st.avgScore)}</b><span>متوسط درجات المشاريع</span></div>

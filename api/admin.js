@@ -461,7 +461,7 @@ export default async function handler(req, res) {
         teams.map((t) => {
           const r = byId.get(t.id);
           return [r?.rank ?? "", t.name, t.status === "disqualified" ? "مستبعد" : "نشط", t.members, t.email, (t.member_emails || []).filter(Boolean), t.phone, t.code, optionLabel(s, t.track, t.challenge),
-            { investor: "المستثمر الذكي", invite: "دعوة" }[t.source] || "مباشر", r?.best.title ?? "", r?.attempts ?? 0, ...s.hackathon.rubric.map((c) => r?.best.ai_scores?.[c.key] ?? ""), r?.best.ai_total ?? "",
+            { investor: s.investor.title, invite: "دعوة" }[t.source] || "مباشر", r?.best.title ?? "", r?.attempts ?? 0, ...s.hackathon.rubric.map((c) => r?.best.ai_scores?.[c.key] ?? ""), r?.best.ai_total ?? "",
             r ? r.judges.filter((j) => !j.coi).length : "", r?.judgeAvg ?? "", r?.final ?? "", r?.finalist ? "نعم" : "", r?.finalRank ?? "", r?.best.ai_feedback?.summary ?? "", r?.flagged ? "نعم" : "", t.created_at];
         })));
     }

@@ -118,7 +118,7 @@ input[type=range]{accent-color:var(--accent);padding:0}
     <div class="brand"><span class="ic"><i data-icon="settings"></i></span> لوحة التحكم</div>
     <button data-p="overview" class="on"><i data-icon="layout-dashboard"></i>نظرة عامة</button>
     <button data-p="brand"><i data-icon="palette"></i>الهوية والعامة</button>
-    <button data-p="investor"><i data-icon="briefcase-business"></i>المستثمر الذكي</button>
+    <button data-p="investor"><i data-icon="briefcase-business"></i>اختبر فكرتك</button>
     <button data-p="hack"><i data-icon="zap"></i>التحدي: الإعدادات</button>
     <button data-p="tracks"><i data-icon="layers"></i>المسارات والتحديات</button>
     <button data-p="rubric"><i data-icon="list-checks"></i>معايير التقييم</button>
@@ -219,17 +219,17 @@ const P = {
     const ok = (b, y, n) => `<span class="pill ${b?"ok":"no"}">${b?y:n}</span>`;
     const ph = {open:'<span class="dot ok"></span> مفتوح', soon:'<span class="dot wait"></span> لم يبدأ', closed:'<span class="dot no"></span> مُقفل'}[sy.phase];
     const links = [
-      ["صفحة الترحيب (رمز QR الموحد)","welcome.html"],["المستثمر الذكي (الزوار)","index.html"],["تسجيل الفرق وصفحاتها","hackathon.html"],["شاشة الجناح (المتحكَّم بها)","booth.html"],
+      ["صفحة الترحيب (رمز QR الموحد)","welcome.html"],["اختبر فكرتك (الزوار)","index.html"],["تسجيل الفرق وصفحاتها","hackathon.html"],["شاشة الجناح (المتحكَّم بها)","booth.html"],
       ["لوحة البيانات","dashboard.html"],["لوحة اللجنة","judges.html"],["إعلان الفائزين","winners.html"],["التقرير الختامي","report.html"]];
     return `<h1>نظرة عامة</h1><p class="lead">${esc(S.brand.orgName)} · ${esc(S.brand.eventName)}</p>
       ${(sy.schemaMissing||[]).length ? `<div class="card note warn"><b style="color:var(--bad)"><i data-icon="triangle-alert"></i> قاعدة البيانات تحتاج تحديثًا</b><p class="small" style="margin-top:4px">الرجاء فتح Supabase ← SQL Editor، ولصق محتوى ملف supabase.sql كاملًا من المستودع ثم الضغط على Run (التشغيل آمن ولا يحذف البيانات). الناقص: <span dir="ltr">${sy.schemaMissing.map(esc).join(", ")}</span></p></div>` : ""}
       <div class="stats">
-        <div class="stat"><b>${fmt(st.pitches)}</b><span>عرض على المستثمر الذكي</span></div>
+        <div class="stat"><b>${fmt(st.pitches)}</b><span>عرض في «اختبر فكرتك»</span></div>
         <div class="stat"><b>${fmt(st.qualified)}</b><span>متأهل للتحدي</span></div>
         <div class="stat"><b>${fmt(st.ticketsUsed)}</b><span>رمز تأهل استُخدم للتسجيل</span></div>
         <div class="stat"><b>${fmt(st.teams)}</b><span>فريق في التحدي</span></div>
         <div class="stat"><b>${fmt(st.submissions)}</b><span>تقديم مُقيَّم</span></div>
-        <div class="stat"><b>${fmt(st.fromInvestor)}</b><span>فريق جاء من المستثمر الذكي</span></div>
+        <div class="stat"><b>${fmt(st.fromInvestor)}</b><span>فريق جاء من «اختبر فكرتك»</span></div>
         <div class="stat"><b>${st.judged}/${st.finalists}</b><span>متأهل قيّمته اللجنة</span></div>
       </div>
       <div class="grid2">
@@ -247,7 +247,7 @@ const P = {
           : `<p class="muted small">بدون ذكاء اصطناعي تكون الأسئلة ثابتة والدرجات <b style="color:var(--bad)">عشوائية وهمية</b>. للتقييم الحقيقي على هذا الجهاز أدخل مفتاح Claude API (من console.anthropic.com). يُحفظ في هذا المتصفح فقط، ولا يُرسل إلا إلى Anthropic.</p>
             <div class="grid2" style="margin-top:10px"><input id="demoKey" type="password" dir="ltr" placeholder="sk-ant-..." value=""><div style="display:flex;gap:8px"><button class="btn" data-act="savekey" style="width:auto;padding:10px 18px">تفعيل</button>${sy.aiMode==="browser-key"?`<button class="btn ghost" data-act="clearkey" style="width:auto;padding:10px 18px">إزالة المفتاح</button>`:""}</div></div>
             <p class="help">عند النشر الفعلي يوضع المفتاح في إعدادات الخادم (ANTHROPIC_API_KEY)، ولا حاجة لهذا الحقل.</p>`, sy.ai ? "" : "danger") : ""}
-        ${card("الأنشطة", tog("المستثمر الذكي","modules.investor","لعبة سريعة لزوار المعرض") + tog("التحدي (تسجيل الفرق وتقديم المشاريع)","modules.hackathon","منافسة أونلاين خلال أيام الفعالية"))}
+        ${card("الأنشطة", tog("اختبر فكرتك","modules.investor","لعبة سريعة لزوار المعرض") + tog("التحدي (تسجيل الفرق وتقديم المشاريع)","modules.hackathon","منافسة أونلاين خلال أيام الفعالية"))}
       </div>
       ${card("روابط المنصة", `<div class="links">${links.map(([l,p])=>`<div><span>${l}</span><code>${esc(abs(p))}</code><a class="ib" href="${p}" target="_blank">فتح</a><button class="ib" data-copy="${attr(abs(p))}">نسخ</button></div>`).join("")}</div>`)}`;
   },
@@ -271,7 +271,7 @@ const P = {
   },
   investor(){
     const L = S.investor.investors;
-    return `<h1>المستثمر الذكي</h1><p class="lead">الزائر يعرض فكرته على مستثمر افتراضي، يُسأل سؤالين، ثم يحصل على قرار الاستثمار وتقييم.</p>
+    return `<h1>${esc(S.investor.title)}</h1><p class="lead">الزائر يختار مسار فكرته ويعرضها على مستشار ذكي، يُسأل سؤالين، ثم يحصل على تقييم وقرار التأهل.</p>
       ${card("العامة", `${f("اسم النشاط","investor.title")}${f("الوصف المختصر","investor.tagline",{type:"textarea",rows:2,max:300})}
         <div class="grid2">${f("أقل مبلغ استثمار (ريال)","investor.minAmount",{type:"num",min:1000,step:1000})}${f("أعلى مبلغ استثمار (ريال)","investor.maxAmount",{type:"num",min:1000,step:1000})}</div>`)}
       ${card("الفرز والتأهل للتحدي", `${tog("اختيار المسار قبل عرض الفكرة","investor.chooseTrack","يختار الزائر مسار التحدي أولًا، ويُضاف معيار «ملاءمة الفكرة للمسار» (15 درجة)، ويُعتمد المسار نفسه للفريق عند التسجيل. عند الإيقاف: أربعة معايير (25 لكل منها)، ويختار الفريق مساره عند التسجيل.")}${f("صرامة التقييم","investor.strictness",{type:"select",opts:[["lenient","ميسّر: يكافئ أي فكرة واضحة ومنطقية (للتعلّم والتشجيع)"],["balanced","متوازن: يكافئ الوضوح والمنطق ولا يطلب أدلة سوقية (موصى به)"],["strict","صارم: يتطلب أرقامًا وأدلة ومنطقًا قويًا (للمسابقات المتقدمة)"]],help:"تؤثر في تحويل المستويات إلى درجات، والقيود على الدرجة، وفحص الإجابات. الفكرة بلا حل تُرفض في كل المستويات."})}<div class="grid2">${f("درجة التأهل (من 100)","investor.qualifyScore",{type:"num",min:0,max:100,help:"من يحصل عليها أو أكثر يُمنح رمز تأهل للتحدي"})}${f("عدد المحاولات لكل بريد","investor.maxAttempts",{type:"num",min:1,max:20})}</div>
@@ -287,7 +287,7 @@ const P = {
     const w = S.hackathon.weights;
     return `<h1>التحدي: الإعدادات</h1><p class="lead">المواعيد، حجم الفرق، المحاولات، والتأهل.</p>
       ${card("العامة", `${f("اسم التحدي","hackathon.name")}${f("الوصف المختصر","hackathon.tagline",{type:"textarea",rows:2,max:300})}
-        ${f("من يستطيع تسجيل فريق؟","hackathon.registration",{type:"select",opts:[["ticket","المتأهلون فقط (رمز تأهل من المستثمر الذكي أو رمز دعوة)"],["open","مفتوح للجميع"]]})}`)}
+        ${f("من يستطيع تسجيل فريق؟","hackathon.registration",{type:"select",opts:[["ticket","المتأهلون فقط (رمز تأهل من «اختبر فكرتك» أو رمز دعوة)"],["open","مفتوح للجميع"]]})}`)}
       ${card("المواعيد", `<div class="grid2">${f("فتح التسجيل والتقديم","hackathon.opensAt",{type:"datetime-local",ltr:true})}${f("إقفال التقديم","hackathon.closesAt",{type:"datetime-local",ltr:true})}</div>
         <p class="help">بالمنطقة الزمنية المحددة في «الهوية والعامة». اتركهما فارغين ليبقى التقديم مفتوحًا.</p>`)}
       ${card("الملفات والعرض الاستثماري", tog("العرض الاستثماري إلزامي","hackathon.uploads.deckRequired","لا يستطيع الفريق التقديم قبل رفع العرض بصيغة PDF") + tog("الذكاء الاصطناعي يقرأ العرض","hackathon.uploads.aiReadsDeck","يقرأ ملف PDF كاملًا ويستخدمه في التقييم. أدق، لكنه أعلى تكلفة قليلًا") + `<div class="grid3">${f("أقصى حجم للعرض (ميجابايت)","hackathon.uploads.deckMaxMB",{type:"num",min:1,max:30})}${f("عدد الملفات الإضافية","hackathon.uploads.extraFiles",{type:"num",min:0,max:10,help:"صفر لإخفاء الملفات الإضافية"})}${f("أقصى حجم للملف الإضافي (م.ب)","hackathon.uploads.extraMaxMB",{type:"num",min:1,max:50})}</div>`)}
@@ -318,8 +318,8 @@ const P = {
   tickets(){
     const T = D.tickets || [];
     return `<h1>التأهيل والدعوات</h1><p class="lead">رموز التأهل التي حصل عليها المتأهلون من ${esc(S.investor.title)}، ورموز الدعوة التي تمنحها للفرق مباشرة.</p>
-      <div class="stats"><div class="stat"><b>${fmt(D.stats.qualified)}</b><span>متأهل من المستثمر الذكي</span></div><div class="stat"><b>${fmt(T.filter(t=>t.kind==="invite").length)}</b><span>رمز دعوة</span></div><div class="stat"><b>${fmt(D.stats.ticketsUsed)}</b><span>رمز استُخدم للتسجيل</span></div></div>
-      ${card("توليد رموز دعوة", `<p class="muted small">للفرق المرشّحة مسبقًا أو الشركاء: كل رمز يسجّل فريقًا واحدًا دون المرور بالمستثمر الذكي.</p>
+      <div class="stats"><div class="stat"><b>${fmt(D.stats.qualified)}</b><span>متأهل من «اختبر فكرتك»</span></div><div class="stat"><b>${fmt(T.filter(t=>t.kind==="invite").length)}</b><span>رمز دعوة</span></div><div class="stat"><b>${fmt(D.stats.ticketsUsed)}</b><span>رمز استُخدم للتسجيل</span></div></div>
+      ${card("توليد رموز دعوة", `<p class="muted small">للفرق المرشّحة مسبقًا أو الشركاء: كل رمز يسجّل فريقًا واحدًا دون المرور باختبر فكرتك.</p>
         ${f("المدعوون بالبريد (اختياري)","_people",{type:"textarea",rows:4,max:20000,ph:"سطر لكل مدعو، مثل:\nفريق كلية الحاسب، cs@qu.edu.sa\nnora@example.com",help:D.system.mail?"يُولَّد رمز لكل مدعو ويُرسل إليه بالبريد مع رابط التسجيل. اتركه فارغًا لتوليد رموز تنسخها بنفسك.":"البريد غير مفعّل: تُولَّد الرموز وتُربط بالمدعوين، لكن لن تُرسل."})}
         <div class="grid2" style="margin-top:8px">${tmp._people.trim()?`<div class="help" style="align-self:end">عدد الرموز = عدد المدعوين</div>`:f("العدد","_count",{type:"num",min:1,max:100})}${f("وصف (اختياري)","_label",{ph:"مثال: فرق كلية الحاسب"})}</div>
         <button class="btn" data-act="invites" style="margin-top:10px">توليد الرموز</button><div id="newCodes"></div>`)}
@@ -422,7 +422,7 @@ const P = {
     if (!TEAMS) return `<h1>المشاركون</h1><p class="muted">جارٍ التحميل…</p>`;
     const q = (tmp._q||"").trim().toLowerCase();
     const list = TEAMS.filter(t => !q || [t.name, t.email, t.code, t.title, ...(t.members||[])].join(" ").toLowerCase().includes(q));
-    const SRC = {investor:"المستثمر الذكي", invite:"دعوة", direct:"مباشر"};
+    const SRC = {investor:"اختبر فكرتك", invite:"دعوة", direct:"مباشر"};
     return `<h1>المشاركون</h1><p class="lead">${TEAMS.length} فريق · ${TEAMS.filter(t=>t.status==="disqualified").length} مستبعد. ابحث بالاسم أو البريد أو رمز الفريق.</p>
       ${PASSLIST && PASSLIST.length ? card(`<span style="display:flex;align-items:center;gap:8px"><i data-icon="key-round"></i> كلمات المرور (تظهر مرة واحدة)</span>`, `<p class="small" style="color:var(--bad);margin-bottom:8px">كلمات المرور محفوظة مشفّرة ولا يمكن عرضها لاحقًا. الرجاء تنزيلها أو نسخها الآن وتسليمها للفرق.</p><div style="overflow-x:auto"><table class="tbl"><thead><tr><th>الفريق</th><th>البريد للدخول</th><th>كلمة المرور</th><th>رمز الفريق</th></tr></thead><tbody>${PASSLIST.map(x=>`<tr><td><b>${esc(x.team)}</b></td><td dir="ltr">${esc(x.email)}${(x.members||[]).length?`<div class="help">${esc(x.members.join("، "))}</div>`:""}</td><td dir="ltr" style="font-family:ui-monospace,monospace;font-weight:700">${esc(x.password)} <button class="ib" data-copy="${attr(`الدخول: ${abs("hackathon.html")}\nالبريد: ${x.email}\nكلمة المرور: ${x.password}`)}">نسخ</button></td><td dir="ltr">${esc(x.code||"")}</td></tr>`).join("")}</tbody></table></div><div style="display:flex;gap:8px;margin-top:10px"><button class="btn sm" data-act="pdl"><i data-icon="download"></i> تنزيل القائمة</button><button class="btn sm ghost" data-act="pclose">تم الحفظ، إخفاء</button></div>`) : ""}
       <div class="card" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><div style="flex:1;min-width:220px">${f("","_q",{ph:"بحث بالاسم أو البريد أو الرمز…"})}</div><button class="btn ghost sm" data-act="pbulk"><i data-icon="key-round"></i> توليد كلمات مرور للفرق الجديدة</button></div>
@@ -449,7 +449,7 @@ const P = {
     const K = D.notifyKinds || {}, N = S.notify, mail = D.system.mail;
     const ST = {sent:["ok","أُرسلت"], failed:["no","فشلت"], skipped:["","لم تُرسل: البريد غير مفعّل"], sending:["warn","قيد الإرسال"]};
     const tot = LOGS?.totals;
-    const groups = [["الزوار والمستثمر الذكي",["otp","qualified","notQualified","invite"]],["الفرق في التحدي",["registered","passwordReset","evaluated","reminderNoSubmit","reminderClose","finalists","winner","results","message"]],["المحكّمون",["judgeInvite","judgeReminder"]],["عامة",["announcement"]]];
+    const groups = [["الزوار و«اختبر فكرتك»",["otp","qualified","notQualified","invite"]],["الفرق في التحدي",["registered","passwordReset","evaluated","reminderNoSubmit","reminderClose","finalists","winner","results","message"]],["المحكّمون",["judgeInvite","judgeReminder"]],["عامة",["announcement"]]];
     const tpl = k => { const m = K[k], t = N.templates[k]; if (!m || !t) return "";
       const open = OPEN.has(k), base = "notify.templates."+k+".";
       return `<div class="item ntpl ${t.on||m.locked?"":"off"}"><div class="head"><div><b>${esc(m.label)}</b><div class="meta"><i data-icon="send"></i> ${esc(m.to)} · <i data-icon="clock"></i> ${esc(m.when)}</div></div>
@@ -481,8 +481,8 @@ const P = {
   screens(){
     const B = S.booth;
     return `<h1>الشاشات</h1><p class="lead">تحكّم في ما يظهر على شاشة الجناح (booth) لحظيًا. تتحدث الشاشة خلال 15 ثانية من الحفظ.</p>
-      ${card("ماذا تعرض شاشة الجناح الآن؟", f("الوضع","booth.mode",{type:"select",opts:[["rotate","تناوب تلقائي بين الشاشات المختارة"],["investor","المستثمر الذكي فقط"],["hackathon","ترتيب الفرق فقط"],["dashboard","لوحة البيانات فقط"],["countdown","عدّ تنازلي (فتح/إقفال التقديم)"],["announcement","آخر إعلان بملء الشاشة"]]}))}
-      ${card("شاشات التناوب", tog("شاشة المستثمر الذكي","booth.screens.investor") + tog("شاشة ترتيب الفرق","booth.screens.hackathon") + tog("لوحة البيانات","booth.screens.dashboard") + f("مدة كل شاشة (ثانية)","booth.rotateSeconds",{type:"num",min:8,max:300}))}
+      ${card("ماذا تعرض شاشة الجناح الآن؟", f("الوضع","booth.mode",{type:"select",opts:[["rotate","تناوب تلقائي بين الشاشات المختارة"],["investor","«اختبر فكرتك» فقط"],["hackathon","ترتيب الفرق فقط"],["dashboard","لوحة البيانات فقط"],["countdown","عدّ تنازلي (فتح/إقفال التقديم)"],["announcement","آخر إعلان بملء الشاشة"]]}))}
+      ${card("شاشات التناوب", tog("شاشة «اختبر فكرتك»","booth.screens.investor") + tog("شاشة ترتيب الفرق","booth.screens.hackathon") + tog("لوحة البيانات","booth.screens.dashboard") + f("مدة كل شاشة (ثانية)","booth.rotateSeconds",{type:"num",min:8,max:300}))}
       ${card(`<span style="display:flex;align-items:center;gap:8px"><i data-icon="smartphone"></i> الجهاز اللوحي في الجناح</span>`, `<p class="muted small">يعرض الزائر فكرته على جهاز لوحي ثابت في الجناح. في هذا الوضع: تُمسح بيانات الزائر تلقائيًا بعد انتهائه أو بعد مدة من عدم الاستخدام، ولا يُطبَّق على الجهاز حد المحاولات في الساعة، ويظهر للمتأهل رمز QR ليكمل تسجيل فريقه من جواله.</p>
         ${B.kioskKey ? `<div class="links" style="margin-top:10px"><div><span>رابط الجهاز اللوحي</span><code>${esc(abs("index.html?kiosk="+B.kioskKey))}</code><a class="ib" href="index.html?kiosk=${attr(B.kioskKey)}" target="_blank">فتح</a><button class="ib" data-copy="${attr(abs("index.html?kiosk="+B.kioskKey))}">نسخ</button></div></div>
           <div class="grid2" style="margin-top:10px">${f("إعادة الضبط بعد عدم الاستخدام (ثانية)","booth.kioskIdle",{type:"num",min:30,max:600})}<div><label>&nbsp;</label><button class="btn ghost" data-act="kioskkey"><i data-icon="refresh-cw"></i> توليد رابط جديد (يُبطل القديم)</button></div></div>`
@@ -518,9 +518,9 @@ const P = {
   },
   data(){
     return `<h1>البيانات</h1><p class="lead">تصدير النتائج لإعداد التقارير، أو تهيئة المنصة لفعالية جديدة.</p>
-      ${card("تصدير (CSV يفتح في Excel)", `<div class="grid3"><button class="btn ghost" data-act="export" data-what="teams"><i data-icon="download"></i> الفرق ونتائجها</button><button class="btn ghost" data-act="export" data-what="deals"><i data-icon="download"></i> عروض المستثمر الذكي</button><button class="btn ghost" data-act="export" data-what="scores"><i data-icon="download"></i> درجات المحكّمين</button></div><p class="help">ملف الفرق يتضمن: الأعضاء وبريدهم ورمز الفريق، ودرجة كل معيار، ومتوسط اللجنة، والدرجة النهائية، والترتيب.</p>`)}
+      ${card("تصدير (CSV يفتح في Excel)", `<div class="grid3"><button class="btn ghost" data-act="export" data-what="teams"><i data-icon="download"></i> الفرق ونتائجها</button><button class="btn ghost" data-act="export" data-what="deals"><i data-icon="download"></i> عروض «اختبر فكرتك»</button><button class="btn ghost" data-act="export" data-what="scores"><i data-icon="download"></i> درجات المحكّمين</button></div><p class="help">ملف الفرق يتضمن: الأعضاء وبريدهم ورمز الفريق، ودرجة كل معيار، ومتوسط اللجنة، والدرجة النهائية، والترتيب.</p>`)}
       ${card("حذف البيانات", `<p class="muted small">يحذف المشاركات نهائيًا ولا يمكن التراجع. الإعدادات لا تتأثر. صدّر البيانات أولًا.</p>
-        <div class="grid2" style="margin-top:10px">${f("اكتب «حذف» للتأكيد","_confirm",{ph:"حذف"})}${f("ما الذي يُحذف؟","_scope",{type:"select",opts:[["investor","عروض المستثمر الذكي"],["hackathon","الفرق وتقديماتها ودرجات اللجنة"],["all","كل البيانات"]]})}</div>
+        <div class="grid2" style="margin-top:10px">${f("اكتب «حذف» للتأكيد","_confirm",{ph:"حذف"})}${f("ما الذي يُحذف؟","_scope",{type:"select",opts:[["investor","عروض «اختبر فكرتك»"],["hackathon","الفرق وتقديماتها ودرجات اللجنة"],["all","كل البيانات"]]})}</div>
         <button class="btn red" data-act="reset" style="margin-top:12px">حذف البيانات</button><p class="err" id="resetMsg"></p>`, "danger")}
       ${card("استعادة الإعدادات الافتراضية", `<p class="muted small">تعيد كل الإعدادات إلى القالب الأصلي (لا تحذف البيانات). تحتاج الحفظ بعدها.</p><button class="btn ghost" data-act="defaults" style="margin-top:10px">استعادة القالب</button>`)}`;
   },
@@ -742,7 +742,7 @@ $("main").addEventListener("click", async e => {
   }
   if (act==="tdelete") {
     const name = b.dataset.name;
-    const typed = prompt(`حذف فريق «${name}» نهائيًا؟\n\nسيُحذف الفريق وأعضاؤه وكل تقديماته وملفاته ودرجات المحكّمين له ورسائله، وعرض فكرته في المستثمر الذكي، فيختفي من كل الشاشات. لا يمكن التراجع. ويعود رمز التأهل الذي سجّل به صالحًا للتسجيل من جديد.\n\nللتأكيد اكتب اسم الفريق كما هو:`, "");
+    const typed = prompt(`حذف فريق «${name}» نهائيًا؟\n\nسيُحذف الفريق وأعضاؤه وكل تقديماته وملفاته ودرجات المحكّمين له ورسائله، وعرض فكرته في «اختبر فكرتك»، فيختفي من كل الشاشات. لا يمكن التراجع. ويعود رمز التأهل الذي سجّل به صالحًا للتسجيل من جديد.\n\nللتأكيد اكتب اسم الفريق كما هو:`, "");
     if (typed == null) return;
     if (typed.trim() !== name) return alert("لم يُحذف الفريق: الاسم المكتوب لا يطابق اسم الفريق.");
     const r = await api("team-delete", {id: Number(b.dataset.id), confirm: typed.trim()});
