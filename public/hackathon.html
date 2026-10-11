@@ -314,8 +314,14 @@ function renderHome(){
   if (H.phase==="closed") $("regCard").classList.add("hidden");
   if (CFG.modules.investor && !IMPORT && H.registration !== "ticket") { $("tryInvestor").innerHTML = `ما زلت تبحث عن فكرة؟ <a href="index.html">جرّبها أولًا مع ${esc(CFG.investor.title)}</a>`; $("tryInvestor").classList.remove("hidden"); }
 }
+let LOCKED = null; // المسار المعتمد من عرض الفكرة (لا يتغير بعد التأهل)
 function renderTracks(){
   const box = $("tracks"); box.innerHTML = "";
+  if (LOCKED) {
+    const t = CFG.hackathon.tracks.find(x => x.id === LOCKED.track), c = t?.challenges.find(x => x.id === LOCKED.challenge);
+    box.innerHTML = `<div class="ch" aria-pressed="true" style="cursor:default"><span class="ic">${glyph(t?.icon)}</span><span><b>${esc(t?.title || "")}${c ? ` · ${esc(c.title)}` : ""}</b><small><i data-icon="lock"></i> المسار الذي اخترته عند عرض فكرتك، وعلى أساسه تأهلت.</small></span></div>`;
+    return;
+  }
   for (const t of CFG.hackathon.tracks) {
     const on = chosen.track === t.id;
     const b = document.createElement("button"); b.type="button"; b.className="ch"; b.setAttribute("aria-pressed", on && (!t.challenges.length || chosen.challenge) ? "true" : on ? "true" : "false");
@@ -338,7 +344,7 @@ function renderTracks(){
 let TICKET_OK = false;
 async function checkTicket(){
   const c = $("tTicket").value.trim().toUpperCase(), m = $("ticketMsg");
-  TICKET_OK = false; m.style.color = "var(--muted)"; m.textContent = "جارٍ التحقق…";
+  TICKET_OK = false; if (LOCKED) { LOCKED = null; renderTracks(); } m.style.color = "var(--muted)"; m.textContent = "جارٍ التحقق…";
   if (!c) { m.textContent = ""; return; }
   try {
     const d = await api("ticket", null, "&code=" + encodeURIComponent(c));
@@ -349,6 +355,8 @@ async function checkTicket(){
     if (d.name && !mem0.value) mem0.value = d.name;
     if (d.email && !$("tEmail").value) $("tEmail").value = d.email;
     if (d.idea && !IMPORT) { IMPORT = {ticket:c, idea:d.idea.idea, title:d.idea.title, at:Date.now()}; }
+    LOCKED = d.track || null; if (LOCKED) chosen = {track: LOCKED.track, challenge: LOCKED.challenge};
+    renderTracks();
   } catch(e){ m.style.color = "var(--bad)"; m.textContent = e.message; }
 }
 $("ticketBtn").onclick = checkTicket;

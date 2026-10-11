@@ -1,10 +1,10 @@
 // المستثمر الذكي = مرحلة الفرز: سؤالان، ثم تقييم بمعايير موحّدة، ثم التأهل للهاكاثون أو لا
-import { getSettings, phase } from "../lib/settings.js";
+import { getSettings, phase, trackFirst, findOption } from "../lib/settings.js";
 import { saveDeal } from "../lib/store.js";
 import { select } from "../lib/db.js";
 import { createTicket } from "../lib/tickets.js";
 import { aiAvailable } from "../lib/ai.js";
-import { SCREEN as ENGINE_SCREEN, screenQuestion, screenFinal, quickIdeaCheck, checkIdea, checkAnswer } from "../lib/evaluator.js";
+import { SCREEN as ENGINE_SCREEN, screenCriteria, screenQuestion, screenFinal, quickIdeaCheck, checkIdea, checkAnswer } from "../lib/evaluator.js";
 import { checkLimits, recordUse } from "../lib/limits.js";
 import { mailEnabled } from "../lib/mailer.js";
 import { notify } from "../lib/notify.js";
@@ -49,8 +49,8 @@ const okEmail = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e);
 export const SCREEN = ENGINE_SCREEN.map(({ key, label, max }) => ({ key, label, max }));
 
 const DEMO_Q = ["فكرة جديرة بالاهتمام. من العميل الذي سيدفع مقابل الحل تحديدًا، ولماذا سيدفع؟", "شكرًا على الإجابة. كيف سيحقق المشروع دخلًا، ومن منافسوك الحاليون؟"];
-function demoFinal(idea, s) {
-  const scores = Object.fromEntries(SCREEN.map((c) => [c.key, Math.round(c.max * (0.35 + Math.random() * 0.6))]));
+function demoFinal(idea, s, opt) {
+  const scores = Object.fromEntries(screenCriteria(opt).map((c) => [c.key, Math.round(c.max * (0.35 + Math.random() * 0.6))]));
   const { minAmount: lo, maxAmount: hi } = s.investor;
   return {
     scores,
@@ -89,6 +89,9 @@ export default async function handler(req, res) {
     if (!okEmail(email)) return res.status(400).json({ error: "اكتب بريدًا إلكترونيًا صحيحًا" });
     if (idea.length < 15) return res.status(400).json({ error: "يُرجى توضيح فكرتك أكثر (المشكلة والحل)" });
     if (!b.consent) return res.status(400).json({ error: "الرجاء الموافقة على استخدام البيانات لأغراض البرنامج" });
+    // المسار يُختار في البداية، وتُقيَّم ملاءمة الفكرة له
+    const opt = trackFirst(s) ? findOption(s, b.track, b.challenge) : null;
+    if (trackFirst(s) && !opt) return res.status(400).json({ error: "الرجاء اختيار المسار" + ((s.hackathon.tracks.find((t) => t.id === b.track)?.challenges || []).length ? " والتحدي" : "") });
     if (verifyOn(s) && !tokenOk(email, b.token)) return res.status(401).json({ error: "يُرجى التحقق من بريدك أولًا", needVerify: true });
 
     const used = await attemptsUsed(email);
@@ -133,7 +136,7 @@ export default async function handler(req, res) {
       let question;
       if (!AI) question = DEMO_Q[step];
       else {
-        try { question = (await screenQuestion(s, inv, { name, idea, questions, answers })).question; }
+        try { question = (await screenQuestion(s, inv, { name, idea, questions, answers, opt })).question; }
         catch (e) { console.error("AI question failed", e.message); return res.status(503).json({ error: "الخدمة مشغولة حاليًا. يُرجى المحاولة بعد دقيقة، ولن تُحتسب عليك محاولة.", retry: true }); }
         await recordUse(req, step === 0 ? "pitch" : "ai"); // حد الساعة يُحسب مرة واحدة لكل عرض
       }
@@ -143,36 +146,43 @@ export default async function handler(req, res) {
     // ===== التقييم النهائي =====
     const { minAmount: lo, maxAmount: hi, qualifyScore } = I;
     let f, ev = null;
-    if (!AI) f = demoFinal(idea, s);
+    const CR = screenCriteria(opt).map(({ key, label, max }) => ({ key, label, max }));
+    if (!AI) f = demoFinal(idea, s, opt);
     else {
-      try { ev = await screenFinal(s, inv, { name, idea, questions, answers, clarified: (Array.isArray(b.clarified) ? b.clarified : []).map(Number) }); f = ev; }
+      try { ev = await screenFinal(s, inv, { name, idea, questions, answers, clarified: (Array.isArray(b.clarified) ? b.clarified : []).map(Number), opt }); f = ev; }
       catch (e) { console.error("AI final failed", e.message); return res.status(503).json({ error: "تعذّر التقييم الآن بسبب ضغط على الخدمة. اضغط «أرسل الإجابة» مرة أخرى بعد دقيقة، ولن تُحسب عليك محاولة.", retry: true }); }
       await recordUse(req, "ai");
     }
 
     const scores = ev
       ? Object.fromEntries(ev.criteria.map((c) => [c.key, c.points]))
-      : Object.fromEntries(SCREEN.map((c) => [c.key, Math.min(c.max, Math.max(0, Math.round(Number(f.scores?.[c.key]) || 0)))]));
+      : Object.fromEntries(CR.map((c) => [c.key, Math.min(c.max, Math.max(0, Math.round(Number(f.scores?.[c.key]) || 0)))]));
     const score = Object.values(scores).reduce((a, n) => a + n, 0);
-    const qualified = score >= qualifyScore;
+    // فكرة لا علاقة لها بالمسار المختار إطلاقًا لا تتأهل مهما كانت درجتها
+    const offTrack = Boolean(opt && ev && ev.criteria.find((c) => c.key === "track")?.level === 0);
+    const qualified = score >= qualifyScore && !offTrack;
     const decision = qualified ? "invest" : "out";
     const amount = qualified ? Math.min(hi, Math.max(lo, Math.round(Number(f.amount) || lo))) : 0;
     const equity = qualified ? Math.min(49, Math.max(1, Number(f.equity) || 10)) : 0;
     const valuation = qualified ? Math.round((amount * 100) / equity) : 0;
     const result = {
       decision, qualified, score, scores, qualifyScore, amount, equity, valuation,
-      criteria: ev ? ev.criteria : SCREEN,
+      criteria: ev ? ev.criteria : CR,
+      track: opt ? { id: opt.track.id, title: opt.track.title, challenge: opt.challenge?.title || null } : null,
       capsApplied: ev?.capsApplied || [],
       title: clip(f.title, 60),
       verdict: clip(qualified ? f.verdict_invest : f.verdict_out, 250),
       strengths: (f.strengths || []).slice(0, 3).map((x) => clip(x, 120)),
-      weaknesses: (f.weaknesses || []).slice(0, 3).map((x) => clip(x, 120)),
+      weaknesses: [...(offTrack ? [`الفكرة لا ترتبط بمسار «${opt.track.title}». يُستحسن اختيار المسار المناسب لها عند إعادة المحاولة.`] : []), ...(f.weaknesses || [])].slice(0, 3).map((x) => clip(x, 160)),
+      offTrack,
       tip: clip(f.tip, 200),
     };
 
     const deal = await saveDeal({
       name, email, title: result.title, idea, investor: inv.id, decision, amount, equity, valuation,
-      verdict: result.verdict, score, scores, qualified, consent_at: new Date().toISOString(),
+      verdict: result.verdict, score, qualified, consent_at: new Date().toISOString(),
+      // المسار يُحفظ مع الدرجات (يُستخدم لاحقًا عند تسجيل الفريق بالتذكرة)
+      scores: opt ? { ...scores, _track: opt.track.id, _challenge: opt.challenge?.id ?? null } : scores,
     });
 
     // تذكرة التأهل للهاكاثون

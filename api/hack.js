@@ -94,9 +94,14 @@ export default async function handler(req, res) {
       const t = await findTicket(q.get("code") || b.ticket);
       if (!t) return res.status(404).json({ error: "رمز التأهل غير صحيح" });
       if (t.used_by_team) return res.status(409).json({ error: "هذا الرمز استُخدم لتسجيل فريق من قبل. إن كنت عضوًا فيه فادخل برمز الفريق." });
-      let idea = null;
-      if (t.deal_id) { const [d] = await select("deals", { id: t.deal_id }); if (d) idea = { title: d.title, idea: d.idea, score: d.score }; }
-      return res.status(200).json({ valid: true, kind: t.kind, name: t.name, email: t.email, idea });
+      let idea = null, track = null;
+      if (t.deal_id) {
+        const [d] = await select("deals", { id: t.deal_id });
+        if (d) idea = { title: d.title, idea: d.idea, score: d.score };
+        const o = d?.scores?._track && findOption(s, d.scores._track, d.scores._challenge);
+        if (o) track = { track: o.track.id, challenge: o.challenge?.id ?? null, label: optionLabel(s, o.track.id, o.challenge?.id) };
+      }
+      return res.status(200).json({ valid: true, kind: t.kind, name: t.name, email: t.email, idea, track });
     }
 
     if (action === "register" && req.method === "POST") {
@@ -118,7 +123,10 @@ export default async function handler(req, res) {
       const member_emails = [...new Set(pairs.map(([, e]) => e).filter(Boolean))];
       const email = clip(b.email, 80).toLowerCase();
       const phone = clip(b.phone, 20);
-      const opt = findOption(s, b.track, b.challenge);
+      // المسار المختار عند عرض الفكرة يُعتمد للفريق (لا يتغير بعد التأهل)
+      let fixed = null;
+      if (ticket?.deal_id) { const [d] = await select("deals", { id: ticket.deal_id }); fixed = d?.scores?._track ? findOption(s, d.scores._track, d.scores._challenge) : null; }
+      const opt = fixed || findOption(s, b.track, b.challenge);
       if (name.length < 2) return res.status(400).json({ error: "اكتب اسم الفريق" });
       if (!members.length) return res.status(400).json({ error: "أضف اسم عضو واحد على الأقل" });
       if (!/^\S+@\S+\.\S+$/.test(email)) return res.status(400).json({ error: "البريد الإلكتروني غير صحيح" });

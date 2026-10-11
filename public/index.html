@@ -73,6 +73,15 @@ body.kiosk .hint{display:none}
 .kqr p{max-width:260px;line-height:1.8;font-size:15px}
 .kbar{position:fixed;bottom:0;left:0;right:0;background:var(--navy);color:#fff;font-size:13px;text-align:center;padding:6px;z-index:6}
 .near.warn{border-color:color-mix(in srgb,var(--bad) 35%,transparent);background:color-mix(in srgb,var(--bad) 4%,var(--card))}
+.opts{display:grid;gap:10px}
+.ch{display:flex;gap:12px;align-items:flex-start;text-align:right;width:100%;font:inherit;color:var(--text);background:var(--card2);border:1.5px solid var(--line);border-radius:14px;padding:12px;cursor:pointer}
+.ch .ic{display:grid;place-items:center;width:40px;height:40px;border-radius:11px;background:var(--soft);color:var(--accent);flex:none;font-size:20px}
+.ch .ic .lu{width:21px;height:21px}
+.ch b{display:block}
+.ch small{color:var(--muted);font-size:13.5px;line-height:1.6;display:block}
+.ch[aria-pressed=true]{border-color:var(--accent);background:var(--soft);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 14%,transparent)}
+.subopts{display:grid;gap:8px;margin:2px 22px 4px 0;padding-right:12px;border-right:2px solid var(--accent)}
+.subopts .ch{padding:10px 12px}
 </style>
 <script src="app.js"></script>
 </head>
@@ -96,6 +105,11 @@ body.kiosk .hint{display:none}
         <div><label for="email">بريدك الإلكتروني</label><input id="email" type="email" dir="ltr" maxlength="80" placeholder="name@example.com" autocomplete="email"></div>
       </div>
       <p class="hint" style="text-align:right;margin-top:8px" id="emailHint"></p>
+    </div>
+    <div class="card hidden" id="trackCard">
+      <label>اختر مسار فكرتك</label>
+      <p class="hint" style="text-align:right;margin:-2px 0 10px">يُقيَّم مدى ارتباط فكرتك بالمسار الذي تختاره، ويُعتمد المسار نفسه لفريقك إن تأهلت.</p>
+      <div class="opts" id="tracks"></div>
     </div>
     <div class="card">
       <label for="idea">فكرتك في ثلاثة أسطر: ما المشكلة؟ وما الحل؟</label>
@@ -141,7 +155,7 @@ body.kiosk .hint{display:none}
 const $ = id => document.getElementById(id);
 const esc = APP.esc, fmt = APP.fmt;
 let CFG, INVESTORS = {}, PROBLEMS = [];
-const state = {investor:"", name:"", email:"", idea:"", questions:[], answers:[], clarified:[], consent:false, token:""};
+const state = {investor:"", name:"", email:"", track:"", challenge:null, idea:"", questions:[], answers:[], clarified:[], consent:false, token:""};
 const SS = { get(k){ try{return sessionStorage.getItem(k)}catch(e){return null} }, set(k,v){ try{sessionStorage.setItem(k,v)}catch(e){} } };
 let attemptsLeft = null;
 const LS = { get(k){ try{return localStorage.getItem(k)}catch(e){return null} }, set(k,v){ try{localStorage.setItem(k,v)}catch(e){} } };
@@ -151,6 +165,8 @@ APP.ready.then(c => {
   if (!c.modules.investor) return APP.disabled(`${c.investor.title} غير متاح حاليًا`);
   document.title = c.investor.title;
   INVESTORS = Object.fromEntries(c.investor.investors.map(i => [i.id, i]));
+  TRACKS = c.investor.chooseTrack !== false && c.modules.hackathon && c.hackathon.tracks.length > 0;
+  $("trackCard").classList.toggle("hidden", !TRACKS); if (TRACKS) renderTracks();
   const gate = c.modules.hackathon && c.hackathon.registration === "ticket";
   $("journey").innerHTML = gate
     ? `<span><i data-icon="lightbulb"></i> اعرض فكرتك</span><span><i data-icon="message-square"></i> أجب عن سؤالين</span><span><i data-icon="ticket"></i> ${c.investor.qualifyScore}+ للتأهل إلى ${esc(c.hackathon.name)}</span>`
@@ -158,6 +174,28 @@ APP.ready.then(c => {
   $("emailHint").textContent = `لكل بريد ${c.investor.maxAttempts} محاولات.` + (c.modules.hackathon ? " تُربط به محاولاتك وتأهلك." : "");
 }).catch(()=>{ $("startErr").textContent = "تعذّر تحميل الإعدادات، يُرجى تحديث الصفحة"; });
 
+let TRACKS = false;
+// اختيار المسار والتحدي قبل عرض الفكرة
+function renderTracks(){
+  const box = $("tracks"); box.innerHTML = "";
+  for (const t of CFG.hackathon.tracks) {
+    const on = state.track === t.id;
+    const b = document.createElement("button"); b.type = "button"; b.className = "ch"; b.setAttribute("aria-pressed", on ? "true" : "false");
+    b.innerHTML = `<span class="ic">${glyph(t.icon)}</span><span><b>${esc(t.title)}</b><small>${esc(t.desc)}</small>${t.challenges.length ? `<small class="gold">${t.challenges.length} تحديات ${on ? "▾" : "◂"}</small>` : ""}</span>`;
+    b.onclick = () => { state.track = t.id; state.challenge = t.challenges.length === 1 ? t.challenges[0].id : null; renderTracks(); };
+    box.appendChild(b);
+    if (on && t.challenges.length) {
+      const sub = document.createElement("div"); sub.className = "subopts";
+      for (const c of t.challenges) {
+        const cb = document.createElement("button"); cb.type = "button"; cb.className = "ch"; cb.setAttribute("aria-pressed", state.challenge === c.id ? "true" : "false");
+        cb.innerHTML = `<span><b>${esc(c.title)}</b><small>${esc(c.desc)}</small></span>`;
+        cb.onclick = () => { state.challenge = c.id; renderTracks(); };
+        sub.appendChild(cb);
+      }
+      box.appendChild(sub);
+    }
+  }
+}
 const KIOSK = Boolean(APP.kiosk);
 if (KIOSK) document.body.classList.add("kiosk");
 // على الجهاز اللوحي المشترك لا نتذكر بيانات الزائر السابق
@@ -170,6 +208,7 @@ let idleT = null;
 function kioskReset(){
   ["name","email","idea","answer"].forEach(id => { $(id).value = ""; });
   $("consent").checked = false; $("idea").oninput?.();
+  state.track = ""; state.challenge = null; if (TRACKS) renderTracks();
   state.investor = ""; state.questions = []; state.answers = []; state.clarified = []; state.token = "";
   $("chat").innerHTML = ""; $("meet").innerHTML = ""; $("qualBox").innerHTML = ""; $("resultCard").innerHTML = "";
   ["startErr","chatErr"].forEach(id => $(id) && ($(id).textContent = ""));
@@ -222,6 +261,11 @@ $("startBtn").onclick = async () => {
   $("startErr").textContent = "";
   if (state.name.length < 2) return $("startErr").textContent = "يُرجى كتابة اسمك";
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(state.email)) return $("startErr").textContent = "الرجاء كتابة بريد إلكتروني صحيح";
+  if (TRACKS) {
+    const t = CFG.hackathon.tracks.find(x => x.id === state.track);
+    if (!t) return $("startErr").textContent = "الرجاء اختيار مسار فكرتك";
+    if (t.challenges.length && !state.challenge) return $("startErr").textContent = "الرجاء اختيار التحدي داخل المسار";
+  }
   if (state.idea.length < 15) return $("startErr").textContent = "يُرجى توضيح فكرتك أكثر (المشكلة والحل)";
   state.consent = $("consent").checked;
   if (!state.consent) return $("startErr").textContent = "الرجاء الموافقة على استخدام البيانات لأغراض البرنامج";
@@ -330,7 +374,7 @@ function showResult(d){
       ticket:d.ticket, dealId:d.dealId, name:state.name, email:state.email, idea:state.idea, title:r.title, investor:inv().name, decision:r.decision, amount:r.amount,
       verdict:r.verdict, strengths:r.strengths, weaknesses:r.weaknesses, tip:r.tip, score:r.score, at:Date.now() })); } catch(e){}
   } else if (gate && !r.qualified) {
-    $("qualBox").innerHTML = `<div class="near"><b>ينقصك ${th - pct} درجة للتأهل إلى ${esc(H.name)}</b><br>
+    $("qualBox").innerHTML = `<div class="near"><b>${r.offTrack ? `فكرتك لا ترتبط بالمسار المختار، لذا لم تتأهل إلى ${esc(H.name)}` : `ينقصك ${th - pct} درجة للتأهل إلى ${esc(H.name)}`}</b><br>
       <span class="muted" style="font-size:14px">${attemptsLeft > 0 ? `نأمل تطوير الفكرة وفق الملاحظات وإعادة المحاولة. المحاولات المتبقية: ${attemptsLeft}.` : "استنفدت محاولاتك بهذا البريد."}${d.emailed ? `<br><i data-icon="mail"></i> أرسلنا نتيجتك وأهم ما تحسّنه إلى ${esc(state.email)}.` : ""}</span></div>`;
   } else $("qualBox").innerHTML = "";
 
