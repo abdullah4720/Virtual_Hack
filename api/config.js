@@ -13,6 +13,8 @@ export default async function handler(req, res) {
     const s = await getSettings();
     const p = publicSettings(s);
     p.brand.logos = await resolveLogos(s);
+    // رقم الإصدار المنشور: تعيد الشاشات تحميل نفسها تلقائيًا عند نشر تحديث جديد
+    p.version = process.env.VERCEL_GIT_COMMIT_SHA || process.env.VERCEL_DEPLOYMENT_ID || "";
     p.features = { mail: mailEnabled(), verifyEmail: Boolean(s.investor.verifyEmail && mailEnabled()) };
     // الإعلانات العامة (للصفحات والشاشات)
     const ann = (await select("announcements")).filter((a) => a.active && (a.audience === "all" || a.audience === "screens"));

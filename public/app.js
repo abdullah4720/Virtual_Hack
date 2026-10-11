@@ -186,8 +186,16 @@ window.APP = (() => {
     const t = el.querySelector(".tk-in"); t.appendChild(cp.cloneNode(true));
     t.style.animationDuration = Math.max(12, cp.scrollWidth / 90) + "s";
   }
+  // شاشات العرض (تبقى مفتوحة طوال الفعالية) تعيد التحميل تلقائيًا عند نشر إصدار جديد من المنصة
+  let VERSION = null;
+  const SCREEN_PAGE = /\/(screen|hack-screen|dashboard|booth)(\.html)?$/.test(location.pathname);
+  function checkVersion(c) {
+    if (!c || !c.version) return;
+    if (VERSION === null) { VERSION = c.version; return; }
+    if (c.version !== VERSION && SCREEN_PAGE) location.reload();
+  }
   async function refreshConfig() {
-    try { const c = await (await window.fetch("api/config", { cache: "no-store" })).json(); ticker(c); return c; } catch (e) { return null; }
+    try { const c = await (await window.fetch("api/config", { cache: "no-store" })).json(); ticker(c); checkVersion(c); return c; } catch (e) { return null; }
   }
 
   const ready = (async () => {
@@ -196,7 +204,7 @@ window.APP = (() => {
     const c = await (await window.fetch("api/config", { cache: "no-store" })).json();
     if (document.readyState === "loading") await new Promise((r) => document.addEventListener("DOMContentLoaded", r));
     applyTheme(c);
-    banner(c); ticker(c);
+    banner(c); ticker(c); checkVersion(c);
     if (self.demo) demoBadge();
     return c;
   })();
