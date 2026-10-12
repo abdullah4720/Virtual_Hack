@@ -85,6 +85,7 @@ async function apply(c){
   else if (SRC[mode]) rotate([SRC[mode]], every);
   else if (mode === "countdown") countdown(c);
   else if (mode === "announcement") announcement(c);
+  else rotate(screens, every); // وضع غير معروف: التناوب الافتراضي بدل شاشة فارغة
 }
 APP.ready.then(apply);
 setInterval(async () => { const c = await APP.refreshConfig(); if (c) apply(c); }, 15000);

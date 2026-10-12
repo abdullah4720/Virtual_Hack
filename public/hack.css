@@ -116,6 +116,8 @@ ul.clean li{margin-bottom:4px}
 .dot.ok{background:var(--good)}.dot.no{background:var(--bad)}.dot.wait{background:var(--gold)}
 
 /* شريط الإعلانات على الشاشات */
+body.has-ticker .grid,body.has-ticker .g{height:calc(100vh - var(--tkh,0px))!important}
+body.has-ticker .g{padding-bottom:1.5vw!important}
 [data-ticker]{position:fixed;bottom:0;left:0;right:0;background:var(--navy);border-top:2px solid var(--accent);color:#fff;overflow:hidden;white-space:nowrap;z-index:5;font-size:1.4vw;padding:.6vw 0}
 [data-ticker] .tk-in{display:inline-flex;width:max-content;animation:tk 30s linear infinite}
 [data-ticker] .tk-c{display:inline-flex;flex:none}

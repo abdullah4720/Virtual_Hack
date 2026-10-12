@@ -122,15 +122,15 @@ async function refresh(){
     $("sDeals").textContent = fmt(d.stats.qualified ?? d.stats.deals);
     $("sTotal").textContent = short(d.stats.total);
 
-    $("top").innerHTML = d.top.length ? d.top.map((x,i)=>`
+    APP.setHTML($("top"), d.top.length ? d.top.map((x,i)=>`
       <div class="row"><span class="rank">${i+1}</span>
         <div class="who"><b>${esc(x.name)}</b><small>${esc(x.title)}</small></div>
         <span class="money">${short(x.valuation)}</span></div>`).join("")
-      : `<p class="empty">لا توجد عروض بعد</p>`;
+      : `<p class="empty">لا توجد عروض بعد</p>`);
 
-    $("recent").innerHTML = d.recent.slice(1,5).map(x=>`
+    APP.setHTML($("recent"), d.recent.slice(1,5).map(x=>`
       <div class="row"><div class="who"><b>${esc(x.name)} · ${esc(x.title)}</b><small>${INV[x.investor]||""}</small></div>
-      ${x.decision==="invest" ? `<span class="money">${short(x.amount)}</span>` : `<span class="out">غير متأهل</span>`}</div>`).join("");
+      ${x.decision==="invest" ? `<span class="money">${short(x.amount)}</span>` : `<span class="out">غير متأهل</span>`}</div>`).join(""));
 
     APP.fit($("top")); APP.fit($("recent"));
     const latest = d.recent[0];

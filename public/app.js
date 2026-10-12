@@ -175,7 +175,9 @@ window.APP = (() => {
     if (!el) return;
     const list = (c.announcements || []).filter((a) => a.audience === "all" || a.audience === "screens");
     el.hidden = !list.length;
-    if (!list.length) { el.innerHTML = ""; el._k = ""; return; }
+    // تُفسح الشاشة مكانًا للشريط في الأسفل فلا يغطي محتواها
+    const room = () => { const h = el.hidden ? 0 : el.offsetHeight; document.documentElement.style.setProperty("--tkh", h + "px"); document.body.classList.toggle("has-ticker", h > 0); document.querySelectorAll("[data-fit]").forEach(fit); };
+    if (!list.length) { el.innerHTML = ""; el._k = ""; room(); return; }
     const html = list.map((a) => `<span><i data-icon="megaphone"></i> <b>${esc(a.title)}</b>${a.body ? ` — ${esc(a.body)}` : ""}</span>`).join("");
     if (el._k === html) return; // لا نعيد التشغيل إن لم يتغير شيء
     el._k = html;
@@ -185,6 +187,7 @@ window.APP = (() => {
     let n = 1; while (cp.scrollWidth < w && n < 20) { cp.innerHTML += html; n++; }
     const t = el.querySelector(".tk-in"); t.appendChild(cp.cloneNode(true));
     t.style.animationDuration = Math.max(12, cp.scrollWidth / 90) + "s";
+    requestAnimationFrame(room);
   }
   // شاشات العرض (تبقى مفتوحة طوال الفعالية) تعيد التحميل تلقائيًا عند نشر إصدار جديد من المنصة
   let VERSION = null;
@@ -220,5 +223,11 @@ window.APP = (() => {
     for (const k of kids) if (k.getBoundingClientRect().bottom > bottom + 1) k.style.display = "none";
   }
   addEventListener("resize", () => document.querySelectorAll("[data-fit]").forEach(fit));
-  return Object.assign(self, { ready, esc, fmt, short, title, disabled, refreshConfig, fit });
+  // شاشات العرض: لا تُعاد كتابة القائمة (وحركتها) إلا إذا تغيّرت بياناتها، فلا يحدث وميض كل بضع ثوانٍ
+  function setHTML(el, html) {
+    if (!el) return;
+    if (el._h !== html) { el._h = html; el.innerHTML = html; }
+    if (el.hasAttribute("data-fit")) fit(el);
+  }
+  return Object.assign(self, { ready, esc, fmt, short, title, disabled, refreshConfig, fit, setHTML });
 })();

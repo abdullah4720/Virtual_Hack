@@ -25,7 +25,7 @@ header h1 .lu{width:.85em;height:.85em}
 .kpi b{display:block;font-size:3vw;line-height:1.2;color:var(--text);font-variant-numeric:tabular-nums}
 .kpi span{font-size:1vw;color:var(--muted)}
 .kpi.hl b{color:var(--accent)}
-.panel{background:var(--card);border:1px solid var(--line);border-radius:1.2vw;padding:1.2vw;display:flex;flex-direction:column;min-height:0}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:1.2vw;padding:1.2vw;display:flex;flex-direction:column;min-height:0;overflow:hidden}
 .panel h2{font-size:1.25vw;color:var(--muted);font-weight:500;margin-bottom:.6vw}
 .panel svg{flex:1;width:100%;min-height:0}
 .ev{display:flex;flex-direction:column;gap:.5vw;overflow:hidden}
@@ -46,9 +46,9 @@ header h1 .lu{width:.85em;height:.85em}
   </header>
   <div class="kpis" id="kpis"></div>
   <section class="panel span2"><h2>النشاط في آخر 12 ساعة (عروض أفكار وتقديمات مشاريع)</h2><svg id="hP" preserveAspectRatio="none"></svg></section>
-  <section class="panel"><h2><i data-icon="zap"></i> آخر النشاط</h2><div class="ev" id="ev"></div></section>
+  <section class="panel"><h2><i data-icon="zap"></i> آخر النشاط</h2><div class="ev" id="ev" data-fit></div></section>
   <section class="panel"><h2>الفرق حسب المسار</h2><svg id="tr" preserveAspectRatio="none"></svg></section>
-  <section class="panel"><h2>توزيع درجات الأفكار (<span data-text="investor.title"></span>)</h2><svg id="dP" preserveAspectRatio="none"></svg></section>
+  <section class="panel"><h2 id="pTitle"></h2><svg id="dP" preserveAspectRatio="none"></svg></section>
   <section class="panel"><h2>توزيع درجات مشاريع <span data-text="hackathon.name">التحدي</span></h2><svg id="dH" preserveAspectRatio="none"></svg></section>
 </div>
 <div class="tip" id="tip"></div>
@@ -114,10 +114,10 @@ function draw(d){
   vbars($("dP"), d.pitchHist.map((v,i)=>({label:BUCKETS[i], v})));
   vbars($("dH"), d.projHist.map((v,i)=>({label:BUCKETS[i], v})));
   const KIND = {pitch:["lightbulb","عرض فكرة"], qualified:["ticket","تأهل"], team:["users","فريق جديد"], eval:["zap","تقييم مشروع"]};
-  $("ev").innerHTML = d.events.length ? d.events.map(e=>`<div><span class="k">${glyph(KIND[e.kind][0])}</span><span class="t"><b>${esc(e.name)}</b> · ${KIND[e.kind][1]}${e.title?` · ${esc(e.title)}`:""}</span>${e.score!=null?`<span class="s">${e.score}</span>`:""}</div>`).join("") : `<p class="muted">بانتظار أول نشاط…</p>`;
+  APP.setHTML($("ev"), d.events.length ? d.events.map(e=>`<div><span class="k">${glyph(KIND[e.kind][0])}</span><span class="t"><b>${esc(e.name)}</b> · ${KIND[e.kind][1]}${e.title?` · ${esc(e.title)}`:""}</span>${e.score!=null?`<span class="s">${e.score}</span>`:""}</div>`).join("") : `<p class="muted">بانتظار أول نشاط…</p>`); APP.fit($("ev"));
 }
 async function load(){ try { draw(await (await fetch("api/feed?scope=dashboard",{cache:"no-store"})).json()); } catch(e){ console.warn(e); } }
-APP.ready.then(c => { $("title").innerHTML = APP.title("لوحة " + (c.brand.eventName || "البيانات")); document.title = "لوحة البيانات"; load(); });
+APP.ready.then(c => { $("title").innerHTML = APP.title("لوحة البيانات الحيّة"); $("pTitle").textContent = `توزيع درجات الأفكار في «${c.investor.title}»`; document.title = "لوحة البيانات"; load(); });
 setInterval(load, 10000); setInterval(()=>APP.refreshConfig(), 30000);
 addEventListener("resize", () => last && draw(last));
 const clock = () => $("clock").textContent = new Date().toLocaleTimeString("ar-SA-u-nu-latn",{hour:"numeric",minute:"2-digit"});
