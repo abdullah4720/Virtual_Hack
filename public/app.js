@@ -198,7 +198,7 @@ window.APP = (() => {
     if (c.version !== VERSION && SCREEN_PAGE) location.reload();
   }
   async function refreshConfig() {
-    try { const c = await (await window.fetch("api/config", { cache: "no-store" })).json(); ticker(c); checkVersion(c); return c; } catch (e) { return null; }
+    try { const c = await (await window.fetch("api/config", { cache: "no-store" })).json(); ticker(c); checkVersion(c); setFx(c); return c; } catch (e) { return null; }
   }
 
   const ready = (async () => {
@@ -207,7 +207,7 @@ window.APP = (() => {
     const c = await (await window.fetch("api/config", { cache: "no-store" })).json();
     if (document.readyState === "loading") await new Promise((r) => document.addEventListener("DOMContentLoaded", r));
     applyTheme(c);
-    banner(c); ticker(c); checkVersion(c);
+    banner(c); ticker(c); checkVersion(c); setFx(c);
     if (self.demo) demoBadge();
     return c;
   })();
@@ -229,5 +229,55 @@ window.APP = (() => {
     if (el._h !== html) { el._h = html; el.innerHTML = html; }
     if (el.hasAttribute("data-fit")) fit(el);
   }
-  return Object.assign(self, { ready, esc, fmt, short, title, disabled, refreshConfig, fit, setHTML });
+  // ===== مؤثرات شاشات العرض (تُطفأ من لوحة التحكم: الشاشات ← المؤثرات الحركية) =====
+  let CFG = null;
+  function setFx(c) { CFG = c; if (document.body) document.body.classList.toggle("fx", fxOn()); }
+  function fxOn() {
+    return !(CFG && CFG.booth && CFG.booth.effects === false) && !(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+  }
+  // عدّاد متحرك: ينتقل الرقم تدريجيًا من قيمته السابقة إلى الجديدة مع نبضة خفيفة عند الزيادة
+  function count(el, to, f = fmt, ms = 1400) {
+    if (!el) return;
+    to = Number(to) || 0;
+    const first = el._v === undefined, from = first ? 0 : el._v;
+    if (!first && from === to) return;
+    el._v = to;
+    cancelAnimationFrame(el._raf);
+    if (!fxOn() || from === to) { el.textContent = f(to); return; }
+    const t0 = performance.now();
+    const step = (t) => {
+      const p = Math.min(1, (t - t0) / ms), e = 1 - Math.pow(1 - p, 3);
+      el.textContent = f(Math.round(from + (to - from) * e));
+      if (p < 1) el._raf = requestAnimationFrame(step);
+    };
+    el._raf = requestAnimationFrame(step);
+    if (!first) { el.classList.remove("bump"); void el.offsetWidth; el.classList.add("bump"); }
+  }
+  // احتفال: قصاصات ملوّنة تنطلق من الزاويتين السفليتين لثوانٍ ثم تختفي (دون وميض)
+  function confetti(ms = 3200) {
+    if (!fxOn() || document.hidden) return;
+    const cv = document.createElement("canvas");
+    cv.style.cssText = "position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:50";
+    document.body.appendChild(cv);
+    const W = (cv.width = innerWidth), H = (cv.height = innerHeight), x = cv.getContext("2d"), k = H / 900;
+    const cs = getComputedStyle(document.body);
+    const cols = [cs.getPropertyValue("--accent").trim() || "#5ec4b6", cs.getPropertyValue("--good").trim() || "#3ccf91", "#ffd166", "#ffffff", "#e3a36f"];
+    const P = Array.from({ length: 160 }, (_, i) => {
+      const L = i % 2 === 0, a = (L ? -1 : -2.14) + (Math.random() - 0.5) * 0.7, v = (14 + Math.random() * 12) * k;
+      return { x: L ? W * 0.02 : W * 0.98, y: H * 0.98, vx: Math.cos(a) * v * (L ? 1 : 1), vy: Math.sin(a) * v, w: (7 + Math.random() * 7) * k, h: (4 + Math.random() * 5) * k, r: Math.random() * 6, vr: (Math.random() - 0.5) * 0.35, c: cols[i % cols.length] };
+    });
+    const t0 = performance.now();
+    (function frame(t) {
+      const p = (t - t0) / ms;
+      x.clearRect(0, 0, W, H);
+      if (p >= 1) return cv.remove();
+      x.globalAlpha = p > 0.7 ? (1 - p) / 0.3 : 1;
+      for (const q of P) {
+        q.vy += 0.38 * k; q.vx *= 0.985; q.vy *= 0.985; q.x += q.vx; q.y += q.vy; q.r += q.vr;
+        x.save(); x.translate(q.x, q.y); x.rotate(q.r); x.fillStyle = q.c; x.fillRect(-q.w / 2, -q.h / 2, q.w, q.h * Math.abs(Math.cos(q.r * 2))); x.restore();
+      }
+      requestAnimationFrame(frame);
+    })(t0);
+  }
+  return Object.assign(self, { ready, esc, fmt, short, title, disabled, refreshConfig, fit, setHTML, count, confetti, fxOn });
 })();

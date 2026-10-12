@@ -124,3 +124,13 @@ body.has-ticker .g{padding-bottom:1.5vw!important}
 [data-ticker] .tk-c span{margin-left:4vw;display:inline-flex;align-items:center;gap:.5vw}
 @keyframes tk{from{transform:translateX(0)}to{transform:translateX(50%)}}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+/* ===== مؤثرات شاشات العرض (تعمل فقط عند body.fx) ===== */
+body.fx .bump{animation:fxBump .7s ease}
+@keyframes fxBump{40%{transform:scale(1.18);color:#ffd166}}
+/* نبض حول رمز QR وخط مسح يمرّ عليه */
+.fx-qr{position:relative;isolation:isolate}
+body.fx .fx-qr::before{content:"";position:absolute;inset:0;border-radius:inherit;z-index:-1;animation:fxHalo 2.6s ease-out infinite}
+@keyframes fxHalo{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 60%,transparent)}75%,100%{box-shadow:0 0 0 1.8vw transparent}}
+body.fx .fx-qr::after{content:"";position:absolute;inset-inline:7%;top:6%;height:3px;border-radius:3px;background:linear-gradient(90deg,transparent,var(--accent),transparent);box-shadow:0 0 10px var(--accent);opacity:.75;animation:fxScan 2.8s ease-in-out infinite alternate}
+@keyframes fxScan{to{top:94%}}
