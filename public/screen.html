@@ -75,10 +75,20 @@ body.fx .att-card{animation:spotIn .7s cubic-bezier(.2,.8,.2,1) both}
 .att-card b{font-size:min(1.6vw,2.8vh);line-height:1.4}
 .att-card p{color:var(--muted);font-size:min(1.15vw,2vh);line-height:1.75}
 .att-tracks{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr}
-.att-steps{grid-template-columns:repeat(4,1fr);align-content:center}
-.att-steps .att-card{align-items:center;text-align:center;justify-content:flex-start;height:min(24vw,46vh);padding-top:min(2.4vw,4.4vh)}
-.att-steps b{font-size:min(1.4vw,2.5vh)}
-.att-steps .num{font-size:min(4.5vw,8vh);font-weight:700;color:var(--accent);line-height:1}
+.att-steps{display:flex;align-items:center}
+.proc{position:relative;display:grid;grid-template-columns:repeat(4,1fr);width:100%;--dot:min(6.4vw,11vh)}
+.proc-line{position:absolute;top:calc(var(--dot)/2 - 2px);inset-inline:12.5%;height:4px;border-radius:4px;background:var(--line)}
+.proc-line i{position:absolute;inset:0;border-radius:inherit;background:var(--accent);transform-origin:right}
+body.fx .proc-line i{animation:procFill 2.4s linear .3s both}
+@keyframes procFill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.proc-step{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;gap:min(.7vw,1.2vh);padding:0 min(.8vw,1.4vh)}
+.proc-step .dot{position:relative;width:var(--dot);height:var(--dot);border-radius:50%;display:grid;place-items:center;background:var(--accent);color:var(--accent-ink,#fff);font-size:min(2.6vw,4.6vh);box-shadow:0 0 0 min(.5vw,.9vh) var(--card),0 0 0 min(.65vw,1.15vh) color-mix(in srgb,var(--accent) 45%,transparent)}
+.proc-step .n{position:absolute;top:-.3vw;inset-inline-end:-.3vw;width:min(2vw,3.5vh);height:min(2vw,3.5vh);border-radius:50%;display:grid;place-items:center;background:#ffd166;color:#1a1a1a;font-size:min(1.05vw,1.85vh);font-weight:700}
+.proc-step b{font-size:min(1.4vw,2.5vh);line-height:1.45;margin-top:min(.6vw,1vh)}
+.proc-step p{color:var(--muted);font-size:min(1.05vw,1.85vh);line-height:1.7}
+body.fx .proc-step .dot{animation:procDot .6s cubic-bezier(.2,.8,.2,1) var(--d) both}
+body.fx .proc-step b,body.fx .proc-step p{animation:spotIn .6s ease var(--d) both}
+@keyframes procDot{from{background:var(--card2);color:var(--muted);transform:scale(.8)}60%{transform:scale(1.12)}to{transform:none}}
 .att-top{display:flex;justify-content:center;align-items:flex-end}
 .att-top .att-card{width:31%}
 .att-top .att-card{align-items:center;text-align:center;justify-content:center}
@@ -229,9 +239,9 @@ function slides(){
   const tracks = c?.hackathon?.tracks || [];
   if (tracks.length) out.push({ t: `<i data-icon="compass"></i> المسارات`, cls: "att-tracks", h: tracks.slice(0,4).map((x,i)=>`
     <div class="att-card" style="animation-delay:${i*.15}s"><span class="ic"><i data-icon="${APP.esc(x.icon||"lightbulb")}"></i></span><b>${esc(x.title)}</b><p>${esc(x.desc||"")}</p></div>`).join("") });
-  const steps = [["qr-code","امسح الرمز بجوالك"],["lightbulb",`اختر «${esc(c?.investor?.title||"")}» واكتب فكرتك`],["message-square","أجب عن سؤالين"],["award","احصل على تقييمك وتأهّل"]];
-  out.push({ t: `<i data-icon="list-ordered"></i> كيف تشارك؟`, cls: "att-steps", h: steps.map(([ic,x],i)=>`
-    <div class="att-card" style="animation-delay:${i*.35}s"><span class="num">${"١٢٣٤"[i]}</span><span class="ic"><i data-icon="${ic}"></i></span><b>${x}</b></div>`).join("") });
+  const steps = [["qr-code","امسح الرمز بجوالك","رمز QR بجوار الشاشة"],["lightbulb",`اختر «${esc(c?.investor?.title||"")}» واكتب فكرتك`,"المشكلة والحل باختصار"],["message-square","أجب عن سؤالين","يطرحهما المستشار الذكي عن فكرتك"],["award","احصل على تقييمك وتأهّل","تقييم فوري ونتيجتك مباشرة"]];
+  out.push({ t: `<i data-icon="list-ordered"></i> كيف تشارك؟`, cls: "att-steps", h: `<div class="proc"><div class="proc-line"><i></i></div>${steps.map(([ic,x,sub],i)=>`
+    <div class="proc-step" style="--d:${(.3+i*.8).toFixed(1)}s"><span class="dot"><i data-icon="${ic}"></i><span class="n">${i+1}</span></span><b>${x}</b><p>${sub}</p></div>`).join("")}</div>` });
   const top = (d.top||[]).slice(0,3);
   if (top.length) out.push({ t: `<i data-icon="trophy"></i> أعلى الأفكار تقييمًا`, cls: "att-top", h: top.map((x,i)=>`
     <div class="att-card" style="animation-delay:${i*.2}s"><span class="medal">${i+1}</span><b>${esc(x.name)}</b><p>«${esc(x.title)}»</p><span class="money">${short(x.valuation)}</span></div>`).join("") });
