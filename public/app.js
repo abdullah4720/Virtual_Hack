@@ -279,5 +279,21 @@ window.APP = (() => {
       requestAnimationFrame(frame);
     })(t0);
   }
-  return Object.assign(self, { ready, esc, fmt, short, title, disabled, refreshConfig, fit, setHTML, count, confetti, fxOn });
+  // عدّ تنازلي بالثواني حتى فتح/إقفال التقديم؛ يتحول للبرتقالي في الساعة الأخيرة. noun: «التقديم» أو «التسجيل»
+  function countdown(el, H, ph, noun = "التقديم", hideIfNone = false) {
+    if (!el || !H) return;
+    const now = Date.now(), o = H.opensAtMs, c = H.closesAtMs;
+    const p = ph || (o && now < o ? "soon" : c && now >= c ? "closed" : "open");
+    const t = p === "soon" ? o : p === "open" ? c : null;
+    el.hidden = false;
+    if (p === "closed") { el.className = "cd"; el.innerHTML = `<b>انتهى ${noun}</b>ترقّبوا إعلان الفائزين`; return; }
+    if (!t) { if (hideIfNone) { el.hidden = true; return; } el.className = "cd"; el.innerHTML = `<b>${noun} مفتوح</b>`; return; }
+    const ms = Math.max(0, t - now);
+    if (!ms) { el.className = "cd"; el.innerHTML = p === "soon" ? `<b>بدأ ${noun}!</b>` : `<b>أُغلق ${noun}</b>بدأ التحكيم`; return; }
+    const d = Math.floor(ms / 864e5), h = Math.floor(ms / 36e5) % 24, m = Math.floor(ms / 6e4) % 60, sc = Math.floor(ms / 1e3) % 60;
+    const pad = (n) => String(n).padStart(2, "0"), u = (v, l) => `<span class="u"><b>${v}</b><small>${l}</small></span>`, sep = `<span class="sep">:</span>`;
+    el.className = "cd" + (p === "open" && ms < 36e5 ? " urgent" : "");
+    el.innerHTML = `<span class="lbl">${p === "soon" ? `يبدأ ${noun} بعد` : `يُقفل ${noun} بعد`}</span><div class="clock">${d ? u(d, "يوم") + sep : ""}${u(pad(h), "ساعة")}${sep}${u(pad(m), "دقيقة")}${sep}${u(pad(sc), "ثانية")}</div>`;
+  }
+  return Object.assign(self, { ready, esc, fmt, short, title, disabled, refreshConfig, fit, setHTML, count, confetti, fxOn, countdown });
 })();
