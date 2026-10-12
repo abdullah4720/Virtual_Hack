@@ -424,7 +424,15 @@ export default async function handler(req, res) {
       if (b.confirm !== "حذف") return res.status(400).json({ error: "اكتب كلمة «حذف» للتأكيد" });
       if (scope === "investor" || scope === "all") { await removeAll("deals"); await removeAll(TICKETS); await removeAll("otp"); }
       if (scope === "hackathon" || scope === "all") {
+        // الملفات المرفوعة (العروض والمرفقات) تُحذف من التخزين أيضًا
+        const [teams, subs] = await Promise.all([select(T.teams), select(T.subs)]);
+        const keys = new Set([...teams.flatMap((t) => t.files || []), ...subs.flatMap((x) => x.files || [])].map((f) => f?.key).filter(Boolean));
+        for (const k of keys) { try { await removeFile(k); } catch (e) { console.error("file delete", k, e.message); } }
         await removeAll(T.scores); await removeAll(T.subs); await removeAll(T.teams);
+        // إسناد اللجان وترتيب العرض كانا لفرق محذوفة
+        if (Object.keys(s.hackathon.judging?.assign || {}).length || Object.keys(s.hackathon.judging?.order || {}).length) {
+          const next = JSON.parse(JSON.stringify(s)); next.hackathon.judging.assign = {}; next.hackathon.judging.order = {}; await saveSettings(next);
+        }
         // رموز التأهل المستخدمة تعود صالحة للتسجيل، فلا تبقى مرتبطة بفرق محذوفة
         if (scope === "hackathon") for (const t of (await select(TICKETS)).filter((x) => x.used_by_team)) await update(TICKETS, t.id, { used_by_team: null, used_at: null });
       }
