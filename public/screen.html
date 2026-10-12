@@ -254,7 +254,7 @@ function slides(){
   const top = (d.top||[]).slice(0,3);
   if (top.length) out.push({ t: `<i data-icon="trophy"></i> أعلى الأفكار تقييمًا`, cls: "att-top", h: top.map((x,i)=>`
     <div class="att-card" style="animation-delay:${i*.2}s"><span class="medal">${i+1}</span><b>${esc(x.name)}</b><p>«${esc(x.title)}»</p><span class="money" dir="ltr">${x.score}<small>/100</small></span></div>`).join("") });
-  if (d.stats.pitches) out.push({ t: `<i data-icon="chart-column"></i> حصيلة الجناح حتى الآن`, cls: "att-stats", h: [["pitches","فكرة عُرضت"],["qualified","متأهل"],["avgScore","متوسط الدرجات"]].map(([k,l],i)=>`
+  if (d.stats.pitches) out.push({ t: `<i data-icon="chart-column"></i> الفعالية بالأرقام`, cls: "att-stats", h: [["pitches","فكرة عُرضت"],["qualified","متأهل"],["avgScore","متوسط الدرجات"]].map(([k,l],i)=>`
     <div class="att-card" style="animation-delay:${i*.2}s"><span class="big" data-n="${k}">0</span><p>${l}</p></div>`).join(""), after: el => el.querySelectorAll("[data-n]").forEach(n => { const v = n.dataset.n==="qualified" ? (d.stats.qualified ?? d.stats.deals) : d.stats[n.dataset.n]; n._v = undefined; n.textContent = "0"; APP.count(n, v, n.dataset.n==="total" ? short : fmt, 1800); }) });
   out.push({ board: true });
   return out;
