@@ -323,8 +323,9 @@ const P = {
         ${f("المدعوون بالبريد (اختياري)","_people",{type:"textarea",rows:4,max:20000,ph:"سطر لكل مدعو، مثل:\nفريق كلية الحاسب، cs@qu.edu.sa\nnora@example.com",help:D.system.mail?"يُولَّد رمز لكل مدعو ويُرسل إليه بالبريد مع رابط التسجيل. اتركه فارغًا لتوليد رموز تنسخها بنفسك.":"البريد غير مفعّل: تُولَّد الرموز وتُربط بالمدعوين، لكن لن تُرسل."})}
         <div class="grid2" style="margin-top:8px">${tmp._people.trim()?`<div class="help" style="align-self:end">عدد الرموز = عدد المدعوين</div>`:f("العدد","_count",{type:"num",min:1,max:100})}${f("وصف (اختياري)","_label",{ph:"مثال: فرق كلية الحاسب"})}</div>
         <button class="btn" data-act="invites" style="margin-top:10px">توليد الرموز</button><div id="newCodes"></div>`)}
-      ${card(`الرموز (${T.length})`, T.length ? `<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>الرمز</th><th>النوع</th><th>الاسم</th><th>البريد</th><th>الدرجة</th><th>الحالة</th></tr></thead><tbody>
-        ${T.map(t=>`<tr><td dir="ltr" style="font-family:ui-monospace,monospace;font-weight:700">${esc(t.code)}</td><td>${t.kind==="invite"?"دعوة"+(t.label?` · ${esc(t.label)}`:""):"تأهل"}</td><td>${esc(t.name||"—")}</td><td dir="ltr">${esc(t.email||"—")}</td><td>${t.score??"—"}</td><td>${t.used?`<span class="pill ok">سجّل: ${esc(t.team)}</span>`:`<span class="pill">لم يُستخدم</span>`}</td></tr>`).join("")}
+      ${card(`الرموز (${T.length})`, T.length ? `<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>الرمز</th><th>النوع</th><th>الاسم</th><th>البريد</th><th>الدرجة</th><th>الحالة</th><th></th></tr></thead><tbody>
+        ${T.map(t=>`<tr><td dir="ltr" style="font-family:ui-monospace,monospace;font-weight:700">${esc(t.code)}</td><td>${t.kind==="invite"?"دعوة"+(t.label?` · ${esc(t.label)}`:""):"تأهل"}</td><td>${esc(t.name||"—")}</td><td dir="ltr">${esc(t.email||"—")}</td><td>${t.score??"—"}</td><td>${t.used?`<span class="pill ok">سجّل: ${esc(t.team)}</span>`:`<span class="pill">لم يُستخدم</span>`}</td>
+          <td>${t.used?`<span class="help">يُحذف مع الفريق</span>`:`<button class="ib del" data-act="tkdelete" data-id="${t.id}" data-kind="${t.kind==="invite"?"invite":"q"}" data-name="${attr(t.name||t.code)}"><i data-icon="trash-2"></i> حذف</button>`}</td></tr>`).join("")}
         </tbody></table></div>` : `<p class="muted">لا توجد رموز بعد.</p>`)}`;
   },
   judges(){
@@ -736,6 +737,12 @@ $("main").addEventListener("click", async e => {
   if (act==="kioskkey") { if (S.booth.kioskKey && !confirm("سيتوقف الرابط الحالي للجهاز اللوحي. متابعة؟")) return; S.booth.kioskKey = genKey(16); render(); dirty("أُنشئ رابط الجهاز اللوحي. الرجاء حفظ التغييرات.", "ok"); return; }
   if (act==="genkey") { S.hackathon.judgeKey = genKey(); render(); dirty(); return; }
   if (act==="reeval") { const old = b.innerHTML; b.disabled = true; b.textContent = "جارٍ التقييم…"; try { const r = await api("reeval", {}); D = await api("get"); render(); dirty(`اكتمل تقييم ${r.evaluated}${r.remaining?`، وبقي ${r.remaining}`:""}`, "ok"); } catch(err){ b.disabled = false; b.innerHTML = old; alert(err.message); } return; }
+  if (act==="tkdelete") {
+    const inv = b.dataset.kind==="invite";
+    if (!confirm(inv ? `حذف رمز الدعوة «${b.dataset.name}»؟\n\nلن يتمكن أحد من التسجيل به.` : `حذف المتأهل «${b.dataset.name}» نهائيًا؟\n\nيُلغى رمز تأهله، ويُحذف عرض فكرته فيختفي من شاشة العرض ولوحة البيانات والتقارير. لا يمكن التراجع.`)) return;
+    try { await api("ticket-delete", {id: Number(b.dataset.id)}); } catch(e) { alert(e.message); return; }
+    D = await api("get"); PITCHES = null; render(); dirty(inv ? "✓ حُذف رمز الدعوة" : "✓ حُذف المتأهل، واختفى من الشاشات", "ok"); return;
+  }
   if (act==="pdelete") {
     if (!confirm(`حذف عرض «${b.dataset.name}» نهائيًا؟\n\nسيختفي من شاشة المستثمر ولوحة البيانات والتقارير، ويُلغى رمز تأهله إن لم يُستخدم.`)) return;
     await api("pitch-delete", {id: Number(b.dataset.id)});

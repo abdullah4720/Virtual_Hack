@@ -46,7 +46,7 @@ export default async function handler(req, res) {
         defaults: DEFAULTS,
         notifyKinds: KINDS, notifyCommon: COMMON_VARS,
         tickets: tickets.slice(-300).reverse().map((t) => ({
-          code: t.code, kind: t.kind, name: t.name, email: t.email, label: t.label, used: Boolean(t.used_by_team), created_at: t.created_at,
+          id: t.id, code: t.code, kind: t.kind, name: t.name, email: t.email, label: t.label, used: Boolean(t.used_by_team), created_at: t.created_at,
           score: t.deal_id ? deals.find((d) => d.id === t.deal_id)?.score ?? null : null,
           team: t.used_by_team ? teams.find((x) => x.id === t.used_by_team)?.name ?? "" : "",
         })),
@@ -152,6 +152,23 @@ export default async function handler(req, res) {
         }),
       });
     }
+    // حذف متأهل أو رمز دعوة واحد من «التأهيل والدعوات»: رمز التأهل يُحذف مع عرض فكرته فيختفي من الشاشات
+    if (action === "ticket-delete" && req.method === "POST") {
+      const [t] = await select(TICKETS, { id: Number(b.id) });
+      if (!t) return res.status(404).json({ error: "الرمز غير موجود" });
+      if (t.used_by_team) {
+        const team = (await select(T.teams, { id: t.used_by_team }))[0];
+        return res.status(409).json({ error: `هذا الرمز سجّل به فريق «${team?.name || ""}». احذف الفريق من «المشاركون» ليُحذف معه.` });
+      }
+      if (t.deal_id) {
+        const team = (await select(T.teams)).find((x) => x.deal_id === t.deal_id);
+        if (team) return res.status(409).json({ error: `صاحب هذا التأهل سجّل فريق «${team.name}». احذف الفريق من «المشاركون» ليُحذف معه.` });
+        if ((await select("deals", { id: t.deal_id })).length) await removeOne("deals", t.deal_id);
+      }
+      await removeOne(TICKETS, t.id);
+      return res.status(200).json({ ok: true });
+    }
+
     if (action === "pitch-delete" && req.method === "POST") {
       const id = Number(b.id);
       const [d] = await select("deals", { id });
