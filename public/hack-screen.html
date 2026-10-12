@@ -35,6 +35,7 @@ header h1 .lu{width:.85em;height:.85em}
 .side h3{font-size:min(1.9vw,3.4vh);line-height:1.5}
 .qr{background:#fff;padding:.9vw;border-radius:1vw}
 .qr img,.qr canvas{width:min(14vw,24vh)!important;height:min(14vw,24vh)!important;display:block}
+.steps{text-align:right;font-size:min(1.15vw,2.1vh);line-height:1.9;color:var(--text)}
 .chs{display:grid;grid-template-columns:1fr 1fr;gap:min(.5vw,.8vh);width:100%}
 .chs div{background:var(--card2);border-radius:.7vw;padding:min(.5vw,.8vh) .8vw;font-size:min(1.1vw,2vh);text-align:right}
 .cd{font-size:min(1.25vw,2.2vh);color:var(--muted)}
@@ -69,7 +70,7 @@ header h1 .lu{width:.85em;height:.85em}
     <h3>شارك من جوالك<br><span class="gold">التقديم أونلاين بالكامل</span></h3>
     <div class="qr" id="qr"></div>
     <div class="cd" id="cd"></div>
-    <div class="chs" id="chs" data-fit></div>
+    <div class="steps" id="steps"></div>
   </section>
 </div>
 <script>
@@ -110,8 +111,12 @@ async function refresh(){
 APP.ready.then(c => {
   CFG = c; document.title = c.hackathon.name;
   $("host").textContent = [c.brand.boothName, c.brand.eventName].filter(Boolean).join(" · ");
-  $("chs").innerHTML = c.hackathon.tracks.map(t=>`<div>${glyph(t.icon)} ${esc(t.title)}</div>`).join("");
-  setTimeout(() => APP.fit($("chs")), 300);
+  // خطوات المشاركة (بدل قائمة المسارات): تبدأ بـ«اختبر فكرتك» إن كان التسجيل للمتأهلين
+  const gate = c.modules.investor && c.hackathon.registration === "ticket";
+  const S = gate
+    ? ["امسح الرمز بجوالك", `اعرض فكرتك في «${esc(c.investor.title)}» وتأهّل`, "سجّل فريقك برمز التأهل", "قدّم مشروعك واحصل على تقييم فوري"]
+    : ["امسح الرمز بجوالك", "سجّل فريقك واختر مسارك", "قدّم مشروعك أونلاين", "احصل على تقييم فوري وتأهّل للتحكيم"];
+  $("steps").innerHTML = S.map((x, i) => `${"١٢٣٤"[i]}. ${x}`).join("<br>");
   refresh();
 });
 setInterval(refresh, 5000); setInterval(countdown, 30000);
