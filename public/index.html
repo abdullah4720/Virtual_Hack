@@ -371,7 +371,7 @@ function showResult(d){
     </div>`;
     if (KIOSK) { try { new QRCode($("ticketQR"), {text: new URL("hackathon.html?ticket=" + encodeURIComponent(d.ticket), location.href).href, width: 200, height: 200}); } catch(e){} }
     else try { localStorage.setItem("hack_import", JSON.stringify({
-      ticket:d.ticket, dealId:d.dealId, name:state.name, email:state.email, idea:state.idea, title:r.title, investor:inv().name, decision:r.decision, amount:r.amount,
+      ticket:d.ticket, dealId:d.dealId, name:state.name, email:state.email, idea:state.idea, title:r.title, investor:inv().name, decision:r.decision,
       verdict:r.verdict, strengths:r.strengths, weaknesses:r.weaknesses, tip:r.tip, score:r.score, at:Date.now() })); } catch(e){}
   } else if (gate && !r.qualified) {
     $("qualBox").innerHTML = `<div class="near"><b>${r.offTrack ? `فكرتك لا ترتبط بالمسار المختار، لذا لم تتأهل إلى ${esc(H.name)}` : `ينقصك ${th - pct} درجة للتأهل إلى ${esc(H.name)}`}</b><br>
@@ -382,7 +382,7 @@ function showResult(d){
   $("resultCard").innerHTML = `
     <span class="badge ${ok?"ok":"no"}">${ok ? '<i data-icon="award"></i> مبروك' : '<i data-icon="clipboard-list"></i> نتيجة التقييم'}</span>
     <div style="font-size:15px;color:var(--muted)">${glyph(inv().emoji)} ${esc(inv().name)} عن «${esc(r.title)}»</div>
-    ${ok ? `<div class="big">${gate ? "متأهل" : "قرار إيجابي"}</div><div class="val">عرض استثماري افتراضي: ${fmt(r.amount)} ريال مقابل ${fmt(r.equity)}%</div>` : `<div class="big">غير متأهل</div><div class="val">${attemptsLeft > 0 ? `${attemptsLeft===1?"لديك محاولة واحدة متبقية":attemptsLeft===2?"لديك محاولتان متبقيتان":`لديك ${attemptsLeft} محاولات متبقية`} لتطوير فكرتك وإعادة التقديم` : "استنفدت المحاولات المتاحة لهذا البريد"}</div>`}
+    ${ok ? `<div class="big">${gate ? "متأهل" : "قرار إيجابي"}</div><div class="val">${gate ? `تجاوزت فكرتك حد التأهل (${th} من 100)` : "تقييم إيجابي لفكرتك"}</div>` : `<div class="big">غير متأهل</div><div class="val">${attemptsLeft > 0 ? `${attemptsLeft===1?"لديك محاولة واحدة متبقية":attemptsLeft===2?"لديك محاولتان متبقيتان":`لديك ${attemptsLeft} محاولات متبقية`} لتطوير فكرتك وإعادة التقديم` : "استنفدت المحاولات المتاحة لهذا البريد"}</div>`}
     <p class="verdict">«${esc(r.verdict)}»</p>
     <div style="font-size:15px">درجة فكرتك: <b style="font-size:22px;color:var(--accent)">${pct}</b> / 100</div>
     <div class="thresh"><i id="scoreBar" style="width:0;background:${r.qualified?"var(--good)":"var(--accent)"}"></i>${gate?`<div class="mark" style="right:${th}%"><span style="${th>80?"transform:none;left:0":th<15?"transform:translateX(100%)":""}">حد التأهل ${th}</span></div>`:""}</div>

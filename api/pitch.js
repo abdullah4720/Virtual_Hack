@@ -51,11 +51,8 @@ export const SCREEN = ENGINE_SCREEN.map(({ key, label, max }) => ({ key, label, 
 const DEMO_Q = ["فكرة جديرة بالاهتمام. من العميل الذي سيدفع مقابل الحل تحديدًا، ولماذا سيدفع؟", "شكرًا على الإجابة. كيف سيحقق المشروع دخلًا، ومن منافسوك الحاليون؟"];
 function demoFinal(idea, s, opt) {
   const scores = Object.fromEntries(screenCriteria(opt).map((c) => [c.key, Math.round(c.max * (0.35 + Math.random() * 0.6))]));
-  const { minAmount: lo, maxAmount: hi } = s.investor;
   return {
     scores,
-    amount: Math.round((lo + Math.random() * (hi - lo)) / 50000) * 50000 || lo,
-    equity: [10, 15, 20, 25, 30][Math.floor(Math.random() * 5)],
     title: clip(idea, 40),
     verdict_invest: "فكرة واعدة، وأنصح بدعمها بأرقام أوضح عن السوق والتكاليف.",
     verdict_out: "الفكرة جيدة، لكنها تحتاج إلى تحديد العميل الذي سيدفع بوضوح قبل التأهل.",
@@ -144,7 +141,7 @@ export default async function handler(req, res) {
     }
 
     // ===== التقييم النهائي =====
-    const { minAmount: lo, maxAmount: hi, qualifyScore } = I;
+    const { qualifyScore } = I;
     let f, ev = null;
     const CR = screenCriteria(opt).map(({ key, label, max }) => ({ key, label, max }));
     if (!AI) f = demoFinal(idea, s, opt);
@@ -162,9 +159,8 @@ export default async function handler(req, res) {
     const offTrack = Boolean(opt && ev && ev.criteria.find((c) => c.key === "track")?.level === 0);
     const qualified = score >= qualifyScore && !offTrack;
     const decision = qualified ? "invest" : "out";
-    const amount = qualified ? Math.min(hi, Math.max(lo, Math.round(Number(f.amount) || lo))) : 0;
-    const equity = qualified ? Math.min(49, Math.max(1, Number(f.equity) || 10)) : 0;
-    const valuation = qualified ? Math.round((amount * 100) / equity) : 0;
+    // أُلغيت قيمة الاستثمار الافتراضية: النتيجة هي الدرجة وقرار التأهل فقط
+    const amount = 0, equity = 0, valuation = 0;
     const result = {
       decision, qualified, score, scores, qualifyScore, amount, equity, valuation,
       criteria: ev ? ev.criteria : CR,

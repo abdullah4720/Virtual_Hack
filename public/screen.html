@@ -32,6 +32,9 @@ h1 span{color:var(--accent)}
 .who b{display:block;font-size:1.25vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .who small{color:var(--muted);font-size:.95vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
 .money{font-size:1.25vw;font-weight:700;color:var(--accent);white-space:nowrap}
+.money,.amt>span,.amt{unicode-bidi:isolate}
+.money small,.amt small{font-size:.6em;color:var(--muted);font-weight:500}
+.money.dim,.amt.dim{color:var(--muted)}
 .out{color:var(--bad);font-size:1.1vw;font-weight:700}
 .spot{flex:1;display:flex;flex-direction:column;justify-content:center;text-align:center;gap:1vw}
 .spot .tag{align-self:center;font-size:1.1vw;padding:.4vw 1.2vw;border-radius:99px;font-weight:700}
@@ -127,7 +130,7 @@ h1 span[data-title] .gold{color:var(--accent)}
     <div class="stats">
       <div class="stat"><b id="sPitches">0</b><small>عرض</small></div>
       <div class="stat"><b id="sDeals">0</b><small>متأهل</small></div>
-      <div class="stat"><b id="sTotal">0</b><small>ريال استثمارات</small></div>
+      <div class="stat"><b id="sTotal">0</b><small>متوسط الدرجات</small></div>
     </div>
   </header>
 
@@ -182,17 +185,17 @@ async function refresh(){
     FEED = d;
     APP.count($("sPitches"), d.stats.pitches);
     APP.count($("sDeals"), d.stats.qualified ?? d.stats.deals);
-    APP.count($("sTotal"), d.stats.total, short);
+    APP.count($("sTotal"), d.stats.avgScore);
 
     APP.setHTML($("top"), d.top.length ? d.top.map((x,i)=>`
       <div class="row"><span class="rank">${i+1}</span>
         <div class="who"><b>${esc(x.name)}</b><small>${esc(x.title)}</small></div>
-        <span class="money">${short(x.valuation)}</span></div>`).join("")
-      : `<p class="empty">لا توجد عروض بعد</p>`);
+        <span class="money" dir="ltr">${x.score}<small>/100</small></span></div>`).join("")
+      : `<p class="empty">لا يوجد متأهلون بعد… كن أنت الأول.</p>`);
 
     APP.setHTML($("recent"), d.recent.slice(1,5).map(x=>`
       <div class="row"><div class="who"><b>${esc(x.name)} · ${esc(x.title)}</b><small>${INV[x.investor]||""}</small></div>
-      ${x.decision==="invest" ? `<span class="money">${short(x.amount)}</span>` : `<span class="out">غير متأهل</span>`}</div>`).join(""));
+      ${x.qualified ? `<span class="money" dir="ltr">${x.score}<small>/100</small></span>` : `<span class="out">غير متأهل</span>`}</div>`).join(""));
 
     APP.fit($("top")); APP.fit($("recent"));
     const latest = d.recent[0];
@@ -204,7 +207,8 @@ async function refresh(){
           <span class="tag ${ok?"ok":"no"} ${fresh&&latest.qualified?"cheer":""}">${latest.qualified?(fresh?'<i data-icon="party-popper"></i> مبروك التأهّل!':'<i data-icon="ticket"></i> تأهّل'):ok?"متأهل":"غير متأهل"}</span>
           <div class="name">${esc(latest.name)}</div>
           <div class="idea">«${esc(latest.title)}»</div>
-          ${ok ? `<div class="amt"><span id="amtV">${fmt(latest.amount)}</span> ريال <small style="font-size:1.4vw;color:var(--muted)">مقابل ${fmt(latest.equity)}%</small></div>` : ""}
+          ${ok ? `<div class="amt" dir="ltr"><span id="amtV">${latest.score}</span><small> / 100</small></div>
+          <div class="by">درجة الفكرة · حد التأهل ${CFG?.investor?.qualifyScore ?? 60}</div>` : ""}
           <div class="quote">“${esc(latest.verdict)}”</div>
           <div class="by">— ${INV[latest.investor]||""}</div>`;
         if (lastId === null) lastAct = Date.parse(latest.created_at) || 0;
@@ -212,7 +216,7 @@ async function refresh(){
           // مشاركة جديدة: تخرج الشاشة من العرض التعريفي وتحتفي بصاحبها
           lastAct = Date.now(); setIdle(false);
           $("spot").classList.remove("enter"); void $("spot").offsetWidth; $("spot").classList.add("enter");
-          if (ok) { const v = $("amtV"); v.textContent = "0"; APP.count(v, latest.amount, fmt, 1800); }
+          if (ok) { const v = $("amtV"); v.textContent = "0"; v._v = undefined; APP.count(v, latest.score, fmt, 1600); }
           $("spotPanel").classList.remove("flash"); void $("spotPanel").offsetWidth; $("spotPanel").classList.add("flash");
           if (latest.qualified) setTimeout(() => APP.confetti(), 500);
         }
@@ -249,8 +253,8 @@ function slides(){
     <div class="proc-step" style="--d:${(.3+i*.8).toFixed(1)}s"><span class="dot"><i data-icon="${ic}"></i><span class="n">${i+1}</span></span><b>${x}</b><p>${sub}</p></div>`).join("")}</div>` });
   const top = (d.top||[]).slice(0,3);
   if (top.length) out.push({ t: `<i data-icon="trophy"></i> أعلى الأفكار تقييمًا`, cls: "att-top", h: top.map((x,i)=>`
-    <div class="att-card" style="animation-delay:${i*.2}s"><span class="medal">${i+1}</span><b>${esc(x.name)}</b><p>«${esc(x.title)}»</p><span class="money">${short(x.valuation)}</span></div>`).join("") });
-  if (d.stats.pitches) out.push({ t: `<i data-icon="chart-column"></i> حصيلة الجناح حتى الآن`, cls: "att-stats", h: [["pitches","فكرة عُرضت"],["qualified","متأهل"],["total","ريال استثمارات"]].map(([k,l],i)=>`
+    <div class="att-card" style="animation-delay:${i*.2}s"><span class="medal">${i+1}</span><b>${esc(x.name)}</b><p>«${esc(x.title)}»</p><span class="money" dir="ltr">${x.score}<small>/100</small></span></div>`).join("") });
+  if (d.stats.pitches) out.push({ t: `<i data-icon="chart-column"></i> حصيلة الجناح حتى الآن`, cls: "att-stats", h: [["pitches","فكرة عُرضت"],["qualified","متأهل"],["avgScore","متوسط الدرجات"]].map(([k,l],i)=>`
     <div class="att-card" style="animation-delay:${i*.2}s"><span class="big" data-n="${k}">0</span><p>${l}</p></div>`).join(""), after: el => el.querySelectorAll("[data-n]").forEach(n => { const v = n.dataset.n==="qualified" ? (d.stats.qualified ?? d.stats.deals) : d.stats[n.dataset.n]; n._v = undefined; n.textContent = "0"; APP.count(n, v, n.dataset.n==="total" ? short : fmt, 1800); }) });
   out.push({ board: true });
   return out;

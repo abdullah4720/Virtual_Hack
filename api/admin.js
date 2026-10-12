@@ -465,9 +465,9 @@ export default async function handler(req, res) {
         const deals = await select("deals");
         res.setHeader("Content-Disposition", 'attachment; filename="investor-pitches.csv"');
         return res.status(200).end(toCSV(
-          ["التاريخ", "الاسم", "البريد", "متأهل", "الفكرة", "المستثمر", "القرار", "المبلغ", "الحصة %", "التقييم", "الدرجة", "تعليق المستثمر"],
+          ["التاريخ", "الاسم", "البريد", "متأهل", "الفكرة", "المستشار", "القرار", "الدرجة", "تعليق المستشار"],
           deals.map((d) => [d.created_at, d.name, d.email || "", d.qualified ? "نعم" : "لا", d.idea || d.title, s.investor.investors.find((i) => i.id === d.investor)?.name || d.investor,
-            d.qualified ? "متأهل" : "غير متأهل", d.amount, d.equity, d.valuation, d.score, d.verdict])));
+            d.qualified ? "متأهل" : "غير متأهل", d.score, d.verdict])));
       }
       // درجات المحكّمين: صف لكل محكّم × فريق (آخر تقييم)
       if (what === "scores") {
