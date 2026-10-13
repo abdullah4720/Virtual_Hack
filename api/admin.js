@@ -46,7 +46,8 @@ export default async function handler(req, res) {
         defaults: DEFAULTS,
         notifyKinds: KINDS, notifyCommon: COMMON_VARS,
         tickets: tickets.slice(-300).reverse().map((t) => ({
-          id: t.id, code: t.code, kind: t.kind, name: t.name, email: t.email, label: t.label, used: Boolean(t.used_by_team), created_at: t.created_at,
+          id: t.id, code: t.code, kind: t.kind,
+          track: (t.used_by_team ? teams.find((x) => x.id === t.used_by_team)?.track : null) || (t.deal_id ? (deals.find((d) => d.id === t.deal_id)?.scores || {})._track : null) || null, name: t.name, email: t.email, label: t.label, used: Boolean(t.used_by_team), created_at: t.created_at,
           score: t.deal_id ? deals.find((d) => d.id === t.deal_id)?.score ?? null : null,
           team: t.used_by_team ? teams.find((x) => x.id === t.used_by_team)?.name ?? "" : "",
         })),
@@ -87,7 +88,7 @@ export default async function handler(req, res) {
         teams: teams.map((t) => {
           const r = byId.get(t.id), ts = subs.filter((x) => x.team_id === t.id);
           return {
-            id: t.id, code: t.code, name: t.name, members: t.members, email: t.email, phone: t.phone, status: t.status || "active",
+            id: t.id, code: t.code, name: t.name, members: t.members, email: t.email, phone: t.phone, status: t.status || "active", track: t.track || null,
             label: optionLabel(s, t.track, t.challenge), source: t.source, created_at: t.created_at,
             attempts: ts.length, pending: ts.filter((x) => x.status === "pending" || x.status === "failed").length,
             best: r ? r.best.ai_total : null, title: r?.best.title || ts[ts.length - 1]?.title || "", rank: r?.rank ?? null,
@@ -144,11 +145,12 @@ export default async function handler(req, res) {
 
     // ---------- عروض الأفكار في المستثمر الذكي: القائمة والحذف ----------
     if (action === "pitches") {
+      const trk = (d) => (d.scores && typeof d.scores === "object" ? d.scores._track : null) || null;
       const [deals, tickets, teams] = await Promise.all([select("deals"), select(TICKETS), select(T.teams)]);
       return res.status(200).json({
         pitches: deals.sort((a, c) => Date.parse(c.created_at) - Date.parse(a.created_at)).map((d) => {
           const tk = tickets.find((t) => t.deal_id === d.id), tm = teams.find((t) => t.deal_id === d.id);
-          return { id: d.id, at: d.created_at, name: d.name, email: d.email || "", title: d.title || "", idea: d.idea || "", score: d.score, qualified: Boolean(d.qualified), ticket: tk?.code || null, team: tm?.name || null };
+          return { id: d.id, at: d.created_at, name: d.name, email: d.email || "", title: d.title || "", idea: d.idea || "", score: d.score, qualified: Boolean(d.qualified), ticket: tk?.code || null, team: tm?.name || null, track: tm?.track || trk(d) };
         }),
       });
     }
@@ -460,13 +462,16 @@ export default async function handler(req, res) {
     // ---------- التصدير ----------
     if (action === "export") {
       const what = q.get("what");
+      const onlyTrack = q.get("track") || "";
+      const inTrack = (id) => !onlyTrack || id === onlyTrack;
+      const dealTrack = (d) => (d.scores && typeof d.scores === "object" ? d.scores._track : null) || "";
       res.setHeader("Content-Type", "text/csv; charset=utf-8");
       if (what === "deals") {
-        const deals = await select("deals");
+        const deals = (await select("deals")).filter((d) => inTrack(dealTrack(d)));
         res.setHeader("Content-Disposition", 'attachment; filename="investor-pitches.csv"');
         return res.status(200).end(toCSV(
-          ["التاريخ", "الاسم", "البريد", "متأهل", "الفكرة", "المستشار", "القرار", "الدرجة", "تعليق المستشار"],
-          deals.map((d) => [d.created_at, d.name, d.email || "", d.qualified ? "نعم" : "لا", d.idea || d.title, s.investor.investors.find((i) => i.id === d.investor)?.name || d.investor,
+          ["التاريخ", "الاسم", "البريد", "المسار", "متأهل", "الفكرة", "المستشار", "القرار", "الدرجة", "تعليق المستشار"],
+          deals.map((d) => [d.created_at, d.name, d.email || "", s.hackathon.tracks.find((t) => t.id === dealTrack(d))?.title || "", d.qualified ? "نعم" : "لا", d.idea || d.title, s.investor.investors.find((i) => i.id === d.investor)?.name || d.investor,
             d.qualified ? "متأهل" : "غير متأهل", d.score, d.verdict])));
       }
       // درجات المحكّمين: صف لكل محكّم × فريق (آخر تقييم)
@@ -475,7 +480,7 @@ export default async function handler(req, res) {
         const R = s.hackathon.rubric;
         res.setHeader("Content-Disposition", 'attachment; filename="judges-scores.csv"');
         const out = [];
-        for (const r of rows) for (const j of r.judges) out.push([j.judge, r.team.name, r.best.title, r.label, ...R.map((c) => j.criteria?.[c.key] ?? ""), j.coi ? "" : j.score, j.coi ? "تعارض مصالح" : "", j.note || ""]);
+        for (const r of rows.filter((x) => inTrack(x.team.track))) for (const j of r.judges) out.push([j.judge, r.team.name, r.best.title, r.label, ...R.map((c) => j.criteria?.[c.key] ?? ""), j.coi ? "" : j.score, j.coi ? "تعارض مصالح" : "", j.note || ""]);
         return res.status(200).end(toCSV(["المحكّم", "الفريق", "المشروع", "المسار", ...R.map((c) => `${c.label} (${c.max})`), "المجموع", "ملاحظة", "تعليق المحكّم"], out));
       }
       const { rows, teams } = await standings(s);
@@ -483,7 +488,7 @@ export default async function handler(req, res) {
       res.setHeader("Content-Disposition", 'attachment; filename="hackathon-teams.csv"');
       return res.status(200).end(toCSV(
         ["الترتيب", "الفريق", "الحالة", "الأعضاء", "البريد", "بريد الأعضاء", "الجوال", "رمز الفريق", "المسار والتحدي", "المصدر", "المشروع", "المحاولات", ...s.hackathon.rubric.map((c) => `${c.label} (${c.max})`), "درجة الذكاء الاصطناعي", "عدد المحكّمين", "متوسط اللجنة", "النهائية", "متأهل للتحكيم", "الترتيب النهائي", "ملخص التقييم", "تنبيه تلاعب", "تاريخ التسجيل"],
-        teams.map((t) => {
+        teams.filter((t) => inTrack(t.track)).map((t) => {
           const r = byId.get(t.id);
           return [r?.rank ?? "", t.name, t.status === "disqualified" ? "مستبعد" : "نشط", t.members, t.email, (t.member_emails || []).filter(Boolean), t.phone, t.code, optionLabel(s, t.track, t.challenge),
             { investor: s.investor.title, invite: "دعوة" }[t.source] || "مباشر", r?.best.title ?? "", r?.attempts ?? 0, ...s.hackathon.rubric.map((c) => r?.best.ai_scores?.[c.key] ?? ""), r?.best.ai_total ?? "",

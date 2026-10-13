@@ -306,7 +306,7 @@ export default async function handler(req, res) {
           announcements: ann.reverse().slice(0, 5).map(({ id, title, body, created_at }) => ({ id, title, body, created_at })),
           stats: { teams: active.length, submissions: subs.length },
           rows: mine.map((r) => ({
-            id: r.team.id, rank: r.rank, finalist: r.finalist, order: judgingOrder(s, r.team), team: r.team.name, members: r.team.members,
+            id: r.team.id, rank: r.rank, finalist: r.finalist, order: judgingOrder(s, r.team), team: r.team.name, members: r.team.members, track: r.team.track || null,
             email: r.team.email, phone: r.team.phone, challenge: r.label, source: r.team.source, attempts: r.attempts,
             submission: { ...publicSub(r.best), flagged: r.flagged, files: r.files },
             judges: r.judges, judgeAvg: r.judgeAvg, final: r.final,

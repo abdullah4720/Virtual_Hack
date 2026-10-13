@@ -213,6 +213,16 @@ const when = d => new Date(d).toLocaleString("ar-SA-u-nu-latn",{day:"numeric",mo
 
 // ---------- الأقسام ----------
 const fmt = n => Number(n||0).toLocaleString("ar-SA-u-nu-latn");
+// الفرز حسب المسار (مشترك بين الصفحات): يعيد شريط الاختيار والقائمة بعد الفرز
+const trTitle = id => (S.hackathon.tracks.find(t=>t.id===id)||{}).title || "";
+const trCell = id => id ? `${glyph((S.hackathon.tracks.find(t=>t.id===id)||{}).icon)} ${esc(trTitle(id))}` : `<span class="muted">—</span>`;
+function byTrack(items, get){
+  const TR = S.hackathon.tracks; if (!TR.length) return {bar:"", list:items};
+  if (tmp._tr && !TR.some(t=>t.id===tmp._tr)) tmp._tr = "";
+  const n = id => items.filter(x=>get(x)===id).length;
+  const bar = `<div class="jchips" style="margin:0 0 14px"><button type="button" class="jchip ${tmp._tr?"":"on"}" data-act="trf" data-id="">كل المسارات · ${fmt(items.length)}</button>${TR.map(t=>`<button type="button" class="jchip ${tmp._tr===t.id?"on":""}" data-act="trf" data-id="${attr(t.id)}">${glyph(t.icon)} ${esc(t.title)} · ${fmt(n(t.id))}</button>`).join("")}</div>`;
+  return {bar, list: tmp._tr ? items.filter(x=>get(x)===tmp._tr) : items};
+}
 const P = {
   overview(){
     const st = D.stats, sy = D.system, base = "";
@@ -315,15 +325,15 @@ const P = {
       <p class="help">تنبيه: تعديل المعايير أثناء التحدي لا يعيد تقييم المشاريع المقدَّمة سابقًا.</p>`;
   },
   tickets(){
-    const T = D.tickets || [];
+    const F = byTrack(D.tickets || [], t=>t.track), T = F.list;
     return `<h1>التأهيل والدعوات</h1><p class="lead">رموز التأهل التي حصل عليها المتأهلون من «${esc(S.investor.title)}»، ورموز الدعوة التي تمنحها للفرق مباشرة.</p>
       <div class="stats"><div class="stat"><b>${fmt(D.stats.qualified)}</b><span>متأهل من «اختبر فكرتك»</span></div><div class="stat"><b>${fmt(T.filter(t=>t.kind==="invite").length)}</b><span>رمز دعوة</span></div><div class="stat"><b>${fmt(D.stats.ticketsUsed)}</b><span>رمز استُخدم للتسجيل</span></div></div>
       ${card("توليد رموز دعوة", `<p class="muted small">للفرق المرشّحة مسبقًا أو الشركاء: كل رمز يسجّل فريقًا واحدًا دون المرور باختبر فكرتك.</p>
         ${f("المدعوون بالبريد (اختياري)","_people",{type:"textarea",rows:4,max:20000,ph:"سطر لكل مدعو، مثل:\nفريق كلية الحاسب، cs@qu.edu.sa\nnora@example.com",help:D.system.mail?"يُولَّد رمز لكل مدعو ويُرسل إليه بالبريد مع رابط التسجيل. اتركه فارغًا لتوليد رموز تنسخها بنفسك.":"البريد غير مفعّل: تُولَّد الرموز وتُربط بالمدعوين، لكن لن تُرسل."})}
         <div class="grid2" style="margin-top:8px">${tmp._people.trim()?`<div class="help" style="align-self:end">عدد الرموز = عدد المدعوين</div>`:f("العدد","_count",{type:"num",min:1,max:100})}${f("وصف (اختياري)","_label",{ph:"مثال: فرق كلية الحاسب"})}</div>
         <button class="btn" data-act="invites" style="margin-top:10px">توليد الرموز</button><div id="newCodes"></div>`)}
-      ${card(`الرموز (${T.length})`, T.length ? `<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>الرمز</th><th>النوع</th><th>الاسم</th><th>البريد</th><th>الدرجة</th><th>الحالة</th><th></th></tr></thead><tbody>
-        ${T.map(t=>`<tr><td dir="ltr" style="font-family:ui-monospace,monospace;font-weight:700">${esc(t.code)}</td><td>${t.kind==="invite"?"دعوة"+(t.label?` · ${esc(t.label)}`:""):"تأهل"}</td><td>${esc(t.name||"—")}</td><td dir="ltr">${esc(t.email||"—")}</td><td>${t.score??"—"}</td><td>${t.used?`<span class="pill ok">سجّل: ${esc(t.team)}</span>`:`<span class="pill">لم يُستخدم</span>`}</td>
+      ${F.bar}${card(`الرموز (${T.length})`, T.length ? `<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>الرمز</th><th>النوع</th><th>المسار</th><th>الاسم</th><th>البريد</th><th>الدرجة</th><th>الحالة</th><th></th></tr></thead><tbody>
+        ${T.map(t=>`<tr><td dir="ltr" style="font-family:ui-monospace,monospace;font-weight:700">${esc(t.code)}</td><td>${t.kind==="invite"?"دعوة"+(t.label?` · ${esc(t.label)}`:""):"تأهل"}</td><td style="white-space:nowrap">${trCell(t.track)}</td><td>${esc(t.name||"—")}</td><td dir="ltr">${esc(t.email||"—")}</td><td>${t.score??"—"}</td><td>${t.used?`<span class="pill ok">سجّل: ${esc(t.team)}</span>`:`<span class="pill">لم يُستخدم</span>`}</td>
           <td>${t.used?`<span class="help">يُحذف مع الفريق</span>`:`<button class="ib del" data-act="tkdelete" data-id="${t.id}" data-kind="${t.kind==="invite"?"invite":"q"}" data-name="${attr(t.name||t.code)}"><i data-icon="trash-2"></i> حذف</button>`}</td></tr>`).join("")}
         </tbody></table></div>` : `<p class="muted">لا توجد رموز بعد.</p>`)}`;
   },
@@ -372,7 +382,9 @@ const P = {
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn sm" data-act="runassign"><i data-icon="split"></i> تنفيذ الإسناد</button><button class="btn sm ghost" data-act="renumber"><i data-icon="list-ordered"></i> إعادة ترقيم العرض</button><button class="btn sm ghost red" data-act="clearassign">إلغاء كل الإسنادات</button></div>` : `<p class="muted">أنشئ لجنة واحدة على الأقل.</p>`);
     }
     if (!JG) return h + `<p class="muted">جارٍ تحميل بيانات التحكيم…</p>`;
-    const ord = p => Number(getP(S,"hackathon.judging.order."+p.id)) || 1e4+p.rank, Pj = [...JG.projects].sort((a,b)=>ord(a)-ord(b));
+    const FJ = byTrack(JG.projects, p=>p.track);
+    const ord = p => Number(getP(S,"hackathon.judging.order."+p.id)) || 1e4+p.rank, Pj = [...FJ.list].sort((a,b)=>ord(a)-ord(b));
+    h += FJ.bar;
     const need = Pj.reduce((a,p)=>a+p.expected.length,0), done = Pj.reduce((a,p)=>a+p.done,0);
     const full = Pj.filter(p=>p.expected.length && p.done>=p.expected.length).length, none = Pj.filter(p=>!p.expected.length).length, wide = Pj.filter(p=>p.spread>=25).length;
     h += `<div class="stats"><div class="stat"><b>${fmt(Pj.length)}</b><span>مشروع في التحكيم${JG.others?` (من ${fmt(JG.submitted)} مقدَّم)`:""}</span></div>
@@ -407,11 +419,12 @@ const P = {
   pitches(){
     if (!PITCHES) return `<h1>عروض الأفكار</h1><p class="muted">جارٍ التحميل…</p>`;
     const q = (tmp._pq||"").trim().toLowerCase();
-    const list = PITCHES.filter(p => !q || [p.name, p.email, p.title, p.idea, p.ticket, p.team].join(" ").toLowerCase().includes(q));
+    const F = byTrack(PITCHES, p=>p.track);
+    const list = F.list.filter(p => !q || [p.name, p.email, p.title, p.idea, p.ticket, p.team].join(" ").toLowerCase().includes(q));
     return `<h1>عروض الأفكار</h1><p class="lead">كل فكرة عُرضت في «${esc(S.investor.title)}»: ${PITCHES.length} عرض، منها ${PITCHES.filter(p=>p.qualified).length} متأهل. هذه العروض هي ما يظهر على شاشة المستثمر ولوحة البيانات، وحذف أي عرض يزيله منها فورًا.</p>
-      <div class="card">${f("","_pq",{ph:"بحث بالاسم أو البريد أو الفكرة أو الرمز…"})}</div>
-      ${card(`العروض (${list.length})`, list.length ? `<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>الوقت</th><th>صاحب الفكرة</th><th>الفكرة</th><th>الدرجة</th><th>الحالة</th><th></th></tr></thead><tbody>
-        ${list.map(p=>`<tr><td>${when(p.at)}</td><td><b>${esc(p.name)}</b><div class="help" dir="ltr">${esc(p.email)}</div></td>
+      ${F.bar}<div class="card">${f("","_pq",{ph:"بحث بالاسم أو البريد أو الفكرة أو الرمز…"})}</div>
+      ${card(`العروض (${list.length})`, list.length ? `<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>الوقت</th><th>صاحب الفكرة</th><th>المسار</th><th>الفكرة</th><th>الدرجة</th><th>الحالة</th><th></th></tr></thead><tbody>
+        ${list.map(p=>`<tr><td>${when(p.at)}</td><td><b>${esc(p.name)}</b><div class="help" dir="ltr">${esc(p.email)}</div></td><td style="white-space:nowrap">${trCell(p.track)}</td>
           <td style="white-space:normal;max-width:320px"><b>${esc(p.title||"—")}</b><div class="help">${esc((p.idea||"").slice(0,140))}</div></td>
           <td><b class="gold">${p.score??"—"}</b></td>
           <td>${p.qualified?`<span class="pill ok">متأهل</span>`:`<span class="pill">غير متأهل</span>`}${p.team?`<div class="help">سجّل فريق «${esc(p.team)}»</div>`:p.ticket?`<div class="help" dir="ltr">${esc(p.ticket)}</div>`:""}</td>
@@ -421,11 +434,12 @@ const P = {
   participants(){
     if (!TEAMS) return `<h1>المشاركون</h1><p class="muted">جارٍ التحميل…</p>`;
     const q = (tmp._q||"").trim().toLowerCase();
-    const list = TEAMS.filter(t => !q || [t.name, t.email, t.code, t.title, ...(t.members||[])].join(" ").toLowerCase().includes(q));
+    const F = byTrack(TEAMS, t=>t.track);
+    const list = F.list.filter(t => !q || [t.name, t.email, t.code, t.title, ...(t.members||[])].join(" ").toLowerCase().includes(q));
     const SRC = {investor:"اختبر فكرتك", invite:"دعوة", direct:"مباشر"};
     return `<h1>المشاركون</h1><p class="lead">${TEAMS.length} فريق · ${TEAMS.filter(t=>t.status==="disqualified").length} مستبعد. ابحث بالاسم أو البريد أو رمز الفريق.</p>
       ${PASSLIST && PASSLIST.length ? card(`<span style="display:flex;align-items:center;gap:8px"><i data-icon="key-round"></i> كلمات المرور (تظهر مرة واحدة)</span>`, `<p class="small" style="color:var(--bad);margin-bottom:8px">كلمات المرور محفوظة مشفّرة ولا يمكن عرضها لاحقًا. الرجاء تنزيلها أو نسخها الآن وتسليمها للفرق.</p><div style="overflow-x:auto"><table class="tbl"><thead><tr><th>الفريق</th><th>البريد للدخول</th><th>كلمة المرور</th><th>رمز الفريق</th></tr></thead><tbody>${PASSLIST.map(x=>`<tr><td><b>${esc(x.team)}</b></td><td dir="ltr">${esc(x.email)}${(x.members||[]).length?`<div class="help">${esc(x.members.join("، "))}</div>`:""}</td><td dir="ltr" style="font-family:ui-monospace,monospace;font-weight:700">${esc(x.password)} <button class="ib" data-copy="${attr(`الدخول: ${abs("hackathon.html")}\nالبريد: ${x.email}\nكلمة المرور: ${x.password}`)}">نسخ</button></td><td dir="ltr">${esc(x.code||"")}</td></tr>`).join("")}</tbody></table></div><div style="display:flex;gap:8px;margin-top:10px"><button class="btn sm" data-act="pdl"><i data-icon="download"></i> تنزيل القائمة</button><button class="btn sm ghost" data-act="pclose">تم الحفظ، إخفاء</button></div>`) : ""}
-      <div class="card" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><div style="flex:1;min-width:220px">${f("","_q",{ph:"بحث بالاسم أو البريد أو الرمز…"})}</div><button class="btn ghost sm" data-act="pbulk"><i data-icon="key-round"></i> توليد كلمات مرور للفرق الجديدة</button></div>
+      ${F.bar}<div class="card" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><div style="flex:1;min-width:220px">${f("","_q",{ph:"بحث بالاسم أو البريد أو الرمز…"})}</div><button class="btn ghost sm" data-act="pbulk"><i data-icon="key-round"></i> توليد كلمات مرور للفرق الجديدة</button></div>
       ${card(`الفرق (${list.length})`, list.length ? `<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>#</th><th>الفريق</th><th>المسار</th><th>المشروع</th><th>المحاولات</th><th>الدرجة</th><th>المصدر</th><th>الحالة</th><th></th></tr></thead><tbody>
         ${list.map(t=>`<tr style="${t.status==="disqualified"?"opacity:.55":""}"><td>${t.rank??"—"}</td>
           <td><b>${esc(t.name)}</b>${t.finalist?' <span class="pill">متأهل</span>':""}${t.flagged?' <span class="pill no"><i data-icon="triangle-alert"></i></span>':""}${t.hasPassword?'':' <span class="pill warn" title="لم تُعيَّن كلمة مرور"><i data-icon="key-round"></i> بلا كلمة مرور</span>'}<div class="help">${esc((t.members||[]).join("، "))}<br><span dir="ltr">${esc(t.email)}</span> · <span dir="ltr" style="font-family:monospace">${esc(t.code)}</span></div></td>
@@ -519,7 +533,7 @@ const P = {
   },
   data(){
     return `<h1>البيانات</h1><p class="lead">تصدير النتائج لإعداد التقارير، أو تهيئة المنصة لفعالية جديدة.</p>
-      ${card("تصدير (CSV يفتح في Excel)", `<div class="grid3"><button class="btn ghost" data-act="export" data-what="teams"><i data-icon="download"></i> الفرق ونتائجها</button><button class="btn ghost" data-act="export" data-what="deals"><i data-icon="download"></i> عروض «اختبر فكرتك»</button><button class="btn ghost" data-act="export" data-what="scores"><i data-icon="download"></i> درجات المحكّمين</button></div><p class="help">ملف الفرق يتضمن: الأعضاء وبريدهم ورمز الفريق، ودرجة كل معيار، ومتوسط اللجنة، والدرجة النهائية، والترتيب.</p>`)}
+      ${card("تصدير (CSV يفتح في Excel)", `${S.hackathon.tracks.length?`<label>المسار</label><div class="jchips" style="margin:0 0 12px"><button type="button" class="jchip ${tmp._tr?"":"on"}" data-act="trf" data-id="">كل المسارات</button>${S.hackathon.tracks.map(t=>`<button type="button" class="jchip ${tmp._tr===t.id?"on":""}" data-act="trf" data-id="${attr(t.id)}">${glyph(t.icon)} ${esc(t.title)}</button>`).join("")}</div>`:""}<div class="grid3"><button class="btn ghost" data-act="export" data-what="teams"><i data-icon="download"></i> الفرق ونتائجها</button><button class="btn ghost" data-act="export" data-what="deals"><i data-icon="download"></i> عروض «اختبر فكرتك»</button><button class="btn ghost" data-act="export" data-what="scores"><i data-icon="download"></i> درجات المحكّمين</button></div><p class="help">ملف الفرق يتضمن: الأعضاء وبريدهم ورمز الفريق، ودرجة كل معيار، ومتوسط اللجنة، والدرجة النهائية، والترتيب.</p>`)}
       ${card("حذف البيانات", `<p class="muted small">يحذف المشاركات نهائيًا ولا يمكن التراجع. الإعدادات لا تتأثر. صدّر البيانات أولًا.</p>
         <div class="grid2" style="margin-top:10px">${f("اكتب «حذف» للتأكيد","_confirm",{ph:"حذف"})}${f("ما الذي يُحذف؟","_scope",{type:"select",opts:[["investor","عروض «اختبر فكرتك»"],["hackathon","الفرق وتقديماتها ودرجات اللجنة"],["all","كل البيانات"]]})}</div>
         <button class="btn red" data-act="reset" style="margin-top:12px">حذف البيانات</button><p class="err" id="resetMsg"></p>`, "danger")}
@@ -804,11 +818,12 @@ $("main").addEventListener("click", async e => {
   if (act==="notify") { if (!confirm("إرسال إشعار التأهل لكل الفرق المتأهلة؟")) return; const r = await api("notify-finalists", {}); $("notifyMsg").textContent = `✓ أُشعرت الفرق المتأهلة${r.emailed?`، وأُرسل ${r.emailed} بريد`:""}`; return; }
   if (act==="loadcerts") { CERTS = (await api("certs")).certs; render(); return; }
   if (act==="defaults") { if (!confirm("استعادة كل الإعدادات الافتراضية؟")) return; S = JSON.parse(JSON.stringify(D.defaults)); S.hackathon.judgeKey = D.settings.hackathon.judgeKey; render(); dirty("تمت الاستعادة. اضغط «حفظ التغييرات» لاعتمادها."); return; }
+  if (act==="trf") { tmp._tr = b.dataset.id || ""; render(); return; }
   if (act==="export") {
-    const r = await fetch(`api/admin?action=export&what=${b.dataset.what}`, {headers:{"x-admin-key":KEY}});
+    const r = await fetch(`api/admin?action=export&what=${b.dataset.what}${tmp._tr?`&track=${encodeURIComponent(tmp._tr)}`:""}`, {headers:{"x-admin-key":KEY}});
     if (!r.ok) { const d = await r.json().catch(()=>({})); return alert("تعذّر التصدير: " + (d.error || r.status)); }
     const blob = await r.blob(); const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob); a.download = {deals:"investor-pitches.csv", scores:"judges-scores.csv"}[b.dataset.what] || "hackathon-teams.csv"; a.click(); return;
+    a.href = URL.createObjectURL(blob); a.download = ({deals:"investor-pitches", scores:"judges-scores"}[b.dataset.what] || "hackathon-teams") + (tmp._tr?"-"+tmp._tr:"") + ".csv"; a.click(); return;
   }
   if (act==="savekey") { const k = $("demoKey").value.trim(); if (!/^sk-ant-/.test(k)) return alert("المفتاح يبدأ بـ sk-ant-"); APP.setDemoKey(k); location.reload(); return; }
   if (act==="clearkey") { APP.setDemoKey(null); location.reload(); return; }

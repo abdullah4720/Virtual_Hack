@@ -75,6 +75,7 @@ a{color:var(--accent)}
     <div class="card" id="progressCard"></div>
     <div class="card small muted" id="guide"></div>
     <div class="tabs"><button class="on" data-f="todo">بانتظار تقييمي</button><button data-f="fin">كل المتأهلين</button><button data-f="all">كل المشاريع</button><button data-f="flag">مشاريع مُعلَّمة</button></div>
+    <div class="tabs" id="trTabs" hidden></div>
     <div id="list"></div>
   </div>
 </div>
@@ -83,7 +84,7 @@ a{color:var(--accent)}
 const $ = id => document.getElementById(id);
 const esc = APP.esc;
 const SS = { get(k){ try{return sessionStorage.getItem(k)}catch(e){return null} }, set(k,v){ try{ v==null?sessionStorage.removeItem(k):sessionStorage.setItem(k,v) }catch(e){} } };
-let KEY = SS.get("jk"), NAME = SS.get("jn") || "", DATA = null, filter = "todo", open = new Set();
+let KEY = SS.get("jk"), NAME = SS.get("jn") || "", DATA = null, filter = "todo", trf = "", open = new Set();
 
 async function api(action, body){
   const r = await fetch(`api/hack?action=${action}${!body && NAME ? "&name="+encodeURIComponent(NAME) : ""}`, {method: body?"POST":"GET", headers:{"Content-Type":"application/json","x-judge-key":KEY}, body: body?JSON.stringify({...body, judge: NAME}):undefined});
@@ -101,7 +102,7 @@ $("loginBtn").onclick = async () => {
 };
 $("jKey").onkeydown = e => { if (e.key === "Enter") $("loginBtn").click(); };
 $("logoutBtn").onclick = () => { SS.set("jk", null); SS.set("jn", null); location.reload(); };
-document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{ filter=b.dataset.f; document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("on",x===b)); render(); });
+document.querySelectorAll(".tabs button[data-f]").forEach(b=>b.onclick=()=>{ filter=b.dataset.f; document.querySelectorAll(".tabs button[data-f]").forEach(x=>x.classList.toggle("on",x===b)); render(); });
 $("refreshBtn").onclick = () => load();
 
 async function load(){
@@ -118,9 +119,20 @@ async function load(){
   $("guide").innerHTML = (DATA.open === false ? `<div class="ann" style="margin-bottom:8px"><b><i data-icon="lock"></i> التحكيم مغلق حاليًا</b><br><span class="small">يمكنك الاطلاع على المشاريع وتقييماتك، ولا يمكن الحفظ أو التعديل.</span></div>` : "") + `قيّم كل مشروع متأهل <b>لكل معيار</b> وفق المعايير المعلنة، ويُحسب المجموع من 100 تلقائيًا. إذا كانت لديك علاقة بأحد أعضاء الفريق فحدّد <b>«لدي تعارض مصالح»</b> ولن تُحتسب درجتك. الدرجة النهائية = ${c.weights.ai}% تقييم الذكاء الاصطناعي + ${c.weights.judges}% متوسط درجات اللجنة. ${DATA.open === false ? "" : "يمكنك تعديل تقييمك بإعادة الحفظ."}`;
   render();
 }
+// الفرز حسب المسار: يظهر فقط إذا كانت المشاريع المعروضة من أكثر من مسار
+function trackTabs(){
+  const TR = DATA.config.hackathon.tracks || [], ids = new Set(DATA.rows.map(r=>r.track).filter(Boolean)), el = $("trTabs");
+  const shown = TR.filter(t=>ids.has(t.id));
+  if (shown.length < 2) { el.hidden = true; trf = ""; return; }
+  if (trf && !ids.has(trf)) trf = "";
+  el.hidden = false;
+  el.innerHTML = `<button data-t="" class="${trf?"":"on"}">كل المسارات</button>` + shown.map(t=>`<button data-t="${esc(t.id)}" class="${trf===t.id?"on":""}">${glyph(t.icon)} ${esc(t.title)}</button>`).join("");
+  el.querySelectorAll("button").forEach(b=>b.onclick=()=>{ trf=b.dataset.t; render(); });
+}
 function render(){
   const R = DATA.config.hackathon.rubric, me = DATA.me;
-  const rows = DATA.rows.filter(r => filter==="all" ? true : filter==="flag" ? r.submission.flagged : filter==="todo" ? (r.finalist && !r.mine) : r.finalist);
+  trackTabs();
+  const rows = DATA.rows.filter(r => !trf || r.track===trf).filter(r => filter==="all" ? true : filter==="flag" ? r.submission.flagged : filter==="todo" ? (r.finalist && !r.mine) : r.finalist);
   if (!rows.length) { $("list").innerHTML = `<div class="card muted">${filter==="todo" ? "لا توجد مشاريع بانتظار تقييمك." : "لا توجد مشاريع في هذا القسم."}</div>`; return; }
   $("list").innerHTML = rows.map(r => {
     const s = r.submission, mine = r.mine;
