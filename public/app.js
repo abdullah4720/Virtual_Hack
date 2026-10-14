@@ -286,13 +286,13 @@ window.APP = (() => {
     const p = ph || (o && now < o ? "soon" : c && now >= c ? "closed" : "open");
     const t = p === "soon" ? o : p === "open" ? c : null;
     el.hidden = false;
-    if (p === "closed") { el.className = "cd"; el.innerHTML = `<b>انتهى ${noun}</b>ترقّبوا إعلان الفائزين`; return; }
-    if (!t) { if (hideIfNone) { el.hidden = true; return; } el.className = "cd"; el.innerHTML = `<b>${noun} مفتوح</b>`; return; }
+    if (p === "closed") { el.classList.add("cd"); el.classList.remove("urgent"); el.innerHTML = `<b>انتهى ${noun}</b>ترقّبوا إعلان الفائزين`; return; }
+    if (!t) { if (hideIfNone) { el.hidden = true; return; } el.classList.add("cd"); el.classList.remove("urgent"); el.innerHTML = `<b>${noun} مفتوح</b>`; return; }
     const ms = Math.max(0, t - now);
-    if (!ms) { el.className = "cd"; el.innerHTML = p === "soon" ? `<b>بدأ ${noun}!</b>` : `<b>أُغلق ${noun}</b>بدأ التحكيم`; return; }
+    if (!ms) { el.classList.add("cd"); el.classList.remove("urgent"); el.innerHTML = p === "soon" ? `<b>بدأ ${noun}!</b>` : `<b>أُغلق ${noun}</b>بدأ التحكيم`; return; }
     const d = Math.floor(ms / 864e5), h = Math.floor(ms / 36e5) % 24, m = Math.floor(ms / 6e4) % 60, sc = Math.floor(ms / 1e3) % 60;
     const pad = (n) => String(n).padStart(2, "0"), u = (v, l) => `<span class="u"><b>${v}</b><small>${l}</small></span>`, sep = `<span class="sep">:</span>`;
-    el.className = "cd" + (p === "open" && ms < 36e5 ? " urgent" : "");
+    el.classList.add("cd"); el.classList.toggle("urgent", p === "open" && ms < 36e5);
     el.innerHTML = `<span class="lbl">${p === "soon" ? `يبدأ ${noun} بعد` : `يُقفل ${noun} بعد`}</span><div class="clock">${d ? u(d, "يوم") + sep : ""}${u(pad(h), "ساعة")}${sep}${u(pad(m), "دقيقة")}${sep}${u(pad(sc), "ثانية")}</div>`;
   }
   return Object.assign(self, { ready, esc, fmt, short, title, disabled, refreshConfig, fit, setHTML, count, confetti, fxOn, countdown });

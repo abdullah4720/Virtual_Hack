@@ -84,6 +84,17 @@ body.kiosk .hint{display:none}
 .subopts .ch{padding:10px 12px}
 </style>
 <script src="app.js"></script>
+<style>
+/* العدّ التنازلي في رأس الصفحة (مقاسات الجوال) */
+.cdm{margin-top:14px;font-size:13.5px;font-weight:700;color:rgba(255,255,255,.85)}
+.cdm>b{font-size:15px;color:#fff}
+.cdm .clock{gap:6px;margin-top:6px}
+.cdm .u{min-width:54px;padding:5px 6px;border-radius:10px;background:rgba(255,255,255,.10)}
+.cdm .u b{font-size:22px;color:#fff}
+.cdm .u small{font-size:11px;color:rgba(255,255,255,.7)}
+.cdm .sep{font-size:20px;color:rgba(255,255,255,.5)}
+.cdm.urgent .u b,.cdm.urgent .lbl{color:#ffb766}
+</style>
 </head>
 <body>
 <header class="topbar">
@@ -93,6 +104,7 @@ body.kiosk .hint{display:none}
     <h1 data-title="investor.title">&nbsp;</h1>
     <p class="sub" data-text="investor.tagline"></p>
     <div class="chips" id="journey"></div>
+    <div class="cd cdm" id="cd" hidden></div>
   </div>
 </header>
 <div class="wrap">
@@ -171,6 +183,8 @@ APP.ready.then(c => {
   $("journey").innerHTML = gate
     ? `<span><i data-icon="lightbulb"></i> اعرض فكرتك</span><span><i data-icon="message-square"></i> أجب عن سؤالين</span><span><i data-icon="ticket"></i> ${c.investor.qualifyScore}+ للتأهل إلى ${esc(c.hackathon.name)}</span>`
     : `<span><i data-icon="lightbulb"></i> اعرض فكرتك</span><span><i data-icon="message-square"></i> أجب عن سؤالين</span><span><i data-icon="chart-column"></i> احصل على تقييمك</span>`;
+  // العدّ التنازلي لإقفال التسجيل في التحدي (يظهر فقط إذا حُدّد موعد الإقفال)
+  if (c.modules.hackathon && c.hackathon.registration === "ticket") { const tick = () => APP.countdown($("cd"), c.hackathon, null, "التسجيل", true); tick(); setInterval(tick, 1000); }
   $("emailHint").textContent = `لكل بريد ${c.investor.maxAttempts} محاولات.` + (c.modules.hackathon ? " تُربط به محاولاتك وتأهلك." : "");
 }).catch(()=>{ $("startErr").textContent = "تعذّر تحميل الإعدادات، يُرجى تحديث الصفحة"; });
 
