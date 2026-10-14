@@ -67,8 +67,15 @@ export default async function handler(req, res) {
       return res.status(200).json({
         phase: ph,
         stats: { teams: active.length, submissions: subs.length, evaluated: rows.length },
-        leaderboard: rows.slice(0, 20).map((r) => ({
-          rank: r.rank, team: r.team.name, title: r.best.title, track: r.team.track, label: r.label, score: r.best.ai_total, attempts: r.attempts, finalist: Boolean(r.finalist),
+        // بعد نشر النتائج: الترتيب النهائي (الذكاء الاصطناعي + اللجنة) مطابقًا لما يراه المشاركون والفائزون، وقبله: أعلى تقييم ذكاء اصطناعي
+        published: Boolean(H.resultsPublished),
+        leaderboard: (H.resultsPublished
+          ? [...rows.filter((r) => r.finalist).sort((a, b) => a.finalRank - b.finalRank), ...rows.filter((r) => !r.finalist)]
+          : rows
+        ).slice(0, 20).map((r, i) => ({
+          rank: H.resultsPublished ? i + 1 : r.rank, team: r.team.name, title: r.best.title, track: r.team.track, label: r.label,
+          score: H.resultsPublished ? (r.final ?? r.best.ai_total) : r.best.ai_total, attempts: r.attempts, finalist: Boolean(r.finalist),
+          award: H.resultsPublished ? r.award ?? null : null,
         })),
       });
     }

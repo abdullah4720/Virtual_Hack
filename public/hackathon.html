@@ -647,7 +647,7 @@ function resultCard(s, best){
   const R = CFG.hackathon.rubric;
   return `<div class="card">
     <div style="display:flex;justify-content:space-between;align-items:center"><h2 style="margin:0">تقييم المحاولة ${s.attempt}</h2>
-      ${best.attempt!==s.attempt?`<span class="pill">أعلى درجة: ${best.total}</span>`:`<span class="pill ok">أعلى درجة لكم</span>`}</div>
+      ${best.attempt!==s.attempt?`<span class="pill">الدرجة المعتمدة في الترتيب: ${best.total} (أعلى محاولة)</span>`:`<span class="pill ok">الدرجة المعتمدة في الترتيب</span>`}</div>
     <div class="total" style="margin:10px 0">${s.total}<small> / 100</small></div>
     ${s.deck_read ? `<p class="small" style="text-align:center;color:var(--good)">✓ قرأ المحكّم الذكي عرضكم الاستثماري ضمن التقييم</p>` : ""}
     ${s.feedback?.demo ? `<div style="border:1.5px solid var(--bad);border-radius:12px;padding:10px;margin:8px 0;font-size:14px"><b style="color:var(--bad)"><i data-icon="triangle-alert"></i> تقييم وهمي عشوائي</b>: الذكاء الاصطناعي غير مفعّل.</div>` : ""}
