@@ -32,6 +32,7 @@ html,body{height:100%;overflow:hidden}
 .warn{position:fixed;top:1vw;left:50%;transform:translateX(-50%);font-size:1vw}
 canvas{position:fixed;inset:0;pointer-events:none}
 .login{max-width:420px;margin:14vh auto;text-align:right}
+.tico{width:12vw;height:12vw;border-radius:50%;display:grid;place-items:center;font-size:6vw;color:var(--gold,#e9c46a);background:color-mix(in srgb,var(--gold,#e9c46a) 12%,transparent);box-shadow:0 0 0 .5vw color-mix(in srgb,var(--gold,#e9c46a) 25%,transparent);animation:drop .9s cubic-bezier(.2,1.4,.4,1)}
 @keyframes drop{from{transform:translateY(-40vh) rotate(-20deg);opacity:0}to{transform:none;opacity:1}}
 @keyframes rise{from{transform:translateY(3vw);opacity:0}to{transform:none;opacity:1}}
 </style>
@@ -72,7 +73,10 @@ async function load(){
 $("go").onclick = async () => { KEY=$("k").value.trim(); try{ await load(); try{sessionStorage.setItem("jk",KEY)}catch(e){} }catch(e){ $("err").textContent=e.message; } };
 
 // التسلسل: مقدمة → الثالث → الثاني → الأول → منصة التتويج
+let FXRUN = 0;
+function stopFx(){ FXRUN++; const c=$("fx"); c.getContext("2d").clearRect(0,0,c.width,c.height); }
 function render(){
+  stopFx(); // لا تنتقل قصاصات الاحتفال إلى الصفحة التالية
   if (BY_TRACK) return renderTracks();
   const s = $("stage"), n = Math.min(3, F.length);
   if (!F.length) { s.innerHTML = `<div class="title">لا توجد مشاريع متأهلة بعد</div>`; return; }
@@ -111,8 +115,17 @@ function renderTracks(){
       <div class="place">إعلان الفائزين بالمركز الأول في كل مسار</div>`;
     return;
   }
-  if (step <= n) {
-    const f = F[step - 1], t = C.hackathon.tracks.find(x => x.id === f.track);
+  // لكل مسار صفحتان: تمهيد «الفائز في مسار …» ثم الكشف عن الفائز وتفاصيل مشروعه
+  if (step <= 2 * n) {
+    const f = F[Math.ceil(step / 2) - 1], t = C.hackathon.tracks.find(x => x.id === f.track);
+    if (step % 2 === 1) {
+      s.innerHTML = `<div class="tico">${glyph(t?.icon || "trophy")}</div>
+        <div class="place p1">المركز الأول</div>
+        <div class="kicker" style="font-size:2.2vw">الفائز في مسار</div>
+        <div class="title" style="font-size:4.6vw;animation:rise .8s ease .2s both">${esc(f.trackTitle)}</div>
+        ${t?.desc ? `<div class="kicker" style="max-width:60vw;line-height:1.8;font-size:1.4vw;animation:rise .8s ease .4s both">${esc(t.desc)}</div>` : ""}`;
+      return;
+    }
     s.innerHTML = `<div class="kicker">${glyph(t?.icon)} مسار ${esc(f.trackTitle)}</div>
       <div class="place p1">المركز الأول</div>
       <div class="medal">${MEDAL[0]}</div>
@@ -127,8 +140,9 @@ function renderTracks(){
     <div class="podium" style="grid-template-columns:repeat(${Math.min(F.length,4)},1fr);align-items:stretch">${F.map(f=>`<div class="pc first"><div class="m">${MEDAL[0]}</div><span>${esc(f.trackTitle)}</span><b>${esc(f.team)}</b><span>${esc(f.title)}</span><span class="gold" style="margin-top:.5vw">${f.final}</span></div>`).join("")}</div>
     <div class="kicker">شكرًا لجميع الفرق المشاركة</div>`;
   $("hint").textContent = "";
+  confetti();
 }
-function next(){ if (!F.length) return; const max = (BY_TRACK ? F.length : Math.min(3,F.length))+1; if (step < max) { step++; render(); } }
+function next(){ if (!F.length) return; const max = (BY_TRACK ? 2*F.length : Math.min(3,F.length))+1; if (step < max) { step++; render(); } }
 function prev(){ if (step>0){ step--; render(); } }
 document.addEventListener("keydown", e => { if ([" ","ArrowLeft","Enter","PageDown"].includes(e.key)) { e.preventDefault(); next(); } if (["ArrowRight","PageUp","Backspace"].includes(e.key)) prev(); });
 $("stage").addEventListener("click", next);
@@ -136,8 +150,9 @@ $("stage").addEventListener("click", next);
 function confetti(){
   const c=$("fx"), x=c.getContext("2d"); c.width=innerWidth; c.height=innerHeight;
   const cols=["#2fb8a6","#e9c46a","#7fe3d4","#8fb3ff","#ffffff","#c9d1da"];
+  const run=FXRUN;
   const P=Array.from({length:220},()=>({x:Math.random()*c.width,y:-20-Math.random()*c.height*.6,r:4+Math.random()*6,c:cols[Math.random()*cols.length|0],vy:2+Math.random()*4,vx:-1.5+Math.random()*3,a:Math.random()*6,va:-.2+Math.random()*.4}));
-  let t=0; (function f(){ x.clearRect(0,0,c.width,c.height);
+  let t=0; (function f(){ if (run!==FXRUN) return; x.clearRect(0,0,c.width,c.height);
     for(const p of P){ p.y+=p.vy; p.x+=p.vx; p.a+=p.va; x.save(); x.translate(p.x,p.y); x.rotate(p.a); x.fillStyle=p.c; x.fillRect(-p.r/2,-p.r/2,p.r,p.r*1.6); x.restore(); }
     if (++t<360) requestAnimationFrame(f); else x.clearRect(0,0,c.width,c.height); })();
 }
