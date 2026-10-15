@@ -196,7 +196,7 @@ const card = (title, body, cls="") => `<div class="card ${cls}">${title?`<h2>${t
 
 const NEW = {
   "investor.investors": () => ({id:uid("inv"), name:"", title:"", emoji:"briefcase-business", desc:"", persona:"", style:""}),
-  "hackathon.tracks": () => ({id:uid("t"), icon:"lightbulb", title:"", desc:"", challenges:[]}),
+  "hackathon.tracks": () => ({id:uid("t"), icon:"lightbulb", color:["#F2788A","#4CC38A","#F0A53C","#5AA9F0","#B48CF0","#4FD1C5"][(S.hackathon.tracks||[]).length % 6], title:"", desc:"", challenges:[]}),
   "challenges": () => ({id:uid("c"), title:"", desc:""}),
   "hackathon.rubric": () => ({key:uid("k"), label:"", max:10, guide:""}),
   "hackathon.judges": () => ({id:uid("j"), name:"", email:"", key:genKey(), tracks:[]}),
@@ -308,7 +308,7 @@ const P = {
     const T = S.hackathon.tracks;
     return `<h1>المسارات والتحديات</h1><p class="lead">يختار الفريق مسارًا، ثم تحديًا داخله. إذا لم تضف تحديات لمسار، يختار الفريق المسار نفسه.</p>
       ${T.map((t,i)=>`<div class="card"><div class="head" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><h2 style="margin:0">${glyph(t.icon)} ${esc(t.title)||"مسار جديد"}</h2>${tools("hackathon.tracks",i,T.length)}</div>
-        <div class="row-inline">${iconField("الأيقونة","hackathon.tracks."+i+".icon")}${f("اسم المسار","hackathon.tracks."+i+".title",{max:80})}</div>
+        <div class="row-inline">${iconField("الأيقونة","hackathon.tracks."+i+".icon")}${f("اسم المسار","hackathon.tracks."+i+".title",{max:80})}<div style="flex:none;width:96px">${f("اللون","hackathon.tracks."+i+".color",{type:"color"})}</div></div>
         ${f("وصف المسار","hackathon.tracks."+i+".desc",{type:"textarea",rows:2,max:400})}
         <div class="sub"><label>التحديات (${t.challenges.length})</label>
           ${t.challenges.map((c,j)=>`<div class="item"><div class="head"><b>${esc(c.title)||"تحدٍّ جديد"}</b>${tools("hackathon.tracks."+i+".challenges",j,t.challenges.length)}</div>

@@ -90,13 +90,14 @@ async function refresh(){
     const H = CFG.hackathon;
     APP.count($("sTeams"), d.stats.teams); APP.count($("sSubs"), d.stats.submissions); APP.count($("sEval"), d.stats.evaluated);
     const trackIcon = id => H.tracks.find(t=>t.id===id)?.icon || "";
+    const trackColor = id => H.tracks.find(t=>t.id===id)?.color || "inherit";
     const sc = H.judging?.scope;
     $("boardTitle").textContent = d.published ? "النتائج النهائية · الذكاء الاصطناعي ولجنة التحكيم" : "الترتيب المباشر · تقييم الذكاء الاصطناعي";
     if (d.published) $("legend").textContent = `▍ الدرجة النهائية = ${H.weights?.ai ?? 40}% تقييم الذكاء الاصطناعي + ${100 - (H.weights?.ai ?? 40)}% متوسط لجنة التحكيم`;
     else $("legend").textContent = sc === "all" ? "▍ كل المشاريع المقدَّمة تدخل تحكيم اللجنة" : `▍ المميَّزون بالخط الذهبي يتأهلون لتحكيم اللجنة: ${sc === "perTrack" ? `${H.finalistsPerTrack === 2 ? "أفضل مشروعين" : `أفضل ${H.finalistsPerTrack}`} من كل مسار` : `أفضل ${H.finalists}`}`;
     APP.setHTML($("rows"), d.leaderboard.length ? d.leaderboard.slice(0,7).map(r=>`
       <div class="row ${r.finalist?"fin":""}"><span class="rank">${r.rank}</span>
-        <div class="who"><b>${esc(r.team)}${r.award?` <span style="color:#ffd166">${glyph("trophy")}</span>`:""}</b><small>${glyph(trackIcon(r.track))} ${esc(r.title)}</small></div>
+        <div class="who"><b>${esc(r.team)}${r.award?` <span style="color:#ffd166">${glyph("trophy")}</span>`:""}</b><small><span style="color:${esc(trackColor(r.track))}">${glyph(trackIcon(r.track))}</span> ${esc(r.title)}</small></div>
         <div class="bar"><i style="width:${r.score}%"></i></div>
         <span class="score">${r.score}</span></div>`).join("")
       : `<p class="empty">بانتظار أول مشروع… امسح الرمز وكن الأول.</p>`);
