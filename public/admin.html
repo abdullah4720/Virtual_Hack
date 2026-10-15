@@ -504,7 +504,7 @@ const P = {
         : `<button class="btn" data-act="kioskkey" style="margin-top:10px"><i data-icon="key-round"></i> إنشاء رابط الجهاز اللوحي</button>`}
         <p class="help">الرابط سري: لا يُعرض للزوار. بعد إنشائه الرجاء حفظ التغييرات ثم فتحه على الجهاز اللوحي، ويُستحسن تثبيت الجهاز على وضع الشاشة الكاملة (Guided Access في iPad).</p>`)}
       ${card(`<span style="display:flex;align-items:center;gap:8px"><i data-icon="monitor"></i> الشاشة الكبيرة</span>`, `<p class="muted small">افتح «شاشة الجناح» على الشاشة الكبيرة واضغط F11 (أو انقر على الشاشة) للعرض الكامل. تتناوب تلقائيًا بين الشاشات المختارة أعلاه، وتعرض رمز QR ليعرض الزوار أفكارهم من جوالاتهم، وتتحدث مباشرة مع كل عرض جديد من الجهاز اللوحي أو الجوالات.</p>`)}
-      ${card("روابط الشاشات", `<div class="links">${[["شاشة الجناح (المتحكَّم بها)","booth.html"],["لوحة البيانات","dashboard.html"],["شاشة المستثمر","screen.html"],["شاشة الفرق","hack-screen.html"],["إعلان الفائزين","winners.html"]].map(([l,p])=>`<div><span>${l}</span><code>${esc(abs(p))}</code><a class="ib" href="${p}" target="_blank">فتح</a><button class="ib" data-copy="${attr(abs(p))}">نسخ</button></div>`).join("")}</div>`)}`;
+      ${card("روابط الشاشات", `<div class="links">${[["شاشة الجناح (المتحكَّم بها)","booth.html"],["لوحة البيانات","dashboard.html"],["شاشة «اختبر فكرتك»","screen.html"],["شاشة الفرق","hack-screen.html"],["إعلان الفائزين (بالمفتاح)","winners.html"],["النتائج للمشاركين (بلا مفتاح، بعد نشر النتائج)","results"]].map(([l,p])=>`<div><span>${l}</span><code>${esc(abs(p))}</code><a class="ib" href="${p}" target="_blank">فتح</a><button class="ib" data-copy="${attr(abs(p))}">نسخ</button></div>`).join("")}</div>`)}`;
   },
   welcome(){
     const P = S.program;

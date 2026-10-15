@@ -80,6 +80,19 @@ export default async function handler(req, res) {
       });
     }
 
+    // إعلان الفائزين للعموم (رابط يُشارك مع المشاركين): بعد «نشر النتائج» فقط، والفائزون وحدهم دون غيرهم
+    if (action === "public-results") {
+      if (!H.resultsPublished) return res.status(403).json({ error: "تُعلن النتائج قريبًا. ترقّبوا الإعلان.", notYet: true });
+      const { rows } = await standings(s);
+      const byTrack = (H.awards || "track") === "track";
+      const finalists = rows.filter((r) => r.finalist && r.award).map((r) => ({
+        team: r.team.name, members: r.team.members, title: r.best.title, challenge: r.label, final: r.final ?? r.best.ai_total,
+        track: r.team.track, trackTitle: r.trackTitle, trackRank: r.trackRank, award: r.award,
+      })).sort((a, c) => (byTrack ? 0 : a.award - c.award) || c.final - a.final);
+      const config = publicSettings(s); config.brand.logos = await resolveLogos(s);
+      return res.status(200).json({ config, finalists, awards: H.awards || "track", public: true });
+    }
+
     // التحقق من شهادة (عام)
     if (action === "cert") {
       const code = clip(q.get("code"), 20).toUpperCase();

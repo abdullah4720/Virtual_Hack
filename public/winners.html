@@ -69,6 +69,23 @@ canvas{position:fixed;inset:0;pointer-events:none}
 .blg img{max-height:7vw;max-width:22vw;object-fit:contain}
 .blg+.blg,.pill2+.blg{margin-top:1vw}
 .thanks{font-size:8vw;font-weight:700;line-height:1.2;animation:rise .8s ease both}
+/* الجوال: رابط النتائج يُفتح غالبًا من الهاتف، فتكبر العناصر وتترتب عموديًا */
+@media (max-width:760px){
+  .fr{padding:14px 12px;gap:8px}
+  .fr-top{font-size:11px}.fr-top .lg img{max-height:26px;max-width:110px}
+  .fr-mid{overflow-y:auto;gap:12px;justify-content:safe center}
+  .ring{width:88px;height:88px;font-size:42px}.pill2{font-size:13px;padding:5px 12px}
+  .lead2{font-size:15px}.big{font-size:30px}.desc{font-size:13px;max-width:92vw}.title{font-size:26px!important}
+  .win{grid-template-columns:1fr;justify-items:center;text-align:center;min-width:0;width:92vw;padding:20px 14px;gap:10px}
+  .win .ring{width:88px;height:88px;font-size:44px}.win .tm{font-size:28px;margin:8px 0}
+  .win .row{font-size:14px;justify-content:center;margin-top:8px}.chips2{justify-content:center}.chips2 span{font-size:12px;padding:3px 10px}
+  .score2{font-size:13px;margin-top:10px}.score2 b{font-size:24px}
+  .grid4{grid-template-columns:1fr 1fr!important;width:94vw;gap:10px}
+  .wc{padding:12px 8px;border-radius:12px;gap:6px}.wc .tk{font-size:11px;min-height:28px}.wc .ring{width:46px;height:46px;font-size:22px}
+  .wc b{font-size:16px}.wc span{font-size:11px}.wc .sc{font-size:14px}
+  .thanks{font-size:52px}.blg img{max-height:58px;max-width:44vw}
+  .fr-bot i{width:6px;height:6px}.fr-bot i.on{width:18px}.hint{font-size:11px;bottom:14px;left:12px}
+}
 @keyframes drop{from{transform:translateY(-40vh) rotate(-20deg);opacity:0}to{transform:none;opacity:1}}
 @keyframes rise{from{transform:translateY(3vw);opacity:0}to{transform:none;opacity:1}}
 </style>
@@ -93,9 +110,13 @@ let KEY; try { KEY = sessionStorage.getItem("jk"); } catch(e){}
 let F = [], step = 0, C = null, BY_TRACK = true;
 const MEDAL = [1,2,3].map(n=>`<i data-icon="medal" class="medal-${n}"></i>`), PLACE = ["المركز الأول","المركز الثاني","المركز الثالث"];
 
+// رابط المشاركة العام (winners?view=1 أو /results): بلا مفتاح، ويعمل بعد «نشر النتائج» فقط
+const VIEW = new URLSearchParams(location.search).has("view");
 async function load(){
-  const r = await fetch("api/hack?action=results",{headers:{"x-judge-key":KEY}});
-  const d = await r.json(); if (!r.ok) throw new Error(d.error||"خطأ");
+  const r = VIEW ? await fetch("api/hack?action=public-results", {cache: "no-store"}) : await fetch("api/hack?action=results",{headers:{"x-judge-key":KEY}});
+  const d = await r.json();
+  if (VIEW && !r.ok) { $("loginView").classList.add("hidden"); $("stage").classList.remove("hidden"); $("stage").innerHTML = `<div class="ring" style="margin:0 auto"><i data-icon="hourglass"></i></div><div class="title" style="font-size:4vw">${esc(d.error || "تُعلن النتائج قريبًا")}</div>`; $("hint").textContent = ""; setTimeout(() => load().catch(()=>{}), 30000); return; }
+  if (!r.ok) throw new Error(d.error||"خطأ");
   F = d.finalists; C = d.config; BY_TRACK = (d.awards || "track") === "track";
   // الفوز حسب المسار: فائز واحد لكل مسار، بترتيب المسارات في الإعدادات
   if (BY_TRACK) { const order = C.hackathon.tracks.map(t => t.id); F = F.filter(f => f.award === 1).sort((a, b) => order.indexOf(a.track) - order.indexOf(b.track)); }
@@ -212,7 +233,8 @@ function confetti(){
     for(const p of P){ p.y+=p.vy; p.x+=p.vx; p.a+=p.va; x.save(); x.translate(p.x,p.y); x.rotate(p.a); x.fillStyle=p.c; x.fillRect(-p.r/2,-p.r/2,p.r,p.r*1.6); x.restore(); }
     if (++t<360) requestAnimationFrame(f); else x.clearRect(0,0,c.width,c.height); })();
 }
-if (KEY) load().catch(()=>$("loginView").classList.remove("hidden")); else $("loginView").classList.remove("hidden");
+if (VIEW) load().catch(e => { $("stage").classList.remove("hidden"); $("stage").innerHTML = `<div class="title" style="font-size:3vw">تعذّر تحميل النتائج، حدّث الصفحة</div>`; });
+else if (KEY) load().catch(()=>$("loginView").classList.remove("hidden")); else $("loginView").classList.remove("hidden");
 </script>
 </body>
 </html>
