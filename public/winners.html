@@ -65,6 +65,9 @@ canvas{position:fixed;inset:0;pointer-events:none}
 .wc b{font-size:2vw;line-height:1.3}
 .wc span{color:var(--muted);font-size:1.15vw;line-height:1.6}
 .wc .sc{color:var(--gold);font-weight:700;font-size:1.6vw}
+.blg{display:flex;gap:3vw;align-items:center;justify-content:center;animation:rise .8s ease both}
+.blg img{max-height:7vw;max-width:22vw;object-fit:contain}
+.blg+.blg,.pill2+.blg{margin-top:1vw}
 .thanks{font-size:8vw;font-weight:700;line-height:1.2;animation:rise .8s ease both}
 @keyframes drop{from{transform:translateY(-40vh) rotate(-20deg);opacity:0}to{transform:none;opacity:1}}
 @keyframes rise{from{transform:translateY(3vw);opacity:0}to{transform:none;opacity:1}}
@@ -140,18 +143,21 @@ function render(){
 // التسلسل حسب المسار: الرئيسية ← (الفائز في مسار … ← الكشف عن الفائز) لكل مسار ← لوحة الفائزين ← شكرًا لكم
 function frame(mid, active){
   const n = F.length, total = 2 * n + 3;
-  const logos = (C.brand.logos||[]).map(l=>`<img src="${esc(l.url)}" alt="" class="${l.mono?"mono":""}">`).join("");
+  // الشعارات صغيرة في الأعلى، إلا في الافتتاحية والختام حيث تظهر كبيرة في الوسط
+  const logos = active === 0 || active === total - 1 ? "" : (C.brand.logos||[]).map(l=>`<img src="${esc(l.url)}" alt="" class="${l.mono?"mono":""}">`).join("");
   return `<div class="fr"><div class="fr-top"><div class="lg">${logos}</div><div><b>${esc(C.hackathon.name)}</b> · ${esc(C.brand.eventName||"")}</div></div>
     <div class="fr-mid">${mid}</div>
     <div class="fr-bot">${Array.from({length: total}, (_, i) => `<i class="${i===active?"on":""}"></i>`).join("")}</div></div>`;
 }
+// شعارات كبيرة (الجامعة والملتقى) في الشريحة الافتتاحية والختامية، من «الهوية والعامة ← الشعارات»
+const bigLogos = () => (C.brand.logos||[]).length ? `<div class="blg">${C.brand.logos.map(l=>`<img src="${esc(l.url)}" alt="" class="${l.mono?"mono":""}">`).join("")}</div>` : "";
 function renderTracks(){
   const s = $("stage"), n = F.length;
   if (!n) { s.innerHTML = `<div class="title">لا توجد مشاريع متأهلة بعد</div>`; return; }
   const trk = f => C.hackathon.tracks.find(x => x.id === f.track) || {};
   let mid;
   if (step === 0) {
-    mid = `<div class="ring"><i data-icon="trophy"></i></div>
+    mid = `${bigLogos() || `<div class="ring"><i data-icon="trophy"></i></div>`}
       <div class="lead2">${esc([C.brand.boothName, C.brand.eventName].filter(Boolean).join(" · "))}</div>
       <div class="big">${APP.title(C.hackathon.name)}</div>
       <span class="pill2"><i data-icon="medal"></i> إعلان الفائزين بالمركز الأول في كل مسار</span>`;
@@ -184,7 +190,7 @@ function renderTracks(){
     mid = `<div class="ring"><i data-icon="handshake"></i></div>
       <div class="thanks">شكرًا لكم</div>
       <div class="lead2">لجميع الفرق المشاركة، ولجنة التحكيم، وكل من أسهم في نجاح ${esc(C.hackathon.name)}</div>
-      <span class="pill2"><i data-icon="sparkles"></i> ${esc(C.brand.eventName || "")}</span>`;
+      <span class="pill2"><i data-icon="sparkles"></i> ${esc(C.brand.eventName || "")}</span>${bigLogos()}`;
   }
   s.innerHTML = frame(mid, step);
   $("hint").textContent = step >= 2 * n + 2 ? "" : "اضغط مسافة أو انقر للانتقال ←";
