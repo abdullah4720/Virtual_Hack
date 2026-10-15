@@ -357,7 +357,9 @@ export default async function handler(req, res) {
           judgeAvg: r.judgeAvg, final: r.final ?? r.best.ai_total, pending: r.final == null,
           track: r.team.track, trackTitle: r.trackTitle, trackRank: r.trackRank, award: r.award ?? null,
         })).sort((a, c) => c.final - a.final);
-        return res.status(200).json({ config: publicSettings(s), finalists, awards: H.awards || "track" });
+        // الشعارات بروابطها الفعلية (كما في api/config) لتظهر في شاشة الإعلان
+        const config = publicSettings(s); config.brand.logos = await resolveLogos(s);
+        return res.status(200).json({ config, finalists, awards: H.awards || "track" });
       }
     }
 
