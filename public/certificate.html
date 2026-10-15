@@ -98,7 +98,7 @@ APP.ready.then(async () => {
   const tag = trackWin ? `${glyph(d.trackIcon || "trophy")} المركز الأول · مسار ${esc(track)}` : win ? `${glyph("trophy")} ${rank}` : d.kind === "finalist" ? `${glyph("award")} ${rank}` : "";
   const dt = new Date(d.date);
   // الصيغة الرسمية: «تشهد [الجهة] بمشاركة [الاسم] في …»
-  const ev = d.brand.eventName ? ` ضمن فعاليات <b class="nw">${esc(d.brand.eventName)} ${dt.getFullYear()}</b>` : "";
+  const ev = d.brand.eventName ? ` ضمن فعاليات <b class="nw">${esc(d.brand.eventName)}${d.period ? "" : " " + dt.getFullYear()}</b>` : "";
   const per = d.period ? `، المنعقد ${esc(d.period).replace(/(\d+ \S+ \d{4}م?)/, '<span class="nw">$1</span>')}` : "";
   const ctx = [d.team && `ضمن <span class="nw">فريق «<b>${esc(d.team)}</b>»</span>`, d.project && `بمشروع «<b>${esc(d.project)}</b>»`, track && `في <span class="nw">مسار «<b>${esc(track)}</b>»</span>`].filter(Boolean).join(" ");
   const what = trackWin ? "وفوز الفريق بالمركز الأول" : win ? `وفوز الفريق ب${rank}` : d.kind === "finalist" ? "وتأهل المشروع إلى التحكيم النهائي" : "";
