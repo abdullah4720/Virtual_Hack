@@ -187,7 +187,7 @@ function f(label, k, o={}){
 }
 // منتقي أيقونة Lucide (للمسارات والمستشارين)
 // معاينة الشعار: رابط مباشر، أو صورة مرفوعة
-const lp = src => /^https?:\/\/\S+\.\S+/.test(src||"") ? src : (D.logoPreview||{})[src] || "";
+const lp = src => /^https?:\/\/\S+\.\S+/.test(src||"") || /^\/brand\//.test(src||"") ? src : (D.logoPreview||{})[src] || "";
 const iconField = (label, k) => { const v = getP(S,k) || ""; const names = Object.keys(window.ICONS||{}); return `<div>${label?`<label>${label}</label>`:""}<div style="display:flex;gap:8px;align-items:center"><span style="display:grid;place-items:center;width:44px;height:44px;border-radius:11px;background:var(--soft);color:var(--accent);flex:none;font-size:20px" data-prev="${k}">${glyph(v)}</span><select data-k="${k}" data-icon-field>${names.includes(v)?"":`<option value="${attr(v)}" selected>${esc(v)||"—"}</option>`}${names.map(n=>`<option value="${n}" ${n===v?"selected":""}>${n}</option>`).join("")}</select></div></div>`; };
 const tog = (label, k, help="") => `<label class="toggle"><span><b>${label}</b>${help?`<div class="help">${help}</div>`:""}</span><input type="checkbox" data-k="${k}" data-type="bool" ${getP(S,k)?"checked":""}></label>`;
 const tools = (list, i, n) => `<div class="tools"><button class="ib" data-act="up" data-list="${list}" data-i="${i}" ${i===0?"disabled":""} title="أعلى">↑</button><button class="ib" data-act="down" data-list="${list}" data-i="${i}" ${i===n-1?"disabled":""} title="أسفل">↓</button><button class="ib del" data-act="del" data-list="${list}" data-i="${i}">حذف</button></div>`;

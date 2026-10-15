@@ -168,12 +168,13 @@ function renderTracks(){
       mid = `<span class="pill2" ${tc}><i data-icon="flag"></i> المسار ${k + 1} من ${n}</span>
         <div class="ring" ${tc}>${glyph(t.icon || "target")}</div>
         <div class="lead2">الفائز بالمركز الأول في مسار</div>
-        <div class="big">${esc(f.trackTitle)}</div>
+        <div class="big" ${t.color ? `style="color:${esc(t.color)}"` : ""}>${esc(f.trackTitle)}</div>
         ${t.desc ? `<div class="desc">${esc(t.desc)}</div>` : ""}`;
     } else {
-      mid = `<div class="win"><div class="ring"><i data-icon="trophy"></i></div><div>
-        <span class="pill2"><span style="color:${esc(t.color || "inherit")}">${glyph(t.icon || "medal")}</span> المركز الأول · مسار ${esc(f.trackTitle)}</span>
-        <div class="tm">${esc(f.team)}</div>
+      // بطاقة الفائز بلون مساره (مطابق للدرع): الحلقة والوسم واسم الفريق والدرجة
+      mid = `<div class="win" ${t.color ? `style="--gold:${esc(t.color)};box-shadow:0 0 0 2px color-mix(in srgb,${esc(t.color)} 55%,transparent)"` : ""}><div class="ring"><i data-icon="trophy"></i></div><div>
+        <span class="pill2">${glyph(t.icon || "medal")} المركز الأول · مسار ${esc(f.trackTitle)}</span>
+        <div class="tm" style="color:var(--gold)">${esc(f.team)}</div>
         <div class="row"><i data-icon="lightbulb"></i><span>«${esc(f.title)}»</span></div>
         ${(f.members||[]).length ? `<div class="row"><i data-icon="users"></i><div class="chips2">${f.members.map(m=>`<span>${esc(m)}</span>`).join("")}</div></div>` : ""}
         <div class="score2"><i data-icon="star"></i> الدرجة النهائية <span dir="ltr"><b>${f.final}</b> / 100</span></div>
@@ -182,10 +183,10 @@ function renderTracks(){
     }
   } else if (step === 2 * n + 1) {
     mid = `<span class="pill2"><i data-icon="trophy"></i> الفائزون بالمركز الأول</span>
-      <div class="grid4" style="grid-template-columns:repeat(${Math.min(n,4)},minmax(0,1fr))">${F.map((f,i)=>{ const t = trk(f); return `<div class="wc" style="animation-delay:${i*.12}s;${t.color?`border-top:.35vw solid ${esc(t.color)}`:""}">
+      <div class="grid4" style="grid-template-columns:repeat(${Math.min(n,4)},minmax(0,1fr))">${F.map((f,i)=>{ const t = trk(f); return `<div class="wc" style="animation-delay:${i*.12}s;${t.color?`--gold:${esc(t.color)};border-top:.35vw solid ${esc(t.color)}`:""}">
         <div class="tk" style="--gold:${esc(t.color || "")}">${glyph(t.icon || "flag")} ${esc(f.trackTitle)}</div>
         <div class="ring"><i data-icon="medal"></i></div>
-        <b>${esc(f.team)}</b><span>${esc(f.title)}</span><span class="sc">${f.final}</span></div>`; }).join("")}</div>`;
+        <b style="color:var(--gold)">${esc(f.team)}</b><span>${esc(f.title)}</span><span class="sc">${f.final}</span></div>`; }).join("")}</div>`;
     confetti();
   } else {
     mid = `<div class="ring"><i data-icon="handshake"></i></div>
