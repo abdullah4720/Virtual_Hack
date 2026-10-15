@@ -24,13 +24,18 @@ body{font-family:"IBM Plex Sans Arabic",system-ui,sans-serif;background:#e9ebf1;
 .head img{max-height:17mm;max-width:62mm;display:block}
 .head .ev{font-size:12.5px;color:#5b6478;text-align:left;line-height:1.7}
 .head .ev b{color:var(--navy);display:block;font-size:14px}
-.eyebrow{margin-top:13mm;font-size:13px;font-weight:700;letter-spacing:.6px;color:var(--tc)}
+.eyebrow{margin-top:9mm;font-size:13px;font-weight:700;letter-spacing:.6px;color:var(--tc)}
 .kind{font-size:44px;font-weight:700;color:var(--navy);line-height:1.25;margin-top:1.5mm}
 .tag{display:inline-flex;align-items:center;gap:2mm;margin-top:3mm;padding:1.6mm 5mm;border-radius:99px;font-size:15px;font-weight:700;color:var(--tagink,#fff);background:var(--tc);align-self:flex-start}
-.to{font-size:15px;color:#5b6478;margin-top:9mm}
+.to{font-size:15px;color:#5b6478;margin-top:6mm}
 .name{font-size:46px;font-weight:700;color:var(--navy);line-height:1.3;margin-top:1mm}
 .rule{width:34mm;height:1.4mm;border-radius:2mm;background:var(--tc);margin-top:3mm}
-.txt{font-size:17px;line-height:2.05;color:#2b3550;margin-top:6mm;max-width:178mm}
+.txt{font-size:16px;line-height:1.95;color:#2b3550;margin-top:5mm;max-width:182mm;text-align:justify}
+.facts{display:flex;gap:0;margin-top:5mm;max-width:182mm;border:1px solid #e3e7ef;border-radius:3mm;background:#f8f9fc;overflow:hidden}
+.fact{flex:1;min-width:0;padding:2.6mm 4.5mm;border-inline-start:1px solid #e3e7ef}.fact:first-child{border-inline-start:0}
+.fact .k{display:flex;align-items:center;gap:1.5mm;font-size:11.5px;color:#6b7489;font-weight:600}.fact .k i,.fact .k svg{color:var(--tc);width:13px;height:13px}
+.fact .v{display:block;font-size:15px;font-weight:700;color:var(--navy);margin-top:.6mm;line-height:1.5}
+.wish{margin-top:4.5mm;font-size:15px;font-weight:600;color:var(--tc);filter:brightness(.8)}
 .txt b{color:var(--navy)}
 .wm{position:absolute;left:12mm;bottom:10mm;font-size:62mm;line-height:1;color:var(--tc);opacity:.07;pointer-events:none}
 .foot{margin-top:auto;position:relative;display:flex;justify-content:space-between;align-items:flex-end;gap:10mm;font-size:12.5px;color:#5b6478}
@@ -93,13 +98,21 @@ APP.ready.then(async () => {
   root.setProperty("--tagink", lum > 0.62 ? "#14213a" : "#fff");
   if (win) root.setProperty("--mc", "#e2b75a"); else root.setProperty("--mc", d.trackColor || "#7fd3c7");
   const tag = trackWin ? `${glyph(d.trackIcon || "trophy")} المركز الأول · مسار ${esc(track)}` : win ? `${glyph("trophy")} ${rank}` : d.kind === "finalist" ? `${glyph("award")} ${rank}` : "";
-  const proj = d.project ? ` بمشروع «<b>${esc(d.project)}</b>»` : "";
-  const inTrack = track && !trackWin ? ` في مسار «${esc(track)}»` : "";
-  const body = trackWin ? `تقديرًا للفوز بالمركز الأول في مسار «<b>${esc(track)}</b>» في <b>${esc(d.hackathon)}</b>، ضمن فريق «<b>${esc(d.team)}</b>»${proj}.`
-    : win ? `تقديرًا للفوز ب${rank} في <b>${esc(d.hackathon)}</b>، ضمن فريق «<b>${esc(d.team)}</b>»${proj}.`
-    : d.kind === "finalist" ? `تقديرًا لتأهل المشروع إلى التحكيم النهائي في <b>${esc(d.hackathon)}</b>، ضمن فريق «<b>${esc(d.team)}</b>»${proj}${inTrack}.`
-    : `تقديرًا للمشاركة الفاعلة في <b>${esc(d.hackathon)}</b>، ضمن فريق «<b>${esc(d.team)}</b>»${proj}${inTrack}.`;
   const dt = new Date(d.date);
+  const ev = d.brand.eventName ? `<b>${esc(d.brand.eventName)} ${dt.getFullYear()}</b>` : "";
+  const inEv = `<b>${esc(d.hackathon)}</b>${ev ? ` ضمن فعاليات ${ev}` : ""}`;
+  // الفقرة الرئيسية: سبب المنح، ثم سطر يربط المشاركة بالأولويات الوطنية
+  const lead = trackWin ? `تقديرًا للفوز بالمركز الأول في مسار «<b>${esc(track)}</b>» في ${inEv}`
+    : win ? `تقديرًا للفوز ب${rank} في ${inEv}`
+    : d.kind === "finalist" ? `تقديرًا لتأهل المشروع إلى التحكيم النهائي في ${inEv}`
+    : `تقديرًا للمشاركة الفاعلة في ${inEv}`;
+  const why = win || d.kind === "finalist"
+    ? "ولِما أظهره الفريق من تميّز في الفكرة وجودة في العرض، وإسهامٍ في تقديم حلول ريادية تستجيب للأولويات الوطنية للبحث والتطوير والابتكار."
+    : "وللإسهام في تطوير فكرة ريادية تستجيب للأولويات الوطنية للبحث والتطوير والابتكار، والعمل بروح الفريق على تحويلها إلى مشروع ذي أثر.";
+  const body = `${lead}، ${why}`;
+  // بيانات المشاركة في صف منظّم بدل حشرها في الجملة
+  const facts = [["users", "الفريق", d.team], ["lightbulb", "المشروع", d.project], [d.trackIcon || "compass", "المسار", track]]
+    .filter(f => f[2]).map(([i, k, v]) => `<div class="fact"><span class="k">${glyph(i)} ${k}</span><span class="v">${esc(v)}</span></div>`).join("");
   const greg = dt.toLocaleDateString("ar-SA-u-ca-gregory-nu-latn", {year: "numeric", month: "long", day: "numeric"});
   const hijri = dt.toLocaleDateString("ar-SA-u-ca-islamic-umalqura-nu-latn", {year: "numeric", month: "long", day: "numeric"});
   const logos = (d.brand.logos||[]).map(l=>`<img src="${esc(l.url)}" alt="">`).join("");
@@ -114,8 +127,10 @@ APP.ready.then(async () => {
       <div class="name">${esc(d.name)}</div>
       <div class="rule"></div>
       <div class="txt">${body}</div>
+      ${facts ? `<div class="facts">${facts}</div>` : ""}
+      <div class="wish">مع أطيب التمنيات بدوام التوفيق والنجاح.</div>
       <div class="wm">${glyph(trackWin ? (d.trackIcon || "trophy") : ic)}</div>
-      <div class="foot"><div>صدرت هذه الشهادة إلكترونيًا، ويمكن التحقق من صحتها بمسح الرمز.</div></div>
+      <div class="foot"><div>صدرت هذه الشهادة إلكترونيًا عن ${esc(d.brand.orgName || "الجهة المنظمة")}، ويمكن التحقق من صحتها بمسح الرمز أو إدخاله في صفحة التحقق.</div></div>
     </div>
     <div class="side">
       <div><div class="medal">${glyph(ic)}</div><div class="lbl">${esc(d.brand.eventName||"")}</div><div class="yr">${dt.getFullYear()}</div></div>
