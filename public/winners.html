@@ -28,11 +28,44 @@ html,body{height:100%;overflow:hidden}
 .pc b{display:block;font-size:2.2vw;line-height:1.3}
 .pc span{display:block;color:var(--muted);font-size:1.3vw}
 .pc.first{padding-top:3.2vw;border-color:var(--gold)}
-.hint{position:fixed;bottom:1.5vw;left:50%;transform:translateX(-50%);color:var(--muted);font-size:1vw}
+.hint{position:fixed;bottom:2.4vw;left:3.4vw;color:var(--muted);font-size:1vw;z-index:2}
 .warn{position:fixed;top:1vw;left:50%;transform:translateX(-50%);font-size:1vw}
 canvas{position:fixed;inset:0;pointer-events:none}
 .login{max-width:420px;margin:14vh auto;text-align:right}
 .tico{width:12vw;height:12vw;border-radius:50%;display:grid;place-items:center;font-size:6vw;color:var(--gold,#e9c46a);background:color-mix(in srgb,var(--gold,#e9c46a) 12%,transparent);box-shadow:0 0 0 .5vw color-mix(in srgb,var(--gold,#e9c46a) 25%,transparent);animation:drop .9s cubic-bezier(.2,1.4,.4,1)}
+/* ===== إعلان الفائزين حسب المسار ===== */
+.fr{position:fixed;inset:0;display:grid;grid-template-rows:auto 1fr auto;padding:2.2vw 3.4vw;gap:1vw}
+.fr-top{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:1.1vw}
+.fr-top .lg{display:flex;gap:1.6vw;align-items:center}.fr-top .lg img{max-height:3.4vw;max-width:14vw}
+.fr-top b{color:var(--text);font-weight:700}
+.fr-mid{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:1.4vw;min-height:0}
+.fr-bot{display:flex;justify-content:center;align-items:center;gap:.8vw}
+.fr-bot i{width:.7vw;height:.7vw;border-radius:50%;background:var(--line);display:block}
+.fr-bot i.on{background:var(--gold);width:2.2vw;border-radius:99px}
+.ring{width:11vw;height:11vw;border-radius:50%;display:grid;place-items:center;font-size:5.2vw;color:var(--gold);
+  background:radial-gradient(circle,color-mix(in srgb,var(--gold) 16%,transparent),transparent 70%);border:.2vw solid color-mix(in srgb,var(--gold) 55%,transparent);animation:drop .9s cubic-bezier(.2,1.4,.4,1)}
+.ring.sm{width:7vw;height:7vw;font-size:3.4vw}
+.pill2{display:inline-flex;align-items:center;gap:.6vw;font-size:1.35vw;font-weight:700;padding:.5vw 1.6vw;border-radius:99px;color:var(--gold);background:color-mix(in srgb,var(--gold) 13%,transparent);border:1px solid color-mix(in srgb,var(--gold) 40%,transparent)}
+.lead2{font-size:1.9vw;color:var(--muted)}
+.big{font-size:5vw;font-weight:700;line-height:1.25;animation:rise .8s ease .15s both}
+.desc{max-width:62vw;font-size:1.35vw;line-height:1.9;color:var(--muted);animation:rise .8s ease .35s both}
+.win{display:grid;grid-template-columns:auto 1fr;gap:3vw;align-items:center;text-align:right;width:auto;min-width:min(60vw,980px);max-width:86vw;background:var(--card);border:1px solid var(--line);border-radius:1.6vw;padding:2.6vw 3vw;animation:rise .7s ease both;box-shadow:0 0 0 1px color-mix(in srgb,var(--gold) 35%,transparent)}
+.win .ring{width:13vw;height:13vw;font-size:6.4vw}
+.win .tm{font-size:4.2vw;font-weight:700;line-height:1.25;margin:.6vw 0 1.2vw}
+.win .row{display:flex;align-items:flex-start;gap:.8vw;font-size:1.6vw;line-height:1.6;margin-top:.9vw}
+.win .row .lu,.win .row i{color:var(--gold);flex:none;margin-top:.3vw}
+.chips2{display:flex;flex-wrap:wrap;gap:.6vw}.chips2 span{font-size:1.35vw;padding:.3vw 1.1vw;border-radius:99px;background:var(--soft);border:1px solid var(--line)}
+.score2{display:inline-flex;align-items:baseline;gap:.6vw;margin-top:1.4vw;font-size:1.4vw;color:var(--muted)}
+.score2 b{font-size:3vw;color:var(--gold)}
+.grid4{display:grid;gap:1.4vw;width:min(92vw,1500px)}
+.wc{background:var(--card);border:1px solid var(--line);border-radius:1.3vw;padding:1.8vw 1.4vw;display:flex;flex-direction:column;align-items:center;gap:.7vw;animation:rise .7s ease both}
+.wc .tk{display:flex;align-items:center;gap:.5vw;font-size:1.15vw;color:var(--muted);min-height:3.4vw;text-align:center}
+.wc .tk .lu{color:var(--gold)}
+.wc .ring{width:6vw;height:6vw;font-size:2.8vw}
+.wc b{font-size:2vw;line-height:1.3}
+.wc span{color:var(--muted);font-size:1.15vw;line-height:1.6}
+.wc .sc{color:var(--gold);font-weight:700;font-size:1.6vw}
+.thanks{font-size:8vw;font-weight:700;line-height:1.2;animation:rise .8s ease both}
 @keyframes drop{from{transform:translateY(-40vh) rotate(-20deg);opacity:0}to{transform:none;opacity:1}}
 @keyframes rise{from{transform:translateY(3vw);opacity:0}to{transform:none;opacity:1}}
 </style>
@@ -104,45 +137,59 @@ function render(){
     <div class="kicker">شكرًا لجميع الفرق المشاركة</div>`;
   $("hint").textContent = "";
 }
-// التسلسل حسب المسار: مقدمة ← فائز كل مسار ← لوحة الفائزين
+// التسلسل حسب المسار: الرئيسية ← (الفائز في مسار … ← الكشف عن الفائز) لكل مسار ← لوحة الفائزين ← شكرًا لكم
+function frame(mid, active){
+  const n = F.length, total = 2 * n + 3;
+  const logos = (C.brand.logos||[]).map(l=>`<img src="${esc(l.url)}" alt="" class="${l.mono?"mono":""}">`).join("");
+  return `<div class="fr"><div class="fr-top"><div class="lg">${logos}</div><div><b>${esc(C.hackathon.name)}</b> · ${esc(C.brand.eventName||"")}</div></div>
+    <div class="fr-mid">${mid}</div>
+    <div class="fr-bot">${Array.from({length: total}, (_, i) => `<i class="${i===active?"on":""}"></i>`).join("")}</div></div>`;
+}
 function renderTracks(){
   const s = $("stage"), n = F.length;
   if (!n) { s.innerHTML = `<div class="title">لا توجد مشاريع متأهلة بعد</div>`; return; }
+  const trk = f => C.hackathon.tracks.find(x => x.id === f.track) || {};
+  let mid;
   if (step === 0) {
-    s.innerHTML = `<div style="display:flex;gap:3vw;align-items:center;justify-content:center">${(C.brand.logos||[]).map(l=>`<img src="${esc(l.url)}" alt="" class="${l.mono?"mono":""}" style="max-height:7vw;max-width:24vw">`).join("")}</div>
-      <div class="kicker">${esc([C.brand.boothName, C.brand.eventName].filter(Boolean).join(" · "))}</div>
-      <div class="title"><i data-icon="zap"></i> ${APP.title(C.hackathon.name)}</div>
-      <div class="place">إعلان الفائزين بالمركز الأول في كل مسار</div>`;
-    return;
-  }
-  // لكل مسار صفحتان: تمهيد «الفائز في مسار …» ثم الكشف عن الفائز وتفاصيل مشروعه
-  if (step <= 2 * n) {
-    const f = F[Math.ceil(step / 2) - 1], t = C.hackathon.tracks.find(x => x.id === f.track);
+    mid = `<div class="ring"><i data-icon="trophy"></i></div>
+      <div class="lead2">${esc([C.brand.boothName, C.brand.eventName].filter(Boolean).join(" · "))}</div>
+      <div class="big">${APP.title(C.hackathon.name)}</div>
+      <span class="pill2"><i data-icon="medal"></i> إعلان الفائزين بالمركز الأول في كل مسار</span>`;
+  } else if (step <= 2 * n) {
+    const k = Math.ceil(step / 2) - 1, f = F[k], t = trk(f);
     if (step % 2 === 1) {
-      s.innerHTML = `<div class="tico">${glyph(t?.icon || "trophy")}</div>
-        <div class="place p1">المركز الأول</div>
-        <div class="kicker" style="font-size:2.2vw">الفائز في مسار</div>
-        <div class="title" style="font-size:4.6vw;animation:rise .8s ease .2s both">${esc(f.trackTitle)}</div>
-        ${t?.desc ? `<div class="kicker" style="max-width:60vw;line-height:1.8;font-size:1.4vw;animation:rise .8s ease .4s both">${esc(t.desc)}</div>` : ""}`;
-      return;
+      mid = `<span class="pill2"><i data-icon="flag"></i> المسار ${k + 1} من ${n}</span>
+        <div class="ring">${glyph(t.icon || "target")}</div>
+        <div class="lead2">الفائز بالمركز الأول في مسار</div>
+        <div class="big">${esc(f.trackTitle)}</div>
+        ${t.desc ? `<div class="desc">${esc(t.desc)}</div>` : ""}`;
+    } else {
+      mid = `<div class="win"><div class="ring"><i data-icon="trophy"></i></div><div>
+        <span class="pill2">${glyph(t.icon || "medal")} المركز الأول · مسار ${esc(f.trackTitle)}</span>
+        <div class="tm">${esc(f.team)}</div>
+        <div class="row"><i data-icon="lightbulb"></i><span>«${esc(f.title)}»</span></div>
+        ${(f.members||[]).length ? `<div class="row"><i data-icon="users"></i><div class="chips2">${f.members.map(m=>`<span>${esc(m)}</span>`).join("")}</div></div>` : ""}
+        <div class="score2"><i data-icon="star"></i> الدرجة النهائية <span dir="ltr"><b>${f.final}</b> / 100</span></div>
+      </div></div>`;
+      confetti();
     }
-    s.innerHTML = `<div class="kicker">${glyph(t?.icon)} مسار ${esc(f.trackTitle)}</div>
-      <div class="place p1">المركز الأول</div>
-      <div class="medal">${MEDAL[0]}</div>
-      <div class="team">${esc(f.team)}</div>
-      <div class="proj">«${esc(f.title)}»</div>
-      <div class="mem">${esc((f.members||[]).join(" · "))}</div>
-      <div class="score">الدرجة النهائية <b>${f.final}</b></div>`;
+  } else if (step === 2 * n + 1) {
+    mid = `<span class="pill2"><i data-icon="trophy"></i> الفائزون بالمركز الأول</span>
+      <div class="grid4" style="grid-template-columns:repeat(${Math.min(n,4)},minmax(0,1fr))">${F.map((f,i)=>{ const t = trk(f); return `<div class="wc" style="animation-delay:${i*.12}s">
+        <div class="tk">${glyph(t.icon || "flag")} ${esc(f.trackTitle)}</div>
+        <div class="ring"><i data-icon="medal"></i></div>
+        <b>${esc(f.team)}</b><span>${esc(f.title)}</span><span class="sc">${f.final}</span></div>`; }).join("")}</div>`;
     confetti();
-    return;
+  } else {
+    mid = `<div class="ring"><i data-icon="handshake"></i></div>
+      <div class="thanks">شكرًا لكم</div>
+      <div class="lead2">لجميع الفرق المشاركة، ولجنة التحكيم، وكل من أسهم في نجاح ${esc(C.hackathon.name)}</div>
+      <span class="pill2"><i data-icon="sparkles"></i> ${esc(C.brand.eventName || "")}</span>`;
   }
-  s.innerHTML = `<div class="title" style="font-size:3.4vw"><i data-icon="trophy"></i> الفائزون في ${esc(C.hackathon.name)}</div>
-    <div class="podium" style="grid-template-columns:repeat(${Math.min(F.length,4)},1fr);align-items:stretch">${F.map(f=>`<div class="pc first"><div class="m">${MEDAL[0]}</div><span>${esc(f.trackTitle)}</span><b>${esc(f.team)}</b><span>${esc(f.title)}</span><span class="gold" style="margin-top:.5vw">${f.final}</span></div>`).join("")}</div>
-    <div class="kicker">شكرًا لجميع الفرق المشاركة</div>`;
-  $("hint").textContent = "";
-  confetti();
+  s.innerHTML = frame(mid, step);
+  $("hint").textContent = step >= 2 * n + 2 ? "" : "اضغط مسافة أو انقر للانتقال ←";
 }
-function next(){ if (!F.length) return; const max = (BY_TRACK ? 2*F.length : Math.min(3,F.length))+1; if (step < max) { step++; render(); } }
+function next(){ if (!F.length) return; const max = BY_TRACK ? 2*F.length+2 : Math.min(3,F.length)+1; if (step < max) { step++; render(); } }
 function prev(){ if (step>0){ step--; render(); } }
 document.addEventListener("keydown", e => { if ([" ","ArrowLeft","Enter","PageDown"].includes(e.key)) { e.preventDefault(); next(); } if (["ArrowRight","PageUp","Backspace"].includes(e.key)) prev(); });
 $("stage").addEventListener("click", next);
