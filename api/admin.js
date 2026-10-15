@@ -325,7 +325,7 @@ export default async function handler(req, res) {
       return res.status(200).json(await runReminders(s, site));
     }
     if (action === "send-results" && req.method === "POST") {
-      if (!s.hackathon.resultsPublished) return res.status(400).json({ error: "فعّل «نشر النتائج» واحفظ أولًا، كي تصل شهادات الفوز الصحيحة" });
+      if (!s.hackathon.resultsPublished) return res.status(400).json({ error: "فعّل «نشر النتائج» واحفظ أولًا، كي تصل الشهادات الصحيحة" });
       return res.status(200).json(await sendResults(s, site));
     }
     if (action === "remind-judges" && req.method === "POST") {

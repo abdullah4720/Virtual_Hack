@@ -530,7 +530,7 @@ function renderResult(){
     const win = r.award, track = r.awards === "track";
     const head = win ? `<i data-icon="trophy" class="medal-1"></i> مبروك! فاز مشروعكم بالمركز ${track ? "الأول في مسار «" + esc(r.trackTitle) + "»" : ["","الأول","الثاني","الثالث"][win] || win}`
       : r.finalist ? `<i data-icon="award"></i> مبروك! تأهل مشروعكم للتحكيم النهائي` : `<i data-icon="award"></i> شكرًا لمشاركتكم في ${esc(H.name)}`;
-    const sub = win ? "تهانينا لكل أعضاء الفريق، وشهادات الفوز جاهزة أدناه." : r.finalist ? "وصل مشروعكم إلى لجنة التحكيم ضمن أفضل المشاريع. شهاداتكم جاهزة أدناه." : "انتهى البرنامج وأُعلن الفائزون. نأمل أن تكون التجربة مفيدة لكم، وشهادات المشاركة جاهزة أدناه.";
+    const sub = win ? "تهانينا لكل أعضاء الفريق، وشهاداتكم جاهزة أدناه." : r.finalist ? "وصل مشروعكم إلى لجنة التحكيم ضمن أفضل المشاريع. شهاداتكم جاهزة أدناه." : "انتهى البرنامج وأُعلن الفائزون. نأمل أن تكون التجربة مفيدة لكم، وشهادات المشاركة جاهزة أدناه.";
     $("finalBox").innerHTML = `<div class="card result ${win ? "win" : ""}"><span class="pill ok"><i data-icon="megaphone"></i> أُعلنت النتائج</span><h2 style="margin-top:8px">${head}</h2><p class="muted">${sub}</p><div class="small muted">الدرجة النهائية: <b class="gold">${r.final}</b></div></div>`;
   } else if (team.phase === "closed" && (team.submissions || []).length) {
     $("finalBox").innerHTML = `<div class="card note"><b><i data-icon="hourglass"></i> انتهى التقديم</b><p class="small" style="margin-top:4px">تُعلن النتائج وتصدر شهادات الفريق في هذه الصفحة بعد انتهاء التحكيم، وسنرسلها أيضًا إلى البريد المسجّل.</p></div>`;
