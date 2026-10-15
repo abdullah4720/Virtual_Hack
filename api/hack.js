@@ -312,13 +312,14 @@ export default async function handler(req, res) {
           progress: { done: finals.filter((r) => r.judges.some((j) => j.judge_id === judge.id)).length, total: finals.length },
           announcements: ann.reverse().slice(0, 5).map(({ id, title, body, created_at }) => ({ id, title, body, created_at })),
           stats: { teams: active.length, submissions: subs.length },
-          rows: mine.map((r) => ({
+          // الحياد: المحكّم يرى تقييمه فقط، لا درجات زملائه ولا متوسط اللجنة (الإدارة ترى الكل)
+          rows: mine.map((r) => { const own = r.judges.find((j) => j.judge_id === judge.id) || null; return {
             id: r.team.id, rank: r.rank, finalist: r.finalist, order: judgingOrder(s, r.team), team: r.team.name, members: r.team.members, track: r.team.track || null,
             email: r.team.email, phone: r.team.phone, challenge: r.label, source: r.team.source, attempts: r.attempts,
             submission: { ...publicSub(r.best), flagged: r.flagged, files: r.files },
-            judges: r.judges, judgeAvg: r.judgeAvg, final: r.final,
-            mine: r.judges.find((j) => j.judge_id === judge.id) || null,
-          })),
+            judges: judge.admin ? r.judges : own ? [own] : [], judgeAvg: judge.admin ? r.judgeAvg : null, final: judge.admin ? r.final : null,
+            mine: own,
+          }; }),
         });
       }
 
@@ -351,6 +352,9 @@ export default async function handler(req, res) {
       }
 
       if (action === "results") {
+        // الحياد: المحكّم بمفتاحه الشخصي لا يرى الترتيب النهائي أثناء التحكيم (الإدارة والمفتاح المشترك متاحان دائمًا)
+        if (judge.personal && H.judging?.open !== false && !H.resultsPublished)
+          return res.status(403).json({ error: "شاشة الإعلان متاحة بعد إغلاق التحكيم، أو بمفتاح الإدارة أو المفتاح المشترك" });
         const { rows } = await standings(s);
         const finalists = rows.filter((r) => r.finalist).map((r) => ({
           team: r.team.name, members: r.team.members, title: r.best.title, challenge: r.label, ai: r.best.ai_total,

@@ -10,7 +10,7 @@
 <script src="icons.js"></script>
 <script src="app.js"></script>
 <style>
-.wrap{max-width:980px}
+.wrap{max-width:1180px}
 .top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
 .tabs{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
 .tabs button{font:inherit;font-size:14px;border:1px solid var(--line);background:transparent;color:var(--text);border-radius:10px;padding:7px 14px;cursor:pointer}
@@ -24,11 +24,13 @@
 .num{text-align:center;min-width:64px}
 .num b{display:block;font-size:20px;color:var(--navy);font-variant-numeric:tabular-nums}
 .num small{color:var(--muted);font-size:11.5px}
-.body{border-top:1px solid var(--line);padding:16px;display:grid;grid-template-columns:1.5fr 1fr;gap:18px}
+/* عمود المحتوى لا يتمدد بالنصوص الطويلة، وعمود التقييم بعرض ثابت لا يُقص */
+.body{border-top:1px solid var(--line);padding:16px;display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,380px);gap:18px;align-items:start}
+.body>*{min-width:0}
 @media (max-width:760px){.body{grid-template-columns:1fr}.sum{grid-template-columns:34px 1fr auto}.sum .hide-sm{display:none}}
 .field{margin-bottom:12px}
 .field h4{font-size:13px;color:var(--muted);font-weight:500}
-.field p{white-space:pre-wrap}
+.field p{white-space:pre-wrap;overflow-wrap:anywhere}
 .rrow{display:grid;grid-template-columns:110px 1fr 46px;gap:8px;align-items:center;font-size:13.5px;margin:5px 0}
 .rrow b{text-align:left}
 .box{background:var(--card2);border-radius:12px;padding:12px;margin-bottom:12px}
@@ -69,7 +71,7 @@ a{color:var(--accent)}
   <div id="mainView" class="hidden">
     <div class="top">
       <div><h1 style="font-size:24px"><span class="ic"><i data-icon="scale"></i></span> لوحة لجنة التحكيم</h1><div class="muted small" id="meta"></div></div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm ghost" id="refreshBtn"><i data-icon="refresh-cw"></i> تحديث</button><a class="btn sm" href="winners.html" target="_blank"><i data-icon="trophy"></i> شاشة الإعلان</a><button class="btn sm ghost" id="logoutBtn">خروج</button></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm ghost" id="refreshBtn"><i data-icon="refresh-cw"></i> تحديث</button><a class="btn sm" id="winBtn" href="winners.html" target="_blank"><i data-icon="trophy"></i> شاشة الإعلان</a><button class="btn sm ghost" id="logoutBtn">خروج</button></div>
     </div>
     <div id="annBox"></div>
     <div class="card" id="progressCard"></div>
@@ -109,6 +111,8 @@ async function load(){
   DATA = await api("judge");
   $("loginView").classList.add("hidden"); $("mainView").classList.remove("hidden");
   const c = DATA.config.hackathon, me = DATA.me;
+  // شاشة الإعلان: للإدارة والمفتاح المشترك، وللمحكّمين بعد إغلاق التحكيم فقط
+  $("winBtn").style.display = (me.personal && DATA.open !== false && !c.resultsPublished) ? "none" : "";
   const mode = c.judging?.mode || "tracks";
   const tr = mode === "committees" ? "المشاريع المسندة إليك" : mode === "all" ? "كل المشاريع" : me.tracks?.length ? me.tracks.map(id => c.tracks.find(t=>t.id===id)?.title).filter(Boolean).join("، ") : "كل المسارات";
   $("meta").textContent = `${me.admin ? "الإدارة (عرض فقط)" : me.name} · ${tr} · ${DATA.stats.teams} فريق`;
@@ -148,8 +152,8 @@ function render(){
         <span><b>${esc(r.team)}</b> ${r.finalist?'<span class="pill">متأهل</span>':""} ${mine?'<span class="done-badge">✓ قيّمته</span>':""} ${s.flagged?'<span class="pill no"><i data-icon="triangle-alert"></i> محاولة تلاعب محتملة</span>':""}
           <div class="muted small">${esc(s.title)} · ${esc(r.challenge)} · ${r.attempts} محاولة</div></span>
         <span class="num"><b>${s.total}</b><small>الذكاء الاصطناعي</small></span>
-        <span class="num hide-sm"><b>${r.judgeAvg ?? "—"}</b><small>اللجنة (${r.judges.filter(j=>!j.coi).length})</small></span>
-        <span class="num hide-sm"><b>${r.final ?? "—"}</b><small>النهائية</small></span>
+        ${me.admin ? `<span class="num hide-sm"><b>${r.judgeAvg ?? "—"}</b><small>اللجنة (${r.judges.filter(j=>!j.coi).length})</small></span>
+        <span class="num hide-sm"><b>${r.final ?? "—"}</b><small>النهائية</small></span>` : `<span class="num hide-sm"><b>${mine ? (mine.coi ? "—" : mine.score) : "—"}</b><small>تقييمك</small></span>`}
       </summary>
       <div class="body">
         <div>
@@ -166,7 +170,7 @@ function render(){
             ${(s.feedback?.caps||[]).length?`<p class="small" style="color:var(--bad)"><i data-icon="lock"></i> ${s.feedback.caps.map(esc).join("، ")}</p>`:""}${s.feedback?.reviewed?`<p class="small muted"><i data-icon="shield-check"></i> خضع لمراجعة ثانية</p>`:""}${s.feedback?.demo?`<p class="small" style="color:var(--bad);font-weight:700"><i data-icon="triangle-alert"></i> تقييم وهمي (الذكاء الاصطناعي غير مفعّل)</p>`:""}
             <p class="small" style="margin-top:8px">${esc(s.feedback?.summary)}</p>
           </div>
-          ${r.judges.length?`<div class="box jl"><b>درجات اللجنة</b>${r.judges.map(j=>`<div><span>${esc(j.judge)}${j.note?` <span class="muted small">— ${esc(j.note)}</span>`:""}</span><b class="gold">${j.coi?"تعارض":j.score}</b></div>`).join("")}</div>`:""}
+          ${me.admin && r.judges.length?`<div class="box jl"><b>درجات اللجنة</b>${r.judges.map(j=>`<div><span>${esc(j.judge)}${j.note?` <span class="muted small">— ${esc(j.note)}</span>`:""}</span><b class="gold">${j.coi?"تعارض":j.score}</b></div>`).join("")}</div>`:""}
         </div>
       </div></details>`;
   }).join("");
