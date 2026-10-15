@@ -52,6 +52,7 @@ body{font-family:"IBM Plex Sans Arabic",system-ui,sans-serif;background:#e9ebf1;
 .side .date small{display:block;color:rgba(255,255,255,.6);font-size:11px}
 .verify{max-width:520px;margin:12vh auto;background:#fff;border-radius:16px;padding:24px;text-align:center;line-height:1.9}
 @media print{ html,body{background:#fff;width:297mm;height:210mm;overflow:hidden} .bar{display:none} .cert{margin:0;box-shadow:none;break-inside:avoid;page-break-after:avoid} @page{size:A4 landscape;margin:0} }
+.pvbar{background:#fff4d6;color:#7a5200;border-bottom:1px solid #f0d58a;padding:10px 16px;text-align:center;font-weight:600;font-size:14px}@media print{.no-print{display:none!important}}
 </style>
 </head>
 <body data-noannounce>
@@ -74,8 +75,10 @@ addEventListener("resize", fitScreen); addEventListener("beforeprint", () => { c
 APP.ready.then(async () => {
   const out = document.getElementById("out");
   if (!code) { out.innerHTML = `<div class="verify"><h2>التحقق من شهادة</h2><p>أضف رمز الشهادة إلى الرابط: certificate.html?c=الرمز</p></div>`; return; }
-  const r = await fetch("api/hack?action=cert&code=" + encodeURIComponent(code), {cache: "no-store"});
+  let ak = ""; try { ak = sessionStorage.getItem("ak") || ""; } catch {}
+  const r = await fetch("api/hack?action=cert&code=" + encodeURIComponent(code), {cache: "no-store", headers: ak ? {"x-admin-key": ak} : {}});
   const d = await r.json().catch(() => ({}));
+  if (d.notYet) { out.innerHTML = `<div class="verify"><div style="font-size:40px;color:#b7791f"><i data-icon="hourglass"></i></div><h2>لم تصدر الشهادة بعد</h2><p>تصدر الشهادات بعد انتهاء البرنامج وإعلان النتائج. احتفظ بهذا الرابط وافتحه لاحقًا.</p></div>`; return; }
   if (!r.ok || !d.valid) { out.innerHTML = `<div class="verify"><div style="font-size:40px;color:#c0392b"><i data-icon="circle-x"></i></div><h2>شهادة غير صالحة</h2><p>${d.error ? esc(d.error) : `لم نجد شهادة بالرمز <b dir="ltr">${esc(code)}</b>.`}</p></div>`; return; }
   const root = document.documentElement.style;
   if (d.brand.accent) root.setProperty("--accent", d.brand.accent); if (d.brand.bg) root.setProperty("--navy", d.brand.bg);
@@ -100,6 +103,7 @@ APP.ready.then(async () => {
   const greg = dt.toLocaleDateString("ar-SA-u-ca-gregory-nu-latn", {year: "numeric", month: "long", day: "numeric"});
   const hijri = dt.toLocaleDateString("ar-SA-u-ca-islamic-umalqura-nu-latn", {year: "numeric", month: "long", day: "numeric"});
   const logos = (d.brand.logos||[]).map(l=>`<img src="${esc(l.url)}" alt="">`).join("");
+  if (d.preview) document.body.insertAdjacentHTML("afterbegin", `<div class="pvbar no-print">معاينة للإدارة — لم تُنشر النتائج بعد، ولن يرى المشاركون الشهادة حتى «نشر النتائج»</div>`);
   out.innerHTML = `<div class="cert">
     <div class="main">
       <div class="head"><div class="logos">${logos}</div><div class="ev"><b>${esc(d.brand.orgName||"")}</b>${esc(d.brand.eventName||"")}</div></div>
