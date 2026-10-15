@@ -15,14 +15,14 @@
 body{font-family:"IBM Plex Sans Arabic",system-ui,sans-serif;background:#e9ebf1;color:#14213a;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .bar{display:flex;gap:10px;justify-content:center;padding:12px}
 .bar button{display:inline-flex;align-items:center;gap:8px;font:inherit;background:var(--navy);color:#fff;border:0;border-radius:10px;padding:8px 18px;font-weight:700;cursor:pointer}
-/* ===== الشهادة: مستطيلة 297 × 180 مم (أقصر من A4 الأفقي) ===== */
-.cert{width:297mm;height:180mm;margin:0 auto 20px;background:#fff;position:relative;display:grid;grid-template-columns:1fr 74mm;overflow:hidden;box-shadow:0 10px 40px rgba(11,42,69,.15)}
+/* ===== الشهادة: مستطيلة 297 × 165 مم (أقصر من A4 الأفقي) ===== */
+.cert{width:297mm;height:165mm;margin:0 auto 20px;background:#fff;position:relative;display:grid;grid-template-columns:1fr 74mm;overflow:hidden;box-shadow:0 10px 40px rgba(11,42,69,.15)}
 .main{position:relative;padding:12mm 18mm 9mm;display:flex;flex-direction:column;align-items:center;text-align:center}
 .main:before{content:"";position:absolute;top:0;right:0;left:0;height:3.2mm;background:linear-gradient(90deg,var(--tc),color-mix(in srgb,var(--tc) 55%,#fff))}
 .head{display:flex;justify-content:center;align-items:center;gap:8mm;width:100%}
 .head .ev{display:none}
 .head .logos{display:flex;gap:7mm;align-items:center}
-.head img{max-height:18mm;max-width:72mm;display:block}
+.head img{max-height:16mm;max-width:72mm;display:block}
 .head .ev{font-size:12.5px;color:#5b6478;text-align:left;line-height:1.7}
 .head .ev b{color:var(--navy);display:block;font-size:14px}
 .eyebrow{margin-top:9mm;font-size:13px;font-weight:700;letter-spacing:.6px;color:var(--tc)}
@@ -41,20 +41,20 @@ body{font-family:"IBM Plex Sans Arabic",system-ui,sans-serif;background:#e9ebf1;
 .foot .sig .ln{border-top:1px solid #c9cfdb;margin-bottom:2mm}
 .foot .sig b{color:var(--navy);font-size:13.5px;display:block}
 /* الشريط الجانبي */
-.side{position:relative;background:var(--navy);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:12mm 9mm 9mm;text-align:center;
+.side{position:relative;background:var(--navy);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:10mm 9mm 8mm;text-align:center;
   background-image:repeating-linear-gradient(135deg,rgba(255,255,255,.035) 0 1px,transparent 1px 9px)}
 .side:before{content:"";position:absolute;inset:0 auto 0 0;width:1.6mm;background:var(--tc)}
-.medal{width:25mm;height:25mm;border-radius:50%;display:grid;place-items:center;font-size:12.5mm;color:var(--mc,#e2b75a);border:.6mm solid color-mix(in srgb,var(--mc,#e2b75a) 60%,transparent);background:radial-gradient(circle,color-mix(in srgb,var(--mc,#e2b75a) 18%,transparent),transparent 70%)}
+.medal{width:22mm;height:22mm;border-radius:50%;display:grid;place-items:center;font-size:11mm;color:var(--mc,#e2b75a);border:.6mm solid color-mix(in srgb,var(--mc,#e2b75a) 60%,transparent);background:radial-gradient(circle,color-mix(in srgb,var(--mc,#e2b75a) 18%,transparent),transparent 70%)}
 .side .lbl{font-size:11px;letter-spacing:.8px;color:rgba(255,255,255,.65);margin-top:4mm}
 .side .yr{font-size:30px;font-weight:700;line-height:1.1;margin-top:1mm}
 .side .qr{background:#fff;padding:2.2mm;border-radius:2.5mm}
-.side .qr img,.side .qr canvas{width:27mm!important;height:27mm!important;display:block}
+.side .qr img,.side .qr canvas{width:25mm!important;height:25mm!important;display:block}
 .side .code{font-size:15px;font-weight:700;letter-spacing:1.5px;margin-top:2.5mm;direction:ltr}
 .side .hint{font-size:10.5px;color:rgba(255,255,255,.65);line-height:1.7;margin-top:1mm}
 .side .date{font-size:13px;line-height:1.8}
 .side .date small{display:block;color:rgba(255,255,255,.6);font-size:11px}
 .verify{max-width:520px;margin:12vh auto;background:#fff;border-radius:16px;padding:24px;text-align:center;line-height:1.9}
-@media print{ html,body{background:#fff;width:297mm;height:180mm;overflow:hidden} .bar{display:none} .cert{margin:0;box-shadow:none;break-inside:avoid;page-break-after:avoid} @page{size:297mm 180mm;margin:0} }
+@media print{ html,body{background:#fff;width:297mm;height:165mm;overflow:hidden} .bar{display:none} .cert{margin:0;box-shadow:none;break-inside:avoid;page-break-after:avoid} @page{size:297mm 165mm;margin:0} }
 .pvbar{background:#fff4d6;color:#7a5200;border-bottom:1px solid #f0d58a;padding:10px 16px;text-align:center;font-weight:600;font-size:14px}@media print{.no-print{display:none!important}}
 </style>
 </head>
@@ -72,7 +72,7 @@ const KIND = {
   winner2: ["trophy", "شهادة فوز", "المركز الثاني"],
   winner3: ["trophy", "شهادة فوز", "المركز الثالث"],
 };
-// الشهادة تملأ عرض الشاشة الصغيرة (الطباعة دائمًا بمقاس 297 × 180 مم)
+// الشهادة تملأ عرض الشاشة الصغيرة (الطباعة دائمًا بمقاس 297 × 165 مم)
 function fitScreen(){ const c = document.querySelector(".cert"); if (!c) return; const w = c.offsetWidth + 24; c.style.zoom = innerWidth < w ? (innerWidth / w).toFixed(3) : ""; }
 addEventListener("resize", fitScreen); addEventListener("beforeprint", () => { const c = document.querySelector(".cert"); if (c) c.style.zoom = ""; }); addEventListener("afterprint", fitScreen);
 APP.ready.then(async () => {
