@@ -76,7 +76,7 @@ a{color:var(--accent)}
     <div id="annBox"></div>
     <div class="card" id="progressCard"></div>
     <div class="card small muted" id="guide"></div>
-    <div class="tabs"><button class="on" data-f="todo">بانتظار تقييمي</button><button data-f="fin">كل المتأهلين</button><button data-f="all">كل المشاريع</button><button data-f="flag">مشاريع مُعلَّمة</button></div>
+    <div class="tabs"><button class="on" data-f="todo">بانتظار تقييمي</button><button data-f="done">تم تقييمها</button><button data-f="fin">كل المتأهلين</button><button data-f="all">كل المشاريع</button><button data-f="flag">مشاريع مُعلَّمة</button></div>
     <div class="tabs" id="trTabs" hidden></div>
     <div id="list"></div>
   </div>
@@ -133,11 +133,16 @@ function trackTabs(){
   el.innerHTML = `<button data-t="" class="${trf?"":"on"}">كل المسارات</button>` + shown.map(t=>`<button data-t="${esc(t.id)}" class="${trf===t.id?"on":""}">${glyph(t.icon)} ${esc(t.title)}</button>`).join("");
   el.querySelectorAll("button").forEach(b=>b.onclick=()=>{ trf=b.dataset.t; render(); });
 }
+// رسالة قصيرة تختفي تلقائيًا
+function toast(t){ let el = document.getElementById("toast"); if (!el) { el = document.createElement("div"); el.id = "toast"; el.style.cssText = "position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 18px;border-radius:12px;font-weight:700;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,.2);transition:opacity .4s"; document.body.appendChild(el); } el.textContent = t; el.style.opacity = "1"; clearTimeout(el._t); el._t = setTimeout(() => el.style.opacity = "0", 4000); }
 function render(){
   const R = DATA.config.hackathon.rubric, me = DATA.me;
   trackTabs();
-  const rows = DATA.rows.filter(r => !trf || r.track===trf).filter(r => filter==="all" ? true : filter==="flag" ? r.submission.flagged : filter==="todo" ? (r.finalist && !r.mine) : r.finalist);
-  if (!rows.length) { $("list").innerHTML = `<div class="card muted">${filter==="todo" ? "لا توجد مشاريع بانتظار تقييمك." : "لا توجد مشاريع في هذا القسم."}</div>`; return; }
+  const rows = DATA.rows.filter(r => !trf || r.track===trf).filter(r => filter==="all" ? true : filter==="flag" ? r.submission.flagged : filter==="todo" ? (r.finalist && !r.mine) : filter==="done" ? Boolean(r.mine) : r.finalist);
+  // عدد المشاريع في كل تبويب، ليعرف المحكّم أين ذهبت المشاريع التي قيّمها
+  const base = DATA.rows.filter(r => !trf || r.track===trf), cnt = {todo: base.filter(r=>r.finalist && !r.mine).length, done: base.filter(r=>r.mine).length, fin: base.filter(r=>r.finalist).length, all: base.length, flag: base.filter(r=>r.submission.flagged).length};
+  document.querySelectorAll(".tabs button[data-f]").forEach(b => { b.dataset.l = b.dataset.l || b.textContent; b.textContent = `${b.dataset.l} (${cnt[b.dataset.f] ?? 0})`; });
+  if (!rows.length) { $("list").innerHTML = `<div class="card muted">${filter==="todo" ? (DATA.rows.some(r=>r.mine) ? "أحسنت! قيّمت كل المشاريع المسندة إليك. تجد تقييماتك في تبويب «تم تقييمها»، ويمكنك تعديلها ما دام التحكيم مفتوحًا." : "لا توجد مشاريع بانتظار تقييمك.") : filter==="done" ? "لم تقيّم أي مشروع بعد." : "لا توجد مشاريع في هذا القسم."}</div>`; return; }
   $("list").innerHTML = rows.map(r => {
     const s = r.submission, mine = r.mine;
     const form = r.finalist && !me.admin ? `<div class="box"><b>تقييمك${mine ? (mine.coi ? " · تعارض مصالح" : ` · ${mine.score}/100`) : ""}</b>
@@ -185,7 +190,7 @@ function render(){
       const msg = d.querySelector(".msg"); msg.textContent="";
       if (!coi.checked && ins.some(i=>i.value==="")) { msg.textContent = "قيّم كل المعايير"; return; }
       btn.disabled = true;
-      try { await api("score", {team_id:id, coi: coi.checked, criteria: Object.fromEntries(ins.map(i=>[i.dataset.c, Number(i.value)])), note: d.querySelector(".nt").value}); await load(); }
+      try { await api("score", {team_id:id, coi: coi.checked, criteria: Object.fromEntries(ins.map(i=>[i.dataset.c, Number(i.value)])), note: d.querySelector(".nt").value}); await load(); toast(filter==="todo" ? "✓ حُفظ تقييمك، وانتقل المشروع إلى تبويب «تم تقييمها»" : "✓ حُفظ تقييمك"); }
       catch(e){ msg.textContent = e.message; btn.disabled = false; }
     };
   });
