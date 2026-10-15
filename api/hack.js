@@ -107,7 +107,7 @@ export default async function handler(req, res) {
         const row = rows.find((r) => r.team.id === t.id);
         return res.status(200).json({
           valid: true, preview: !!preview, code, name: t.members[i], team: t.name, project: row?.best.title || "", label: optionLabel(s, t.track, t.challenge),
-          kind: certKind(s, row), awards: H.awards || "track", trackTitle: row?.trackTitle || "", trackColor: s.hackathon.tracks.find((x) => x.id === t.track)?.color || "", trackIcon: s.hackathon.tracks.find((x) => x.id === t.track)?.icon || "", brand: { ...s.brand, logos: await resolveLogos(s) }, hackathon: H.name, period: H.certPeriod || "", date: (toDate(H.closesAt, s.brand.tzOffset) ? new Date(toDate(H.closesAt, s.brand.tzOffset)).toISOString() : null) || row?.best.created_at || t.created_at,
+          kind: certKind(s, row), awards: H.awards || "track", trackTitle: row?.trackTitle || "", trackColor: s.hackathon.tracks.find((x) => x.id === t.track)?.color || "", trackIcon: s.hackathon.tracks.find((x) => x.id === t.track)?.icon || "", brand: { ...s.brand, orgName: s.brand.orgName || "جامعة القصيم", logos: await resolveLogos(s) }, hackathon: H.name, period: H.certPeriod || "", date: (toDate(H.closesAt, s.brand.tzOffset) ? new Date(toDate(H.closesAt, s.brand.tzOffset)).toISOString() : null) || row?.best.created_at || t.created_at,
         });
       }
       return res.status(404).json({ valid: false, error: "الشهادة غير موجودة" });
