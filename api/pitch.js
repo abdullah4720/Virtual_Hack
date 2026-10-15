@@ -96,6 +96,9 @@ export default async function handler(req, res) {
 
     const step = answers.length;
     const AI = aiAvailable();
+    // بعد انتهاء موعد التسجيل في التحدي لا يبدأ عرض جديد (من بدأ قبل الموعد يُكمل حواره)
+    if (step === 0 && s.modules.hackathon && phase(s) === "closed")
+      return res.status(403).json({ error: `انتهت فترة التسجيل في ${s.hackathon.name}. شكرًا لاهتمامك، ونتطلع لمشاركتك في النسخ القادمة.`, closed: true });
     if (step === 0) {
       const limitMsg = await checkLimits(s, req, "pitch");
       if (limitMsg) return res.status(429).json({ error: limitMsg });

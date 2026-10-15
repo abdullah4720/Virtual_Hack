@@ -185,6 +185,11 @@ APP.ready.then(c => {
     : `<span><i data-icon="lightbulb"></i> اعرض فكرتك</span><span><i data-icon="message-square"></i> أجب عن سؤالين</span><span><i data-icon="chart-column"></i> احصل على تقييمك</span>`;
   // العدّ التنازلي لإقفال التسجيل في التحدي (يظهر فقط إذا حُدّد موعد الإقفال)
   if (c.modules.hackathon && c.hackathon.registration === "ticket") { const tick = () => APP.countdown($("cd"), c.hackathon, null, "التسجيل", true); tick(); setInterval(tick, 1000); }
+  // انتهى موعد التسجيل: لا يُعرض نموذج البدء
+  if (c.modules.hackathon && c.hackathon.phase === "closed") {
+    $("s-start").innerHTML = `<div class="card" style="text-align:center;padding:28px 18px"><div style="font-size:40px;color:var(--accent)"><i data-icon="hourglass"></i></div><h2 style="margin:8px 0">انتهت فترة التسجيل</h2><p class="muted">انتهت فترة التسجيل في ${APP.esc(c.hackathon.name)}. شكرًا لاهتمامك، وترقّبوا إعلان الفائزين.</p></div>`;
+    return;
+  }
   $("emailHint").textContent = `لكل بريد ${c.investor.maxAttempts} محاولات.` + (c.modules.hackathon ? " تُربط به محاولاتك وتأهلك." : "");
 }).catch(()=>{ $("startErr").textContent = "تعذّر تحميل الإعدادات، يُرجى تحديث الصفحة"; });
 
