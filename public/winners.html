@@ -189,10 +189,11 @@ function renderTracks(){
         <b style="color:var(--gold)">${esc(f.team)}</b><span>${esc(f.title)}</span><span class="sc">${f.final}</span></div>`; }).join("")}</div>`;
     confetti();
   } else {
-    mid = `<div class="ring"><i data-icon="handshake"></i></div>
+    // شريحة الشكر: شعار الجامعة في الأعلى (وأيقونة المصافحة إن لم يُرفع شعار)
+    mid = `${bigLogos() || `<div class="ring"><i data-icon="handshake"></i></div>`}
       <div class="thanks">شكرًا لكم</div>
       <div class="lead2">لجميع الفرق المشاركة، ولجنة التحكيم، وكل من أسهم في نجاح ${esc(C.hackathon.name)}</div>
-      <span class="pill2"><i data-icon="sparkles"></i> ${esc(C.brand.eventName || "")}</span>${bigLogos()}`;
+      <span class="pill2"><i data-icon="sparkles"></i> ${esc(C.brand.eventName || "")}</span>`;
   }
   s.innerHTML = frame(mid, step);
   $("hint").textContent = step >= 2 * n + 2 ? "" : "اضغط مسافة أو انقر للانتقال ←";
